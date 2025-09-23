@@ -33,3 +33,45 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+---
+
+## Backend Setup
+
+The backend is an Express.js server with PostgreSQL.
+
+## 1. Install PostgreSQL
+
+Make sure you have PostgreSQL installed locally:
+
+* [Download PostgreSQL](https://www.postgresql.org/download/)
+* Or install via Homebrew (macOS):
+    ```bash
+    brew install postgresql
+    ```
+Start the PostgreSQL service and create a database (example name: internsnow):
+```bash
+createdb internsnow (or whatever name)
+```
+## 2. Create a .env file in /backend
+Inside the /backend folder, create a .env file with the following variables:
+```
+PORT=5000
+PG_URI=postgresql://username:password@localhost:5432/internsnow
+JWT_SECRET=your_jwt_secret_here
+```
+Replace username and password with your local PostgreSQL credentials.
+
+## 3. Install dependencies
+```
+cd backend
+npm install
+```
+## 4. Run the backend
+```
+npm start
+```
+The backend server will start at http://localhost:5000
+
+
