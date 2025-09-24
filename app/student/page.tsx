@@ -157,6 +157,7 @@ export default function StudentLandingPage() {
                   count: "789 jobs",
                   color: "bg-orange-500",
                 },
+                
                 { name: "Business", count: "654 jobs", color: "bg-red-500" },
                 { name: "Finance", count: "321 jobs", color: "bg-yellow-500" },
                 { name: "Healthcare", count: "456 jobs", color: "bg-pink-500" },

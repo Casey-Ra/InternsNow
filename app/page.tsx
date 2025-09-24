@@ -4,7 +4,7 @@ export default function HomeLandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="px-6 py-4">
+      <header className="px-6 py-1">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -21,7 +21,7 @@ export default function HomeLandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="px-6 py-12">
+      <main className="px-6 py-11">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
             Connect Students with
@@ -71,7 +71,7 @@ export default function HomeLandingPage() {
             </Link>
           </div>
 
-          {/* Stats Section */}
+          {/*
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="text-4xl font-bold text-blue-600 mb-2">10K+</div>
@@ -86,6 +86,8 @@ export default function HomeLandingPage() {
               <div className="text-gray-600 dark:text-gray-300">Success Rate</div>
             </div>
           </div>
+          */}
+          
         </div>
       </main>
 
