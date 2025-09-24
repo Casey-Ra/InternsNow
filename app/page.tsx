@@ -33,7 +33,7 @@ export default function HomeLandingPage() {
           </p>
 
           {/* CTA Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-1 gap-8 max-w-4xl mx-auto">
             {/* Student Card */}
             <Link href="/student" className="group">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-500">
@@ -52,7 +52,8 @@ export default function HomeLandingPage() {
               </div>
             </Link>
 
-            {/* Employer Card */}
+          
+            {/* Employer Card 
             <Link href="/employer" className="group">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-green-300 dark:group-hover:border-green-500">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -69,6 +70,12 @@ export default function HomeLandingPage() {
                 </div>
               </div>
             </Link>
+            */}
+            
+            
+            
+
+          
           </div>
 
           {/*
