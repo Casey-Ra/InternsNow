@@ -1,77 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# InternsNow
 
-## Getting Started
-First, run the development server:
+A modern internship platform connecting students with opportunities, built with Next.js and PostgreSQL.
 
+## Architecture
+
+This is a full-stack Next.js application with:
+- **Frontend**: React components with Tailwind CSS
+- **Backend**: Next.js API routes (no separate server needed)
+- **Database**: PostgreSQL (local development) / Neon (production)
+- **Authentication**: JWT-based auth system
+
+## Quick Start
+
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-
----
-
-## Backend Setup
-
-The backend is an Express.js server with PostgreSQL.
-
-## 1. Install PostgreSQL
-
-Make sure you have PostgreSQL installed locally:
-
-* [Download PostgreSQL](https://www.postgresql.org/download/)
-* Or install via Homebrew (macOS):
-    ```bash
-    brew install postgresql
-    ```
-Start the PostgreSQL service and create a database (example name: internsnow):
-```bash
-createdb internsnow (or whatever name)
-```
-## 2. Create a .env file in /backend
-Inside the /backend folder, create a .env file with the following variables:
-```
-PORT=5000
-PG_URI=postgresql://username:password@localhost:5432/internsnow
-JWT_SECRET=your_jwt_secret_here
-```
-Replace username and password with your local PostgreSQL credentials.
-
-## 3. Install dependencies
-```
-cd backend
 npm install
 ```
-## 4. Run the backend
-```
-npm start
-```
-The backend server will start at http://localhost:5000
 
+### 2. Set Up Environment Variables
+Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
 
+Update the database connection in `.env.local`:
+```env
+PG_URI=postgresql://your_username@localhost:5432/internsnow
+JWT_SECRET=your_secure_jwt_secret_here
+```
+
+### 3. Set Up Local Database
+Install PostgreSQL if you haven't:
+```bash
+# macOS
+brew install postgresql
+brew services start postgresql
+
+# Create database
+createdb internsnow
+```
+
+### 4. Run Development Server
+```bash
+npm run dev
+```
+
+Your app will be available at:
+- **Frontend**: http://localhost:3000
+- **API Routes/Backend**: http://localhost:3000/api
+
+## API Endpoints
+
+- `POST /api/auth/register` - Create new user account
+- `POST /api/auth/login` - User authentication
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL with `pg` driver
+- **Authentication**: JWT with bcryptjs
+- **Deployment**: Vercel + Neon
