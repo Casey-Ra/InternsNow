@@ -37,7 +37,13 @@ export default function StudentRegisterPage() {
             Student Sign Up
           </h1>
 
-          <div className="space-y-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegister();
+            }}
+            className="space-y-4"
+          >
             <input
               type="text"
               placeholder="Username"
@@ -46,6 +52,7 @@ export default function StudentRegisterPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                          dark:bg-gray-700 dark:text-white"
+              required
             />
 
             <input
@@ -56,16 +63,17 @@ export default function StudentRegisterPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                          dark:bg-gray-700 dark:text-white"
+              required
             />
 
             <button
-              onClick={handleRegister}
+              type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
                          py-2 px-4 rounded-lg transition-colors"
             >
               Create Account
             </button>
-          </div>
+          </form>
 
           {message && (
             <p className="mt-4 text-center text-sm text-gray-700 dark:text-gray-300">

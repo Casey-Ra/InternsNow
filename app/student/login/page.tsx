@@ -39,7 +39,13 @@ export default function LoginPage() {
             Student Login
           </h1>
 
-          <div className="space-y-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="space-y-4"
+          >
             <input
               type="text"
               placeholder="Username"
@@ -48,6 +54,7 @@ export default function LoginPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                          dark:bg-gray-700 dark:text-white"
+              required
             />
 
             <input
@@ -58,16 +65,17 @@ export default function LoginPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                          dark:bg-gray-700 dark:text-white"
+              required
             />
 
             <button
-              onClick={handleLogin}
+              type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
                          py-2 px-4 rounded-lg transition-colors"
             >
               Login
             </button>
-          </div>
+          </form>
 
           {message && (
             <p className="mt-4 text-center text-sm text-gray-700 dark:text-gray-300">
