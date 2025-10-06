@@ -47,7 +47,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
         ];
       default:
         return [
-          { href: "#about", label: "About" },
+          { href: "/about", label: "About" },
           { href: "#features", label: "Features" },
           { href: "#contact", label: "Contact" },
         ];
@@ -71,7 +71,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/student" className="flex items-center space-x-2">
           <div
             className={`w-8 h-8 ${colors.logo} rounded-lg flex items-center justify-center`}
           >

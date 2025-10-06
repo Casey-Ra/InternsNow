@@ -1,24 +1,11 @@
 import Link from "next/link";
+import Header from "../components/Header";
 
 export default function HomeLandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="px-6 py-1">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">IN</span>
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">InternsNow</span>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="#about" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">About</a>
-            <a href="#features" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Features</a>
-            <a href="#contact" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Contact</a>
-          </nav>
-        </div>
-      </header>
+      <Header variant="default" />
 
       {/* Hero Section */}
       <main className="px-6 py-11">
