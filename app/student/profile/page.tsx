@@ -75,73 +75,83 @@ export default function StudentProfilePage() {
             </div>
 
             {/* Education */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+            <section className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Education</h2>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    University *
+                  <label htmlFor="university" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    School / University
                   </label>
-                  <input 
-                    type="text" 
-                    required
+                  <input
+                    id="university"
+                    name="university"
+                    type="text"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="University of California, Berkeley"
+                    placeholder="Your School Name"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Degree *
+                  <label htmlFor="degree" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Degree
                   </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                  <select
+                    id="degree"
+                    name="degree"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
                     <option value="">Select degree level</option>
+                    <option value="highschool">High School</option>
+                    <option value="associate">Associate Degree</option>
                     <option value="bachelors">Bachelor's Degree</option>
                     <option value="masters">Master's Degree</option>
                     <option value="phd">PhD</option>
-                    <option value="associate">Associate Degree</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Major *
+                  <label htmlFor="major" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Major / Focus
                   </label>
-                  <input 
-                    type="text" 
-                    required
+                  <input
+                    id="major"
+                    name="major"
+                    type="text"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="Computer Science"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Graduation Date *
+                  <label htmlFor="graduationDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Graduation Date
                   </label>
-                  <input 
-                    type="month" 
-                    required
+                  <input
+                    id="graduationDate"
+                    name="graduationDate"
+                    type="month"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="gpa" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     GPA (Optional)
                   </label>
-                  <input 
-                    type="number" 
+                  <input
+                    id="gpa"
+                    name="gpa"
+                    type="number"
                     step="0.01"
-                    min="0"
-                    max="4"
+                    min={0}
+                    max={4}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="3.75"
                   />
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Skills & Interests */}
             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">

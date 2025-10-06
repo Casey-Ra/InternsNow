@@ -138,8 +138,7 @@ export default function StudentLandingPage() {
             </div>
           </div>
 
-          {/* Popular Categories */}
-          <section className="mb-16">
+          {/* Popular Categories <section className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
               Popular Categories
             </h2>
@@ -183,7 +182,8 @@ export default function StudentLandingPage() {
                 </button>
               ))}
             </div>
-          </section>
+          </section>*/}
+          
 
           {/* CTA Section */}
           <section className="text-center bg-blue-600 rounded-2xl p-12 text-white">
