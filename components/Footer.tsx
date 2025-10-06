@@ -21,7 +21,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
   const getLinks = () => {
     const baseLinks = {
       company: [
-        { href: "#", label: "About Us" },
+        { href: "/about", label: "About Us" },
         { href: "#", label: "Contact" },
         { href: "#", label: "Privacy Policy" },
         { href: "#", label: "Terms of Service" },
