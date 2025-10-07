@@ -34,7 +34,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
     switch (variant) {
       case "student":
         return [
-          { href: "/student/jobs", label: "Browse Jobs" },
+          { href: "/student/jobs", label: "Find Opportunities" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/profile", label: "My Profile" },
           // addition
@@ -48,8 +48,8 @@ export default function Header({ variant = "default" }: HeaderProps) {
       default:
         return [
           { href: "/about", label: "About" },
-          { href: "#features", label: "Features" },
-          { href: "#contact", label: "Contact" },
+          { href: "/features", label: "Features" },
+          { href: "/contact", label: "Contact" },
         ];
     }
   };

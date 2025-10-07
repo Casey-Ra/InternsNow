@@ -22,24 +22,24 @@ export default function Footer({ variant = "default" }: FooterProps) {
     const baseLinks = {
       company: [
         { href: "/about", label: "About Us" },
-        { href: "#", label: "Contact" },
-        { href: "#", label: "Privacy Policy" },
-        { href: "#", label: "Terms of Service" },
+        { href: "/contact", label: "Contact" },
+        { href: "/privacy-policy", label: "Privacy Policy" },
+        { href: "/terms-of-service", label: "Terms of Service" },
       ],
       support: [
-        { href: "#", label: "Help Center" },
-        { href: "#", label: "FAQs" },
-        { href: "#", label: "Community" },
-        { href: "#", label: "Feedback" },
+        { href: "/help-center", label: "Help Center" },
+        { href: "/faqs", label: "FAQs" },
+        { href: "/community", label: "Community" },
+        { href: "/feedback", label: "Feedback" },
       ],
     };
 
     const specificLinks = {
       student: [
-        { href: "#", label: "Browse Jobs" },
-        { href: "#", label: "Career Resources" },
-        { href: "#", label: "Resume Builder" },
-        { href: "#", label: "Interview Prep" },
+        { href: "/student/find-opportunities", label: "Find Opportunities" },
+        { href: "/student/career-resources", label: "Career Resources" },
+        { href: "/student/resume", label: "Resume Builder" },
+        { href: "/student/interview", label: "AI Interview" },
       ],
       employer: [
         { href: "#", label: "Post Jobs" },
@@ -52,7 +52,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
     return {
       specific:
         variant === "default"
-          ? baseLinks.company
+          ? []
           : specificLinks[variant as keyof typeof specificLinks],
       company: baseLinks.company,
       support: baseLinks.support,
@@ -70,7 +70,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
   return (
     <footer className="px-6 py-8 mt-16 border-t border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className={`grid ${links.specific.length > 0 ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-8`}>
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -87,20 +87,28 @@ export default function Footer({ variant = "default" }: FooterProps) {
             </p>
           </div>
 
-          <div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-4">
-              {specificTitle}
-            </h3>
-            <ul className="space-y-2 text-gray-600 dark:text-gray-300">
-              {links.specific.map((link) => (
-                <li key={link.label}>
-                  <a href={link.href} className={hoverColor}>
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {links.specific.length > 0 && (
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4">
+                {specificTitle}
+              </h3>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+                {links.specific.map((link) => (
+                  <li key={link.label}>
+                    {link.href === "#" ? (
+                      <span className="text-gray-400 dark:text-gray-500 cursor-not-allowed">
+                        {link.label}
+                      </span>
+                    ) : (
+                      <Link href={link.href} className={hoverColor}>
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-4">
@@ -109,9 +117,9 @@ export default function Footer({ variant = "default" }: FooterProps) {
             <ul className="space-y-2 text-gray-600 dark:text-gray-300">
               {links.company.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className={hoverColor}>
+                  <Link href={link.href} className={hoverColor}>
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -124,9 +132,9 @@ export default function Footer({ variant = "default" }: FooterProps) {
             <ul className="space-y-2 text-gray-600 dark:text-gray-300">
               {links.support.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className={hoverColor}>
+                  <Link href={link.href} className={hoverColor}>
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

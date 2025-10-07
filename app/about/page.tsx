@@ -1,10 +1,10 @@
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header />
+      <Header variant="default" />
 
       <main className="px-6 py-16">
         <div className="max-w-4xl mx-auto text-gray-800 dark:text-gray-100">
@@ -62,7 +62,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer variant="default" />
     </div>
   );
 }
