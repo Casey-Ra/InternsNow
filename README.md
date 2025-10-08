@@ -27,6 +27,13 @@ Update the database connection in `.env.local`:
 ```env
 PG_URI=postgresql://your_username@localhost:5432/internsnow
 JWT_SECRET=your_secure_jwt_secret_here
+
+# Auth0 Configuration
+(ask project owner for this information)
+AUTH0_DOMAIN=dev-xxxxxx.us.auth0.com
+AUTH0_CLIENT_ID=your_client_id_here
+AUTH0_CLIENT_SECRET=your_client_secret_here
+AUTH0_CALLBACK_URL=http://localhost:3000/api/auth/callback
 ```
 
 ### 3. Set Up Local Database

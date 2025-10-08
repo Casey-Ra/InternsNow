@@ -4,6 +4,7 @@ export interface User {
   id: number;
   username: string;
   password?: string;
+  email?: string;
   created_at: Date;
 }
 
@@ -12,10 +13,10 @@ const init = async () => {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(100) UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+        auth0_id VARCHAR PRIMARY KEY,
+        email VARCHAR(255) UNIQUE,
+        role VARCHAR(50),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
     console.log("Users table initialized successfully");
@@ -27,26 +28,48 @@ const init = async () => {
 // Initialize the table when the module is loaded
 init();
 
-export const createUser = async (username: string, hashedPassword: string): Promise<User> => {
+export const createUser = async (
+  auth0_id: string,
+  email?: string,
+  role: string = "student",
+): Promise<User> => {
   try {
     const result = await pool.query(
-      `INSERT INTO users (username, password) VALUES ($1, $2)
-       RETURNING id, username, created_at`,
-      [username, hashedPassword]
+      `
+      INSERT INTO users (auth0_id, email, role)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (auth0_id) DO UPDATE
+        SET email = EXCLUDED.email,
+            role = EXCLUDED.role
+      RETURNING auth0_id, email, role, created_at
+      `,
+      [auth0_id, email, role],
     );
+
     return result.rows[0];
   } catch (err: any) {
-    if (err.code === "23505") {
-      throw new Error("Username already exists");
-    }
+    console.error("Error creating user:", err);
     throw err;
   }
 };
 
-export const findUserByUsername = async (username: string): Promise<User | null> => {
+export const findUserByAuth0Id = async (
+  auth0_id: string,
+): Promise<User | null> => {
   const result = await pool.query(
-    "SELECT id, username, password, created_at FROM users WHERE username = $1",
-    [username]
+    "SELECT auth0_id, email, role, created_at FROM users WHERE auth0_id = $1",
+    [auth0_id],
+  );
+  return result.rows[0] || null;
+};
+
+/**
+ * Optionally, find user by email
+ */
+export const findUserByEmail = async (email: string): Promise<User | null> => {
+  const result = await pool.query(
+    "SELECT auth0_id, email, role, created_at FROM users WHERE email = $1",
+    [email],
   );
   return result.rows[0] || null;
 };

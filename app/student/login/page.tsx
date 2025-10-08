@@ -1,32 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-
-  const handleLogin = async () => {
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("✅ Login successful!");
-        // TODO: save token in localStorage or cookies
-      } else {
-        setMessage("❌ " + (data.error || "Invalid credentials"));
-      }
-    } catch (err) {
-      setMessage("❌ Network error, is the backend running?");
-    }
+  const handleAuth0Login = async () => {
+    // Redirect the user to Auth0's hosted login page
+    window.location.href = "/api/auth/login-auth0";
   };
 
   return (
@@ -39,49 +19,17 @@ export default function LoginPage() {
             Student Login
           </h1>
 
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleLogin();
-            }}
-            className="space-y-4"
+          <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
+            Sign in securely using Auth0
+          </p>
+
+          <button
+            onClick={handleAuth0Login}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                       py-2 px-4 rounded-lg transition-colors"
           >
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
-                         rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
-                         dark:bg-gray-700 dark:text-white"
-              required
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600
-                         rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
-                         dark:bg-gray-700 dark:text-white"
-              required
-            />
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
-                         py-2 px-4 rounded-lg transition-colors"
-            >
-              Login
-            </button>
-          </form>
-
-          {message && (
-            <p className="mt-4 text-center text-sm text-gray-700 dark:text-gray-300">
-              {message}
-            </p>
-          )}
+            Continue with Auth0
+          </button>
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Don’t have an account?{" "}
