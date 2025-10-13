@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
@@ -69,6 +72,25 @@ export default function Header({ variant = "default" }: HeaderProps) {
   const navLinks = getNavLinks();
   const buttonText = getButtonText();
 
+  const [auth, setAuth] = useState<{ loggedIn: boolean; isEdu: boolean } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/auth/status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (mounted) setAuth(data);
+      })
+      .catch(() => {
+        if (mounted) setAuth({ loggedIn: false, isEdu: false });
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -96,19 +118,40 @@ export default function Header({ variant = "default" }: HeaderProps) {
         </nav>
 
         <div className="flex space-x-4">
-          <Link
-            href="/student/login"
-            className={`px-4 py-2 ${colors.textButton} font-medium`}
-          >
-            {buttonText.secondary}
-          </Link>
-
-          <Link
-            href={variant === "student" ? "/student/register" : "/register"}
-            className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
-          >
-            {buttonText.primary}
-          </Link>
+          {auth === null ? (
+            // loading placeholder
+            <div className="px-4 py-2 text-gray-500">...</div>
+          ) : auth.loggedIn ? (
+            <>
+              <Link
+                href="/student/profile"
+                className={`px-4 py-2 ${colors.textButton} font-medium`}
+              >
+                My Profile
+              </Link>
+              <Link
+                href="/api/auth/logout"
+                className="px-4 py-2 text-red-600 hover:text-red-800 font-medium"
+              >
+                Logout
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/student/login"
+                className={`px-4 py-2 ${colors.textButton} font-medium`}
+              >
+                {buttonText.secondary}
+              </Link>
+              <Link
+                href={variant === "student" ? "/student/register" : "/register"}
+                className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
+              >
+                {buttonText.primary}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
