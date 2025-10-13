@@ -34,13 +34,14 @@ export default function Header({ variant = "default" }: HeaderProps) {
     switch (variant) {
       case "student":
         return [
+          { href: "/student", label: "Home" },
           { href: "/student/jobs", label: "Find Opportunities" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/profile", label: "My Profile" },
-          // addition
         ];
       case "employer":
         return [
+          { href: "/employer", label: "Home" },
           { href: "/employer/pricing", label: "Pricing" },
           { href: "/employer/solutions", label: "Solutions" },
           { href: "/employer/resources", label: "Resources" },
@@ -71,7 +72,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/student" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-2">
           <div
             className={`w-8 h-8 ${colors.logo} rounded-lg flex items-center justify-center`}
           >
