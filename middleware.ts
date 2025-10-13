@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Toggle enforcement via env var: set EDU_ENFORCEMENT=false to disable in dev
-const EDU_ENFORCEMENT = (() => {
-  const v = process.env.EDU_ENFORCEMENT ?? process.env.NEXT_PUBLIC_EDU_ENFORCEMENT;
-  if (!v) return true; // default on
-  return !(v === "false" || v === "0" || v.toLowerCase() === "off");
-})();
+// Toggle enforcement via env var: set EDU_ENFORCEMENT=true to enable. Any other value or missing -> disabled.
+// Determine enforcement: check if EDU_ENFORCEMENT is defined in server env (.env.local)
+const hasEduEnv = typeof process.env.EDU_ENFORCEMENT !== "undefined";
+
+
+let EDU_ENFORCEMENT = false;//If no EDU_ENFORCEMENT env var is set
+if (hasEduEnv) { //If there is an EDU_ENFORCEMENT env var set
+  if (process.env.EDU_ENFORCEMENT === "true") {
+    EDU_ENFORCEMENT = true;
+  }
+  else {
+    EDU_ENFORCEMENT = false;
+}
+} 
+
+
 
 // Paths that should be accessible without .edu check
 // exact matches (use strict equality)
