@@ -57,10 +57,35 @@ export async function GET(request: NextRequest) {
 
     console.log("Auth0 user info received:", userInfo);
 
-    await createUser(userInfo.sub, userInfo.email, "student");
+    const email: string | undefined = userInfo.email;
+    const isEdu = !!email && email.toLowerCase().endsWith(".edu");
 
-    // Redirect the user to a page (e.g dashboard)
-    return NextResponse.redirect("http://localhost:3000/");
+    // If user is .edu, create/update them in our DB and allow access.
+    if (isEdu) {
+      await createUser(userInfo.sub, email, "student");
+
+      const res = NextResponse.redirect(new URL("/", request.url));
+      res.cookies.set("is_edu", "true", {
+        httpOnly: true,
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+      return res;
+    }
+
+    // Non-.edu users: do not create an account and redirect to a notice page.
+    const res = NextResponse.redirect(new URL("/not-edu", request.url));
+    // set a short-lived cookie so middleware can detect non-edu users and block access
+    res.cookies.set("is_edu", "false", {
+      httpOnly: true,
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      // expire quickly (10 minutes)
+      maxAge: 60 * 10,
+    });
+    return res;
   } catch (err: any) {
     console.error("Auth0 callback error:", err);
     return NextResponse.json(
