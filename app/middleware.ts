@@ -19,6 +19,7 @@ const PUBLIC_PATHS = [
   "/about",
   "/contact",
   "/public",
+  "/",
 ];
 
 export function middleware(request: NextRequest) {
