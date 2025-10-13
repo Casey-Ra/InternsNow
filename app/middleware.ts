@@ -8,19 +8,19 @@ const EDU_ENFORCEMENT = (() => {
 })();
 
 // Paths that should be accessible without .edu check
-const PUBLIC_PATHS = [
-  "/_next",
+// exact matches (use strict equality)
+const EXACT_PUBLIC_PATHS = [
+  "/",
   "/favicon.ico",
-  "/api",
   "/not-edu",
   "/student/login",
   "/student/register",
-  "/employer",
   "/about",
   "/contact",
-  "/public",
-  "/",
 ];
+
+// prefix matches (use startsWith)
+const PREFIX_PUBLIC_PATHS = ["/_next", "/static", "/public", "/api", "/employer"];
 
 export function middleware(request: NextRequest) {
   // If enforcement is disabled, allow all requests through
@@ -29,10 +29,8 @@ export function middleware(request: NextRequest) {
 
   // Allow public paths and static assets
   if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/static") ||
-    pathname.startsWith("/public") ||
-    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p))
+    PREFIX_PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
+    EXACT_PUBLIC_PATHS.some((p) => pathname === p)
   ) {
     return NextResponse.next();
   }
