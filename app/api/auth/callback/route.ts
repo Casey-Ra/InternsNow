@@ -60,7 +60,6 @@ export async function GET(request: NextRequest) {
     const email: string | undefined = userInfo.email;
     const isEdu = !!email && email.toLowerCase().endsWith(".edu");
 
-<<<<<<< Updated upstream
     // If user is .edu, create/update them in our DB and allow access.
     if (isEdu) {
       await createUser(userInfo.sub, email, "student");
@@ -87,13 +86,6 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 10,
     });
     return res;
-=======
-    // Redirect the user to a page (e.g dashboard)
-    //return NextResponse.redirect("http://localhost:3000/"); for local dev
-    return NextResponse.redirect(
-      "https://internsnow-1iwbokzpm-interns-now.vercel.app",
-    );
->>>>>>> Stashed changes
   } catch (err: any) {
     console.error("Auth0 callback error:", err);
     return NextResponse.json(
