@@ -40,6 +40,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
           { href: "/student", label: "Home" },
           { href: "/student/jobs", label: "Find Opportunities" },
           { href: "/student/resources", label: "Resources" },
+          { href: "/student/fluency-test", label: "AI Fluency Test" },
           { href: "/student/profile", label: "My Profile" },
         ];
       case "employer":
