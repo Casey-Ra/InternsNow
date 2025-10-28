@@ -93,9 +93,9 @@ const samples = [
 // Run initialization asynchronously on module import. This is idempotent: it only inserts when the table is empty.
 (async function initDb() {
   try {
-    const existing = await getAllInternships();
+  const existing = await getAllInternships();
 
-    // If duplicates exist (from previous runs without uniqueness), remove duplicates keeping one per URL.
+  // If duplicates exist (from previous runs without uniqueness), remove duplicates keeping one per URL.
     try {
       const dupRes = await pool.query(
         `
@@ -121,7 +121,9 @@ const samples = [
       console.error("Error during deduplication step:", err);
     }
 
-    if (existing.length > 0) {
+    // Re-fetch after deduplication in case we removed rows — only seed when table is truly empty
+    const after = await getAllInternships();
+    if (after.length > 0) {
       // Already populated; skip seeding
       return;
     }
