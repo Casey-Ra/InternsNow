@@ -10,7 +10,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing internship id" }, { status: 400 });
     }
 
+    console.log(`/api/internships/delete received id: ${id}`);
     const ok = await deleteInternship(id);
+    console.log(`/api/internships/delete result for id ${id}:`, ok);
 
     if (!ok) {
       return NextResponse.json({ error: "Internship not found or not deleted" }, { status: 404 });

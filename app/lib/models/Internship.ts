@@ -20,6 +20,10 @@ const init = async () => {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
+    // Ensure URL uniqueness to prevent duplicate seed inserts in concurrent environments
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS internships_url_unique ON internships (url)
+    `);
     console.log("Internships table initialized successfully");
   } catch (err) {
     console.error("Internships table init failed:", err);
@@ -35,16 +39,26 @@ export const createInternship = async (
   url: string
 ): Promise<Internship> => {
   try {
+    // Try inserting; if a row with the same URL already exists, avoid duplicate.
     const result = await pool.query(
       `
       INSERT INTO internships (company_name, job_description, url)
       VALUES ($1, $2, $3)
+      ON CONFLICT (url) DO NOTHING
       RETURNING id, company_name, job_description, url, created_at
       `,
       [company_name, job_description, url]
     );
 
-    return result.rows[0];
+    if (result.rows[0]) return result.rows[0];
+
+    // If insertion was skipped due to conflict, return the existing row
+    const existing = await pool.query(
+      `SELECT id, company_name, job_description, url, created_at FROM internships WHERE url = $1 LIMIT 1`,
+      [url]
+    );
+
+    return existing.rows[0];
   } catch (err: any) {
     console.error("Error creating internship:", err);
     throw err;
@@ -105,6 +119,8 @@ export const deleteInternship = async (id: string): Promise<boolean> => {
       [id]
     );
 
+    // Log rowCount to aid debugging if deletions fail
+    console.log(`deleteInternship: deleted rows for id ${id}:`, result.rowCount);
     return result.rowCount! > 0;
   } catch (err: any) {
     console.error("Error deleting internship:", err);
