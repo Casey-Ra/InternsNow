@@ -73,7 +73,8 @@ export default function ManageInternshipsClient({ initialData }: { initialData: 
       const res = await fetch("/api/internships/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        // Send url as well so server can fallback to deleting by url if id mismatches
+        body: JSON.stringify({ id, url: items.find((p) => p.id === id)?.url }),
       });
       const data = await res.json();
       if (!res.ok) {

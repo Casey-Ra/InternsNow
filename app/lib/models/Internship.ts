@@ -127,3 +127,17 @@ export const deleteInternship = async (id: string): Promise<boolean> => {
     throw err;
   }
 };
+
+export const deleteInternshipByUrl = async (url: string): Promise<number> => {
+  try {
+    const result = await pool.query(
+      "DELETE FROM internships WHERE url = $1",
+      [url]
+    );
+  console.log(`deleteInternshipByUrl: deleted rows for url ${url}:`, result.rowCount);
+  return result.rowCount ?? 0;
+  } catch (err: any) {
+    console.error("Error deleting internship by url:", err);
+    throw err;
+  }
+};
