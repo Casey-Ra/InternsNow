@@ -1,11 +1,23 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getAllInternships } from "@/app/lib/models/Internship";
 
-export default function FindOpportunitiesPage() {
+function formatDate(iso?: string | Date) {
+  try {
+    const d = iso ? new Date(iso) : new Date();
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  } catch (e) {
+    return "";
+  }
+}
+
+export default async function FindOpportunitiesPage() {
+  const internships = await getAllInternships();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header variant="student" />
-      
+
       <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
@@ -13,33 +25,35 @@ export default function FindOpportunitiesPage() {
               Find Opportunities
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're building an amazing opportunity discovery platform.
+              Browse the latest internships submitted by employers.
             </p>
           </div>
-          
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full mb-6">
-              <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+
+          {internships.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 dark:text-gray-300">No internships available yet. Check back later or ask employers to add opportunities.</p>
             </div>
-            
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Coming Soon
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our opportunity finder is currently under development. We're creating a powerful search and discovery tool to help you find the perfect internships and entry-level positions.
-            </p>
-            
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                Soon you'll be able to search by location, industry, company size, and more to discover opportunities that match your interests and career goals.
-              </p>
+          ) : (
+            <div className="space-y-6">
+              {internships.map((i) => (
+                <div key={i.id} className="border border-gray-100 dark:border-gray-700 rounded-lg p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{i.company_name}</h3>
+                      <p className="mt-2 text-gray-700 dark:text-gray-300 whitespace-pre-line">{i.job_description.length > 800 ? `${i.job_description.slice(0, 800)}...` : i.job_description}</p>
+                    </div>
+                    <div className="ml-4 text-right">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(i.created_at)}</p>
+                      <a href={i.url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline">Apply</a>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </main>
-      
+
       <Footer variant="student" />
     </div>
   );
