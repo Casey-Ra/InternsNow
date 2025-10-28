@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export interface InternshipItem {
   id: string;
@@ -12,6 +13,7 @@ export interface InternshipItem {
 
 export default function ManageInternshipsClient({ initialData }: { initialData: InternshipItem[] }) {
   const [items, setItems] = useState<InternshipItem[]>(initialData || []);
+  const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -56,6 +58,13 @@ export default function ManageInternshipsClient({ initialData }: { initialData: 
         setItems((prev) => prev.map((p) => (p.id === id ? data.data : p)));
       }
 
+      // refresh server-rendered pages so edits reflect everywhere
+      try {
+        router.refresh();
+      } catch (e) {
+        window.location.reload();
+      }
+
       setEditingId(null);
     } catch (e: any) {
       setError(e?.message || "Unexpected error");
@@ -82,7 +91,14 @@ export default function ManageInternshipsClient({ initialData }: { initialData: 
         return;
       }
 
+      // remove locally and refresh server-rendered data
       setItems((prev) => prev.filter((p) => p.id !== id));
+      try {
+        router.refresh();
+      } catch (e) {
+        // fallback: full reload
+        window.location.reload();
+      }
     } catch (e: any) {
       setError(e?.message || "Unexpected error");
     } finally {

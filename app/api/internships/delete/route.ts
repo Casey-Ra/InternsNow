@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteInternship, deleteInternshipByUrl } from "../../../lib/models/Internship";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,14 @@ export async function POST(request: NextRequest) {
 
     if (!ok) {
       return NextResponse.json({ error: "Internship not found or not deleted" }, { status: 404 });
+    }
+
+    // Revalidate important pages so UI shows latest data
+    try {
+      revalidatePath("/employer/manage-internships");
+      revalidatePath("/student/find-opportunities");
+    } catch (e) {
+      console.warn("revalidatePath failed:", e);
     }
 
     return NextResponse.json({ msg: "Internship deleted" }, { status: 200 });
