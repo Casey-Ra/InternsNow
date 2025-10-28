@@ -1,4 +1,5 @@
 import { getAllInternships, createInternship } from "./models/Internship";
+import pool from "./db";
 
 // Initial sample data - hardcoded for now
 const samples = [
@@ -93,8 +94,35 @@ const samples = [
 (async function initDb() {
   try {
     const existing = await getAllInternships();
+
+    // If duplicates exist (from previous runs without uniqueness), remove duplicates keeping one per URL.
+    try {
+      const dupRes = await pool.query(
+        `
+        SELECT url, array_agg(id ORDER BY created_at) AS ids, COUNT(*) AS cnt
+        FROM internships
+        GROUP BY url
+        HAVING COUNT(*) > 1
+      `
+      );
+
+      if (dupRes.rows.length > 0) {
+        console.log(`Found ${dupRes.rows.length} duplicated URL(s). Deduplicating...`);
+        for (const row of dupRes.rows) {
+          const ids: string[] = row.ids;
+          // keep the first id, delete the rest
+          const keep = ids[0];
+          const remove = ids.slice(1);
+          const delRes = await pool.query(`DELETE FROM internships WHERE id = ANY($1::uuid[])`, [remove]);
+          console.log(`Deduped url=${row.url}: kept ${keep}, removed ${delRes.rowCount} duplicates`);
+        }
+      }
+    } catch (err) {
+      console.error("Error during deduplication step:", err);
+    }
+
     if (existing.length > 0) {
-      // Already populated; skip
+      // Already populated; skip seeding
       return;
     }
 
