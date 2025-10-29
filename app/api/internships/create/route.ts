@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createInternship } from "../../../lib/models/Internship";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,14 @@ export async function POST(request: NextRequest) {
     }
 
     const internship = await createInternship(company_name, job_description, url);
+
+    // Revalidate pages that list internships so the new item appears
+    try {
+      revalidatePath("/employer/manage-internships");
+      revalidatePath("/student/find-opportunities");
+    } catch (e) {
+      console.warn("revalidatePath failed:", e);
+    }
 
     return NextResponse.json({ msg: "Internship created", data: internship }, { status: 201 });
   } catch (err: any) {
