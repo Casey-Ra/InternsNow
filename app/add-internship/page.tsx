@@ -75,9 +75,9 @@ export default function AddInternshipPage() {
       setJobDescription("");
       setUrl("");
 
-      // short delay then navigate to employer dashboard
+      // short delay then navigate to manage internships
       setTimeout(() => {
-        router.push("/employer");
+        router.push("/manage-internships");
       }, 1200);
     } catch (err: any) {
       setError(err?.message || "An error occurred");
@@ -88,7 +88,7 @@ export default function AddInternshipPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="employer" />
+      <Header variant="default" />
 
       <main className="max-w-3xl mx-auto p-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8">
@@ -146,7 +146,7 @@ export default function AddInternshipPage() {
         </div>
       </main>
 
-      <Footer variant="employer" />
+      <Footer variant="default" />
     </div>
   );
 }

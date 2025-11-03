@@ -4,8 +4,16 @@ import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const raw = await request.text();
+    let body: any = {};
+    try {
+      body = JSON.parse(raw);
+    } catch (e) {
+      body = await request.json().catch(() => ({}));
+    }
     const { id, company_name, job_description, url } = body || {};
+
+    console.log(`/api/internships/update received body: ${raw}`);
 
     if (!id || !company_name || !job_description || !url) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -17,8 +25,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Internship not found" }, { status: 404 });
     }
 
-    // Revalidate pages that list internships so changes are reflected
+    // Revalidate pages that list internships so changes are reflected (old and new paths)
     try {
+      revalidatePath("/manage-internships");
       revalidatePath("/employer/manage-internships");
       revalidatePath("/student/find-opportunities");
     } catch (e) {

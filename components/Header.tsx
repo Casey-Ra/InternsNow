@@ -43,13 +43,6 @@ export default function Header({ variant = "default" }: HeaderProps) {
           { href: "/student/fluency-test", label: "AI Fluency Test" },
           { href: "/student/profile", label: "My Profile" },
         ];
-      case "employer":
-        return [
-          { href: "/employer", label: "Home" },
-          { href: "/employer/pricing", label: "Pricing" },
-          { href: "/employer/solutions", label: "Solutions" },
-          { href: "/employer/resources", label: "Resources" },
-        ];
       default:
         return [
           { href: "/about", label: "About" },

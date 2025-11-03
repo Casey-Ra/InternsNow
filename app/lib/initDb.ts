@@ -93,6 +93,12 @@ const samples = [
 // Run initialization asynchronously on module import. This is idempotent: it only inserts when the table is empty.
 (async function initDb() {
   try {
+    // Skip automatic init/dedup/seed in production by default to avoid accidental data changes.
+    // Set FORCE_INITDB=1 in the environment to override.
+    if (process.env.NODE_ENV === "production" && !process.env.FORCE_INITDB) {
+      console.log("initDb: skipping automatic initialization in production. Set FORCE_INITDB=1 to force.");
+      return;
+    }
   const existing = await getAllInternships();
 
   // If duplicates exist (from previous runs without uniqueness), remove duplicates keeping one per URL.
