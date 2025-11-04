@@ -80,13 +80,8 @@ export async function POST(request: Request) {
       [user.sub],
     );
 
-    const skillsArray = Array.isArray(data.skills)
-      ? data.skills
-      : typeof data.skills === "string"
-        ? data.skills.split(",").map((s) => s.trim())
-        : [];
-
-    if (existing.rowCount > 0) {
+    // Safely check that the query returned a valid result
+    if (existing && existing.rowCount && existing.rowCount > 0) {
       await pool.query(
         `UPDATE profiles
          SET full_name=$1, email=$2, phone=$3, location=$4, school=$5,
