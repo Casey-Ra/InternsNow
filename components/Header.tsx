@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import UserMenu from "@/components/UserMenu";
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
@@ -41,7 +42,6 @@ export default function Header({ variant = "default" }: HeaderProps) {
           { href: "/student/find-opportunities", label: "Find Opportunities" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/fluency-test", label: "AI Fluency Test" },
-          { href: "/student/profile", label: "My Profile" },
         ];
       default:
         return [
@@ -66,20 +66,27 @@ export default function Header({ variant = "default" }: HeaderProps) {
   const navLinks = getNavLinks();
   const buttonText = getButtonText();
 
-  const [auth, setAuth] = useState<{ loggedIn: boolean; isEdu: boolean } | null>(
-    null,
-  );
+  // --- Auth0 state ---
+  const [session, setSession] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    fetch("/api/auth/status")
-      .then((r) => r.json())
+    fetch("/auth/profile") // ✅ Auth0’s built-in route
+      .then((res) => {
+        if (!res.ok) throw new Error("No session");
+        return res.json();
+      })
       .then((data) => {
-        if (mounted) setAuth(data);
+        if (mounted) setSession(data);
       })
       .catch(() => {
-        if (mounted) setAuth({ loggedIn: false, isEdu: false });
+        if (mounted) setSession(null);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
       });
+
     return () => {
       mounted = false;
     };
@@ -112,38 +119,27 @@ export default function Header({ variant = "default" }: HeaderProps) {
         </nav>
 
         <div className="flex space-x-4">
-          {auth === null ? (
-            // loading placeholder
+          {loading ? (
             <div className="px-4 py-2 text-gray-500">...</div>
-          ) : auth.loggedIn ? (
-            <>
-              <Link
-                href="/student/profile"
-                className={`px-4 py-2 ${colors.textButton} font-medium`}
-              >
-                My Profile
-              </Link>
-              <Link
-                href="/api/auth/logout"
-                className="px-4 py-2 text-red-600 hover:text-red-800 font-medium"
-              >
-                Logout
-              </Link>
-            </>
+          ) : session ? (
+            <UserMenu
+              profileImage={session.user?.picture}
+              name={session.user?.name}
+            />
           ) : (
             <>
-              <Link
-                href="/student/login"
+              <a
+                href="/auth/login"
                 className={`px-4 py-2 ${colors.textButton} font-medium`}
               >
                 {buttonText.secondary}
-              </Link>
-              <Link
-                href={variant === "student" ? "/student/register" : "/register"}
+              </a>
+              <a
+                href="/auth/login?screen_hint=signup"
                 className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
               >
                 {buttonText.primary}
-              </Link>
+              </a>
             </>
           )}
         </div>
