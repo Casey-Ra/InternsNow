@@ -6,7 +6,7 @@ import pool from "@/lib/db";
 
 await initDb();
 
-// ✅ GET - fetch profile info
+// GET - fetch profile info
 export async function GET() {
   try {
     const session = await auth0.getSession();
@@ -74,6 +74,12 @@ export async function POST(request: Request) {
 
     const user = session.user;
     const data = sanitizeEmptyToNull(await request.json());
+
+    const skillsArray = Array.isArray(data.skills)
+      ? data.skills
+      : typeof data.skills === "string"
+        ? data.skills.split(",").map((s) => s.trim())
+        : [];
 
     const existing = await pool.query(
       "SELECT id FROM profiles WHERE user_id = $1",
