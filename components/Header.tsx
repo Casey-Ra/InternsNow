@@ -129,13 +129,13 @@ export default function Header({ variant = "default" }: HeaderProps) {
           ) : (
             <>
               <a
-                href="/auth/login"
+                href="/auth/login?returnTo=/student"
                 className={`px-4 py-2 ${colors.textButton} font-medium`}
               >
                 {buttonText.secondary}
               </a>
               <a
-                href="/auth/login?screen_hint=signup"
+                href="/auth/login?screen_hint=signup&returnTo=/student"
                 className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
               >
                 {buttonText.primary}
