@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
 }
 
-export default function Header({ variant = "default" }: HeaderProps) {
+export default function Header({ variant }: HeaderProps) {
+  const pathname = usePathname();
+
+  const pathVariant = pathname?.startsWith("/student")
+    ? "student"
+    : pathname?.startsWith("/employer")
+    ? "employer"
+    : "default";
+
+  const resolvedVariant = pathVariant === "default" ? "default" : variant ?? pathVariant;
   const getThemeColors = () => {
-    switch (variant) {
+    switch (resolvedVariant) {
       case "student":
         return {
           logo: "bg-blue-600",
@@ -35,7 +45,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
   const colors = getThemeColors();
 
   const getNavLinks = () => {
-    switch (variant) {
+    switch (resolvedVariant) {
       case "student":
         return [
           { href: "/student", label: "Home" },
@@ -53,7 +63,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
   };
 
   const getButtonText = () => {
-    switch (variant) {
+    switch (resolvedVariant) {
       case "student":
         return { primary: "Sign Up", secondary: "Login" };
       case "employer":

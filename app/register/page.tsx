@@ -1,10 +1,9 @@
 "use client";
 
-import Header from "../../../components/Header";
-import Footer from "../../../components/Footer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
-export default function StudentRegisterPage() {
-  // Redirect user to Auth0's hosted sign-up page
+export default function RegisterPage() {
   const handleAuth0Signup = () => {
     window.location.href = "/api/auth/register-auth0";
   };
@@ -25,18 +24,14 @@ export default function StudentRegisterPage() {
 
           <button
             onClick={handleAuth0Signup}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
-                       py-2 px-4 rounded-lg transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
           >
             Sign Up with Auth0
           </button>
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <a
-              href="/student/login"
-              className="text-blue-600 hover:underline dark:text-blue-400"
-            >
+            <a href="/login" className="text-blue-600 hover:underline dark:text-blue-400">
               Login
             </a>
           </p>

@@ -12,10 +12,7 @@ export default function NotEduPage() {
           If you believe you should have access, please sign in with your school
           email or contact support.
         </p>
-        <a
-          href="/student/login"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded"
-        >
+        <a href="/login" className="inline-block px-4 py-2 bg-blue-600 text-white rounded">
           Sign in with .edu email
         </a>
       </div>
