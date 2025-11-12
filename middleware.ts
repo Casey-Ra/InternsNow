@@ -14,8 +14,8 @@ const EXACT_PUBLIC_PATHS = [
   "/",
   "/favicon.ico",
   "/not-edu",
-  "/student/login",
-  "/student/register",
+  "/login",
+  "/register",
   "/about",
   "/contact",
 ];
@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (isEdu !== "true") {
-      return NextResponse.redirect(new URL("/student/login", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
   }
 
