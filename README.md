@@ -69,3 +69,6 @@ Your app will be available at:
 - **Database**: PostgreSQL with `pg` driver
 - **Authentication**: JWT with bcryptjs
 - **Deployment**: Vercel + Neon
+
+<!-- Testing CI/CD pipeline -->
+````
