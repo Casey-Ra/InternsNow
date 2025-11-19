@@ -1,10 +1,10 @@
 // app/api/profile/route.ts
 import { NextResponse } from "next/server";
-import { initDb } from "@/lib/initDB";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
 
-await initDb();
+// Note: Database tables should be initialized before deployment
+// await initDb(); // Removed to prevent build failures
 
 // GET - fetch profile info
 export async function GET() {
