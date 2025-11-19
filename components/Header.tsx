@@ -9,6 +9,7 @@ interface HeaderProps {
   variant?: "student" | "employer" | "default";
 }
 
+
 export default function Header({ variant }: HeaderProps) {
   const pathname = usePathname();
 
