@@ -69,3 +69,72 @@ Your app will be available at:
 - **Database**: PostgreSQL with `pg` driver
 - **Authentication**: JWT with bcryptjs
 - **Deployment**: Vercel + Neon
+
+## Development Workflow
+
+We use a branching workflow with CI/CD. **Never push directly to `main`.**
+
+### Branch Structure
+
+| Branch | Purpose | Deploys To |
+|--------|---------|------------|
+| `main` | Production code | Live site |
+| `develop` | Staging/testing | Preview URL |
+| `feature/description-of-feature` | New features | Preview URL |
+| `fix/description-of-fix` | Bug fixes | Preview URL |
+
+### Making Changes
+
+```bash
+# 1. Start from develop (always pull latest first)
+git checkout develop
+git pull origin develop
+
+# 2. Create a feature branch
+git checkout -b feature/your-feature-name
+
+# 3. Make your changes, then commit
+git add .
+git commit -m "Add your feature description"
+
+# 4. Push your branch
+git push origin feature/your-feature-name
+
+# 5. Create a Pull Request on GitHub
+#    Base: develop  ←  Compare: feature/your-feature-name
+```
+
+### Pull Request Process
+
+1. **Create PR** to `develop` branch
+2. **CI runs automatically** - tests, linting, build check
+3. **Merge** after CI passes
+4. **Delete** your feature branch after merging
+
+### Releasing to Production
+
+When `develop` is stable and tested:
+1. Create PR from `develop` → `main`
+2. After merge, Vercel auto-deploys to production
+
+### Available Scripts
+
+```bash
+npm run dev        # Start development server
+npm run build      # Build for production
+npm run start      # Start production server
+npm run test       # Run tests
+npm run test:watch # Run tests in watch mode
+npm run lint       # Run ESLint
+npm run type-check # Run TypeScript type checking
+```
+
+### CI/CD Pipeline
+
+On every Pull Request, GitHub Actions automatically runs:
+- ✅ **Tests** - Jest unit tests
+- ✅ **Linting** - ESLint code quality checks
+- ✅ **Type Check** - TypeScript validation
+- ✅ **Build** - Vercel production build
+
+PRs cannot be merged if CI fails.
