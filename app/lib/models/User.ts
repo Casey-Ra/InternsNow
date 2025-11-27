@@ -25,8 +25,11 @@ const init = async () => {
   }
 };
 
-// Initialize the table when the module is loaded
-init();
+// Initialize the table when the module is loaded (skip during build)
+// Auto-init disabled to prevent build failures - call init() manually if needed
+// if (typeof window === 'undefined' && process.env.NEXT_PHASE !== 'phase-production-build') {
+//   init().catch(console.error);
+// }
 
 export const createUser = async (
   auth0_id: string,
