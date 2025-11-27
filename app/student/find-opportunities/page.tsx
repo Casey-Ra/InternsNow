@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { getAllInternships } from "@/app/lib/models/Internship";
 
+// Prevent static generation - this page needs database access at runtime
+export const dynamic = 'force-dynamic';
+
 function formatDate(iso?: string | Date) {
   try {
     const d = iso ? new Date(iso) : new Date();

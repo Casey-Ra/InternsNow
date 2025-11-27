@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import { getAllInternships } from "@/app/lib/models/Internship";
 import ManageInternshipsClient from "@/app/manage-internships/ManageInternshipsClient";
 
+// Prevent static generation - this page needs database access at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function ManageInternshipsPage() {
   const internships = await getAllInternships();
   // Next.js serializes props to the client; ensure dates are strings
