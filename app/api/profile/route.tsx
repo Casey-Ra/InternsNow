@@ -11,7 +11,8 @@ export async function GET() {
   try {
     const session = await auth0.getSession();
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // Return a benign payload so the client can treat this as logged-out without console 401s
+      return NextResponse.json({ authenticated: false }, { status: 200 });
     }
 
     const user = session.user;
@@ -29,6 +30,7 @@ export async function GET() {
 
     const p = result.rows[0];
     return NextResponse.json({
+      authenticated: true,
       fullName: p.full_name,
       email: p.email,
       phone: p.phone,
