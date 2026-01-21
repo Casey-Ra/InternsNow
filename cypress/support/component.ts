@@ -10,7 +10,7 @@ import '@testing-library/cypress/add-commands';
 import '../../app/globals.css';
 
 // Mounting helper for Next.js components
-import { mount } from 'cypress/react18';
+import { mount } from 'cypress/react';
 
 declare global {
   namespace Cypress {

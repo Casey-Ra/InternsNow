@@ -73,7 +73,6 @@ Cypress.Commands.add(
       );
     };
     expect(isVisible(subject)).to.be.true;
-    return subject;
   }
 );
 
