@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 // ***********************************************************
 // Component Testing Support File
 // https://on.cypress.io/component-testing

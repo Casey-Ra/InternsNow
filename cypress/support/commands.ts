@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /// <reference types="cypress" />
 // ***********************************************
 // Custom Commands for InternsNow
@@ -72,7 +73,10 @@ Cypress.Commands.add(
           (window.innerWidth || document.documentElement.clientWidth)
       );
     };
-    expect(isVisible(subject)).to.be.true;
+    const visible = isVisible(subject);
+    if (!visible) {
+      throw new Error('Expected element to be visible in viewport');
+    }
   }
 );
 
