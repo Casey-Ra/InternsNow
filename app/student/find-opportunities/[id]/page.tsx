@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { findInternshipById } from "@/app/lib/models/Internship";
 
 type PageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 function formatDate(iso?: string | Date) {
@@ -20,7 +20,8 @@ function formatDate(iso?: string | Date) {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const internship = await findInternshipById(params.id);
+  const { id } = await params;
+  const internship = await findInternshipById(id);
   if (!internship) {
     return { title: "Opportunity not found • InternsNow" };
   }
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function InternshipDetailsPage({ params }: PageProps) {
-  const internship = await findInternshipById(params.id);
+  const { id } = await params;
+  const internship = await findInternshipById(id);
 
   if (!internship) {
     notFound();

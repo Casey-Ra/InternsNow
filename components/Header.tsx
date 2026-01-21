@@ -83,13 +83,18 @@ export default function Header({ variant }: HeaderProps) {
 
   useEffect(() => {
     let mounted = true;
-    fetch("/auth/profile") // ✅ Auth0’s built-in route
+    fetch("/api/profile", { credentials: "include" })
       .then((res) => {
-        if (!res.ok) throw new Error("No session");
+        if (!res.ok) throw new Error("Profile fetch failed");
         return res.json();
       })
       .then((data) => {
-        if (mounted) setSession(data);
+        if (!mounted) return;
+        if (data.authenticated === false) {
+          setSession(null);
+        } else {
+          setSession(data);
+        }
       })
       .catch(() => {
         if (mounted) setSession(null);

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-// Import DB initializer module to auto-create DB rows on server start (idempotent)
-import "@/app/lib/initDb";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 

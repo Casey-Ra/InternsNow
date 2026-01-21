@@ -37,8 +37,8 @@ export async function middleware(request: NextRequest) {
     PREFIX_PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     EXACT_PUBLIC_PATHS.some((p) => pathname === p)
   ) {
-    // For all other requests, still let Auth0’s middleware handle session rolling, etc.
-    return await auth0.middleware(request);
+    // Public/static routes skip Auth0 to avoid extra latency.
+    return NextResponse.next();
   }
 
   // 2. EDU enforcement logic
