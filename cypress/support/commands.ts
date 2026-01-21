@@ -57,18 +57,24 @@ Cypress.Commands.add('logout', () => {
 });
 
 // Check element visibility in viewport
-Cypress.Commands.add('shouldBeVisible', { prevSubject: 'element' }, (subject) => {
-  const isVisible = (elem: JQuery<HTMLElement>) => {
-    const rect = elem[0].getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
-  };
-  expect(isVisible(subject)).to.be.true;
-  return subject;
-});
+Cypress.Commands.add(
+  'shouldBeVisible',
+  { prevSubject: ['element'] },
+  (subject: JQuery<HTMLElement>) => {
+    const isVisible = (elem: JQuery<HTMLElement>) => {
+      const rect = elem[0].getBoundingClientRect();
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <=
+          (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <=
+          (window.innerWidth || document.documentElement.clientWidth)
+      );
+    };
+    expect(isVisible(subject)).to.be.true;
+    return subject;
+  }
+);
 
 export {};
