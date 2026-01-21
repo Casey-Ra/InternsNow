@@ -1,0 +1,16 @@
+{
+  "student": {
+    "sub": "auth0|student123",
+    "email": "student@university.edu",
+    "name": "Test Student",
+    "picture": "https://example.com/student-avatar.jpg",
+    "role": "student"
+  },
+  "employer": {
+    "sub": "auth0|employer123",
+    "email": "hr@company.com",
+    "name": "Test Employer",
+    "picture": "https://example.com/employer-avatar.jpg",
+    "role": "employer"
+  }
+}
