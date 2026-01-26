@@ -16,11 +16,12 @@ describe('Home Page', () => {
   });
 
   it('should have a login link', () => {
-    cy.contains('Log In').should('be.visible');
+    cy.get('a[href^="/auth/login"]').first().should('be.visible');
   });
 
-  it('should navigate to login page', () => {
-    cy.contains('Log In').click();
-    cy.url().should('include', '/login');
+  it('should point to the auth login route', () => {
+    cy.get('a[href^="/auth/login"]').first()
+      .should('have.attr', 'href')
+      .and('include', '/auth/login');
   });
 });

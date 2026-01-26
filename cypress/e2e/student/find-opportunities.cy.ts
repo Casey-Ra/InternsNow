@@ -1,16 +1,17 @@
 describe('Find Opportunities Page', () => {
   beforeEach(() => {
     // Mock authenticated user session
-    cy.intercept('/api/auth/me', {
+    cy.intercept('GET', '/api/profile', {
       statusCode: 200,
       body: {
+        authenticated: true,
         user: {
           sub: 'auth0|test123',
           email: 'student@test.edu',
           name: 'Test Student',
         },
       },
-    }).as('authMe');
+    }).as('profile');
 
     // Mock internships API
     cy.intercept('GET', '/api/internships*', {
