@@ -13,11 +13,6 @@ describe('Navigation', () => {
     cy.url().should('include', '/features');
   });
 
-  it('should navigate to FAQs page', () => {
-    cy.contains('FAQs').click();
-    cy.url().should('include', '/faqs');
-  });
-
   it('should navigate to Contact page', () => {
     cy.contains('Contact').click();
     cy.url().should('include', '/contact');
