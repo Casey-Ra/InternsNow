@@ -16,7 +16,7 @@
     "cypress:component": "cypress run --component"
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "^4.12.0",
+    "@auth0/nextjs-auth0": "^4.14.1",
     "@headlessui/react": "^2.2.9",
     "bcryptjs": "^3.0.2",
     "express-jwt": "^8.5.1",

@@ -2,7 +2,7 @@ describe('Authentication Flow', () => {
   describe('Unauthenticated User', () => {
     it('should show login button on home page', () => {
       cy.visit('/');
-      cy.contains('Log In').should('be.visible');
+      cy.get('a[href^="/auth/login"]').first().should('be.visible');
     });
 
     it('should redirect to login when accessing protected routes', () => {
@@ -50,7 +50,7 @@ describe('Authentication Flow', () => {
             sub: 'auth0|test123',
             email: 'test@university.edu',
             name: 'Test User',
-            picture: 'https://example.com/avatar.jpg',
+            picture: '/default-avatar.png',
           },
         },
       }).as('profile');

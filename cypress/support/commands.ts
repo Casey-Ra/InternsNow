@@ -41,7 +41,7 @@ Cypress.Commands.add('login', () => {
         sub: 'auth0|test123',
         email: 'test@example.edu',
         name: 'Test User',
-        picture: 'https://example.com/avatar.jpg',
+        picture: '/default-avatar.png',
       },
     },
   }).as('authMe');
