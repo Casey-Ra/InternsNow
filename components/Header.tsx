@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import UserMenu from "@/components/UserMenu";
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
 }
-
 
 export default function Header({ variant }: HeaderProps) {
   const pathname = usePathname();
@@ -16,10 +15,12 @@ export default function Header({ variant }: HeaderProps) {
   const pathVariant = pathname?.startsWith("/student")
     ? "student"
     : pathname?.startsWith("/employer")
-    ? "employer"
-    : "default";
+      ? "employer"
+      : "default";
 
-  const resolvedVariant = pathVariant === "default" ? "default" : variant ?? pathVariant;
+  const resolvedVariant =
+    pathVariant === "default" ? "default" : (variant ?? pathVariant);
+
   const getThemeColors = () => {
     switch (resolvedVariant) {
       case "student":
@@ -77,36 +78,14 @@ export default function Header({ variant }: HeaderProps) {
   const navLinks = getNavLinks();
   const buttonText = getButtonText();
 
-  // --- Auth0 state ---
-  const [session, setSession] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, isLoading } = useUser();
 
-  useEffect(() => {
-    let mounted = true;
-    fetch("/api/profile", { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Profile fetch failed");
-        return res.json();
-      })
-      .then((data) => {
-        if (!mounted) return;
-        if (data.authenticated === false) {
-          setSession(null);
-        } else {
-          setSession(data);
-        }
-      })
-      .catch(() => {
-        if (mounted) setSession(null);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const returnTo =
+    resolvedVariant === "student"
+      ? "/student"
+      : resolvedVariant === "employer"
+        ? "/employer"
+        : "/";
 
   return (
     <header className="px-6 py-4">
@@ -135,23 +114,26 @@ export default function Header({ variant }: HeaderProps) {
         </nav>
 
         <div className="flex space-x-4">
-          {loading ? (
+          {isLoading ? (
             <div className="px-4 py-2 text-gray-500">...</div>
-          ) : session ? (
+          ) : user ? (
             <UserMenu
-              profileImage={session.user?.picture}
-              name={session.user?.name}
+              profileImage={user.picture}
+              name={(user.name ?? user.email ?? "") as string}
             />
           ) : (
             <>
               <a
-                href="/auth/login?returnTo=/student"
+                href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
                 className={`px-4 py-2 ${colors.textButton} font-medium`}
               >
                 {buttonText.secondary}
               </a>
+
               <a
-                href="/auth/login?screen_hint=signup&returnTo=/student"
+                href={`/auth/login?screen_hint=signup&returnTo=${encodeURIComponent(
+                  returnTo,
+                )}`}
                 className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
               >
                 {buttonText.primary}
