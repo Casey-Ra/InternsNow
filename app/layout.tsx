@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Auth0Provider } from "@auth0/nextjs-auth0/client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,12 +15,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "InternsNow - Connect Students with Dream Opportunities",
-  description: "InternsNow bridges the gap between talented students seeking their first career opportunities and employers looking for fresh, motivated talent.",
-  keywords: ["internships", "jobs", "students", "employers", "career", "opportunities"],
+  description:
+    "InternsNow bridges the gap between talented students seeking their first career opportunities and employers looking for fresh, motivated talent.",
+  keywords: [
+    "internships",
+    "jobs",
+    "students",
+    "employers",
+    "career",
+    "opportunities",
+  ],
   authors: [{ name: "InternsNow Team" }],
   openGraph: {
     title: "InternsNow - Connect Students with Dream Opportunities",
-    description: "The premier platform for connecting students with internships and employers with talent.",
+    description:
+      "The premier platform for connecting students with internships and employers with talent.",
     url: "https://internsnow.vercel.app",
     siteName: "InternsNow",
     type: "website",
@@ -27,7 +37,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "InternsNow - Connect Students with Dream Opportunities",
-    description: "The premier platform for connecting students with internships and employers with talent.",
+    description:
+      "The premier platform for connecting students with internships and employers with talent.",
   },
   robots: {
     index: true,
@@ -45,7 +56,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Auth0Provider>{children}</Auth0Provider> {}
       </body>
     </html>
   );

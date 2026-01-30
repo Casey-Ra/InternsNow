@@ -28,7 +28,7 @@ export default function StudentProfilePage() {
 
   const [loading, setLoading] = useState(false);
 
-  // ✅ Load existing profile on mount
+  // Load existing profile on mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -64,7 +64,7 @@ export default function StudentProfilePage() {
     fetchProfile();
   }, []);
 
-  // ✅ Generic handler for inputs/textareas/selects
+  // Generic handler for inputs/textareas/selects
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -74,7 +74,7 @@ export default function StudentProfilePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle checkbox selections for career interests
+  // Handle checkbox selections for career interests
   const handleInterestChange = (interest: string) => {
     setFormData((prev) => {
       const newInterests = prev.interests.includes(interest)
@@ -84,7 +84,7 @@ export default function StudentProfilePage() {
     });
   };
 
-  // ✅ Submit to API
+  // Submit to API
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -97,7 +97,7 @@ export default function StudentProfilePage() {
       });
 
       if (res.ok) {
-        alert("✅ Profile saved successfully!");
+        alert("Profile saved successfully!");
       } else {
         alert("❌ Failed to save profile.");
       }

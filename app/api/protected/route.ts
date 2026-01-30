@@ -1,4 +1,4 @@
-import { auth0 } from "@/lib/auth0";
+/*import { auth0 } from "@/lib/auth0";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -24,3 +24,4 @@ export async function GET(req: NextRequest) {
     user: session.user ?? null,
   });
 }
+*/

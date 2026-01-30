@@ -1,17 +1,25 @@
 // app/api/profile/route.ts
 import { NextResponse } from "next/server";
+import { initDb } from "@/lib/initDB";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
 
-// Note: Database tables should be initialized before deployment
-// await initDb(); // Removed to prevent build failures
+function sanitizeEmptyToNull(obj: Record<string, any>) {
+  const sanitized: Record<string, any> = {};
+  for (const key in obj) sanitized[key] = obj[key] === "" ? null : obj[key];
+  return sanitized;
+}
 
-// GET - fetch profile info
+async function ensureDb() {
+  await initDb();
+}
+
 export async function GET() {
   try {
+    await ensureDb();
+
     const session = await auth0.getSession();
     if (!session) {
-      // Return a benign payload so the client can treat this as logged-out without console 401s
       return NextResponse.json({ authenticated: false }, { status: 200 });
     }
 
@@ -57,18 +65,11 @@ export async function GET() {
     );
   }
 }
-// Converts all empty strings ("") to null so Postgres can handle deletions cleanly
-function sanitizeEmptyToNull(obj: Record<string, any>) {
-  const sanitized: Record<string, any> = {};
-  for (const key in obj) {
-    sanitized[key] = obj[key] === "" ? null : obj[key];
-  }
-  return sanitized;
-}
 
-// POST - update or insert profile
 export async function POST(request: Request) {
   try {
+    await ensureDb();
+
     const session = await auth0.getSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -80,16 +81,22 @@ export async function POST(request: Request) {
     const skillsArray = Array.isArray(data.skills)
       ? data.skills
       : typeof data.skills === "string"
-        ? data.skills.split(",").map((s) => s.trim())
+        ? data.skills
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
         : [];
+
+    const graduationDate = data.graduationDate ?? data.graduation_date ?? null;
+    const resumeUrl = data.resume_url ?? data.resumeUrl ?? null;
+    const profileImage = data.profile_image ?? data.profileImage ?? null;
 
     const existing = await pool.query(
       "SELECT id FROM profiles WHERE user_id = $1",
       [user.sub],
     );
 
-    // Safely check that the query returned a valid result
-    if (existing && existing.rowCount && existing.rowCount > 0) {
+    if (existing.rowCount && existing.rowCount > 0) {
       await pool.query(
         `UPDATE profiles
          SET full_name=$1, email=$2, phone=$3, location=$4, school=$5,
@@ -98,23 +105,23 @@ export async function POST(request: Request) {
              resume_url=$16, profile_image=$17, updated_at=NOW()
          WHERE user_id=$18`,
         [
-          data.full_name,
-          data.email,
-          data.phone,
-          data.location,
-          data.school || data.university,
-          data.degree,
-          data.major,
-          data.graduationDate,
-          data.gpa,
+          data.full_name ?? data.fullName ?? null,
+          data.email ?? null,
+          data.phone ?? null,
+          data.location ?? null,
+          data.school ?? data.university ?? null,
+          data.degree ?? null,
+          data.major ?? null,
+          graduationDate,
+          data.gpa ?? null,
           skillsArray,
-          data.interests,
-          data.bio,
-          data.linkedin,
-          data.github,
-          data.portfolio,
-          data.resume_url,
-          data.profile_image,
+          data.interests ?? null,
+          data.bio ?? null,
+          data.linkedin ?? null,
+          data.github ?? null,
+          data.portfolio ?? null,
+          resumeUrl,
+          profileImage,
           user.sub,
         ],
       );
@@ -129,23 +136,23 @@ export async function POST(request: Request) {
         )`,
         [
           user.sub,
-          data.full_name,
-          data.email,
-          data.phone,
-          data.location,
-          data.school || data.university,
-          data.degree,
-          data.major,
-          data.graduationDate,
-          data.gpa,
+          data.full_name ?? data.fullName ?? null,
+          data.email ?? null,
+          data.phone ?? null,
+          data.location ?? null,
+          data.school ?? data.university ?? null,
+          data.degree ?? null,
+          data.major ?? null,
+          graduationDate,
+          data.gpa ?? null,
           skillsArray,
-          data.interests,
-          data.bio,
-          data.linkedin,
-          data.github,
-          data.portfolio,
-          data.resume_url,
-          data.profile_image,
+          data.interests ?? null,
+          data.bio ?? null,
+          data.linkedin ?? null,
+          data.github ?? null,
+          data.portfolio ?? null,
+          resumeUrl,
+          profileImage,
         ],
       );
     }
