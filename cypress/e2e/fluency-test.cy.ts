@@ -1,16 +1,17 @@
 describe('Fluency Test', () => {
   beforeEach(() => {
     // Mock authenticated user
-    cy.intercept('/api/auth/me', {
+    cy.intercept('GET', '/api/profile', {
       statusCode: 200,
       body: {
+        authenticated: true,
         user: {
           sub: 'auth0|test123',
           email: 'student@test.edu',
           name: 'Test Student',
         },
       },
-    }).as('authMe');
+    }).as('profile');
 
     cy.visit('/student/fluency-test');
   });
