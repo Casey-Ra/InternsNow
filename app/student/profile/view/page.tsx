@@ -29,7 +29,8 @@ export default function ViewProfilePage() {
 
   useEffect(() => {
     fetch("/api/profile", { credentials: "include" })
-      .then((res) => {
+      .then(async (res) => {
+        if (res.status === 404) return null; // profile doesn't exist yet
         if (!res.ok) throw new Error("Failed to fetch profile");
         return res.json();
       })
