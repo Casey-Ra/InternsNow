@@ -1,7 +1,15 @@
+import { redirect } from "next/navigation";
+import { auth0 } from "@/lib/auth0";
 import Link from "next/link";
 import Header from "../components/Header";
 
-export default function HomeLandingPage() {
+export default async function HomeLandingPage() {
+  const session = await auth0.getSession();
+
+  if (session) {
+    redirect("/student");
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
@@ -15,8 +23,9 @@ export default function HomeLandingPage() {
             <span className="text-blue-600 block">Dream Opportunities</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-            InternsNow bridges the gap between talented students seeking their first career opportunities 
-            and employers looking for fresh, motivated talent.
+            InternsNow bridges the gap between talented students seeking their
+            first career opportunities and employers looking for fresh,
+            motivated talent.
           </p>
 
           {/* CTA Cards */}
@@ -25,13 +34,26 @@ export default function HomeLandingPage() {
             <Link href="/student" className="group">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-500">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  <svg
+                    className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">I'm a Student</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  I'm a Student
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Find internships and entry-level positions that match your skills and career goals.
+                  Find internships and entry-level positions that match your
+                  skills and career goals.
                 </p>
                 <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold group-hover:bg-blue-700 transition-colors">
                   Find Opportunities →
@@ -39,8 +61,7 @@ export default function HomeLandingPage() {
               </div>
             </Link>
 
-          
-            {/* Employer Card 
+            {/* Employer Card
             <Link href="/employer" className="group">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-green-300 dark:group-hover:border-green-500">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -58,11 +79,6 @@ export default function HomeLandingPage() {
               </div>
             </Link>
             */}
-            
-            
-            
-
-          
           </div>
 
           {/*
@@ -81,14 +97,16 @@ export default function HomeLandingPage() {
             </div>
           </div>
           */}
-          
         </div>
       </main>
 
       {/* Footer */}
       <footer className="px-6 py-8 mt-16 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto text-center text-gray-600 dark:text-gray-400">
-          <p>&copy; 2025 InternsNow. Built for connecting talent with opportunity.</p>
+          <p>
+            &copy; 2025 InternsNow. Built for connecting talent with
+            opportunity.
+          </p>
         </div>
       </footer>
     </div>

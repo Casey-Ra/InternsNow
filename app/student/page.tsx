@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { auth0 } from "@/lib/auth0";
+import { redirect } from "next/navigation";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
@@ -21,7 +23,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function StudentLandingPage() {
+export default async function StudentLandingPage() {
+  const session = await auth0.getSession();
+
+  if (!session) {
+    redirect("/auth/login");
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header variant="student" />
@@ -156,7 +163,7 @@ export default function StudentLandingPage() {
                   count: "789 jobs",
                   color: "bg-orange-500",
                 },
-                
+
                 { name: "Business", count: "654 jobs", color: "bg-red-500" },
                 { name: "Finance", count: "321 jobs", color: "bg-yellow-500" },
                 { name: "Healthcare", count: "456 jobs", color: "bg-pink-500" },
@@ -183,7 +190,6 @@ export default function StudentLandingPage() {
               ))}
             </div>
           </section>*/}
-          
 
           {/* CTA Section */}
           <section className="text-center bg-blue-600 rounded-2xl p-12 text-white">
