@@ -106,7 +106,7 @@ export default function Header({ variant }: HeaderProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              className="text-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               {link.label}
             </Link>
