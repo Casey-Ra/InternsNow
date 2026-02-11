@@ -3,157 +3,158 @@ import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
 
-// Note: Database tables should be initialized before deployment
-// await initDb(); // Removed to prevent build failures
+function sanitizeEmptyToNull(obj: Record<string, any>) {
+  const sanitized: Record<string, any> = {};
+  for (const key in obj) sanitized[key] = obj[key] === "" ? null : obj[key];
+  return sanitized;
+}
 
-// GET - fetch profile info
+// GET: read from "profiles" (a VIEW over the ERD tables)
 export async function GET() {
   try {
     const session = await auth0.getSession();
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ authenticated: false }, { status: 200 });
     }
 
-    const user = session.user;
+    const userSub = session.user.sub;
+
     const result = await pool.query(
-      `SELECT * FROM profiles WHERE user_id = $1`,
-      [user.sub],
+      `SELECT *
+       FROM internsnow_db.profiles
+       WHERE user_id = $1
+       LIMIT 1`,
+      [userSub],
     );
 
     if (result.rowCount === 0) {
-      return NextResponse.json(
-        { message: "Profile not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "Profile not found" }, { status: 404 });
     }
 
     const p = result.rows[0];
+
     return NextResponse.json({
-      fullName: p.full_name,
-      email: p.email,
-      phone: p.phone,
-      location: p.location,
-      school: p.school,
-      degree: p.degree,
-      major: p.major,
-      graduationDate: p.graduation_date,
-      gpa: p.gpa,
-      skills: p.skills,
-      interests: p.interests,
-      bio: p.bio,
-      linkedin: p.linkedin,
-      github: p.github,
-      portfolio: p.portfolio,
-      resumeUrl: p.resume_url,
-      profileImage: p.profile_image,
+      authenticated: true,
+      userId: p.user_id,
+      firstName: p.first_name ?? null,
+      lastName: p.last_name ?? null,
+      email: p.email ?? null,
+      school: p.school ?? null,
+      startDate: p.start_date ?? null,
+      endDate: p.end_date ?? null,
+      status: p.status ?? null,
+      description: p.description ?? null,
     });
   } catch (error) {
     console.error("GET /api/profile error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch profile" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
   }
-}
-// Converts all empty strings ("") to null so Postgres can handle deletions cleanly
-function sanitizeEmptyToNull(obj: Record<string, any>) {
-  const sanitized: Record<string, any> = {};
-  for (const key in obj) {
-    sanitized[key] = obj[key] === "" ? null : obj[key];
-  }
-  return sanitized;
 }
 
-// POST - update or insert profile
+// POST: write into ERD tables (USER, INSTITUTION, EDUCATION)
 export async function POST(request: Request) {
+  const client = await pool.connect();
   try {
     const session = await auth0.getSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = session.user;
-    const data = sanitizeEmptyToNull(await request.json());
+    const userSub = session.user.sub;
+    const body = sanitizeEmptyToNull(await request.json());
 
-    const skillsArray = Array.isArray(data.skills)
-      ? data.skills
-      : typeof data.skills === "string"
-        ? data.skills.split(",").map((s) => s.trim())
-        : [];
+    const firstName = body.firstName ?? body.first_name ?? null;
+    const lastName = body.lastName ?? body.last_name ?? null;
+    const email = body.email ?? session.user.email ?? null;
 
-    const existing = await pool.query(
-      "SELECT id FROM profiles WHERE user_id = $1",
-      [user.sub],
+    const schoolName = body.school ?? body.institutionName ?? null;
+    const startDate = body.startDate ?? body.start_date ?? null;
+    const endDate = body.endDate ?? body.end_date ?? null;
+    const status = body.status ?? null;
+    const description = body.description ?? null;
+
+    await client.query("BEGIN");
+
+    // Ensure USER.auth0_sub exists in your schema
+    // If you haven't added it yet:
+    // ALTER TABLE internsnow_db."USER" ADD COLUMN auth0_sub TEXT UNIQUE;
+
+    // Upsert user by auth0_sub
+    const userUpsert = await client.query(
+      `INSERT INTO internsnow_db."USER" (first_name, last_name, email, auth0_sub)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (auth0_sub)
+       DO UPDATE SET first_name = EXCLUDED.first_name,
+                     last_name  = EXCLUDED.last_name,
+                     email      = EXCLUDED.email
+       RETURNING user_id`,
+      [firstName, lastName, email, userSub],
     );
 
-    // Safely check that the query returned a valid result
-    if (existing && existing.rowCount && existing.rowCount > 0) {
-      await pool.query(
-        `UPDATE profiles
-         SET full_name=$1, email=$2, phone=$3, location=$4, school=$5,
-             degree=$6, major=$7, graduation_date=$8, gpa=$9, skills=$10,
-             interests=$11, bio=$12, linkedin=$13, github=$14, portfolio=$15,
-             resume_url=$16, profile_image=$17, updated_at=NOW()
-         WHERE user_id=$18`,
-        [
-          data.full_name,
-          data.email,
-          data.phone,
-          data.location,
-          data.school || data.university,
-          data.degree,
-          data.major,
-          data.graduationDate,
-          data.gpa,
-          skillsArray,
-          data.interests,
-          data.bio,
-          data.linkedin,
-          data.github,
-          data.portfolio,
-          data.resume_url,
-          data.profile_image,
-          user.sub,
-        ],
+    const userId = userUpsert.rows[0].user_id as number;
+
+    // Upsert institution by name
+    let institutionId: number | null = null;
+    if (schoolName) {
+      const instFind = await client.query(
+        `SELECT institution_id
+         FROM internsnow_db."INSTITUTION"
+         WHERE name = $1
+         LIMIT 1`,
+        [schoolName],
+      );
+
+      if (instFind.rowCount > 0) {
+        institutionId = instFind.rows[0].institution_id;
+      } else {
+        const instIns = await client.query(
+          `INSERT INTO internsnow_db."INSTITUTION"(name)
+           VALUES ($1)
+           RETURNING institution_id`,
+          [schoolName],
+        );
+        institutionId = instIns.rows[0].institution_id;
+      }
+    }
+
+    // Update latest education row if exists else insert
+    const eduExisting = await client.query(
+      `SELECT edu_id
+       FROM internsnow_db."EDUCATION"
+       WHERE user_id = $1
+       ORDER BY start_date DESC NULLS LAST
+       LIMIT 1`,
+      [userId],
+    );
+
+    if (eduExisting.rowCount > 0) {
+      const eduId = eduExisting.rows[0].edu_id;
+      await client.query(
+        `UPDATE internsnow_db."EDUCATION"
+         SET start_date = COALESCE($1, start_date),
+             end_date = $2,
+             status = $3,
+             description = $4,
+             institution_id = $5
+         WHERE edu_id = $6`,
+        [startDate, endDate, status, description, institutionId, eduId],
       );
     } else {
-      await pool.query(
-        `INSERT INTO profiles (
-          user_id, full_name, email, phone, location, school, degree,
-          major, graduation_date, gpa, skills, interests, bio, linkedin,
-          github, portfolio, resume_url, profile_image
-        ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18
-        )`,
-        [
-          user.sub,
-          data.full_name,
-          data.email,
-          data.phone,
-          data.location,
-          data.school || data.university,
-          data.degree,
-          data.major,
-          data.graduationDate,
-          data.gpa,
-          skillsArray,
-          data.interests,
-          data.bio,
-          data.linkedin,
-          data.github,
-          data.portfolio,
-          data.resume_url,
-          data.profile_image,
-        ],
+      await client.query(
+        `INSERT INTO internsnow_db."EDUCATION"
+           (start_date, end_date, status, description, user_id, institution_id)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [startDate, endDate, status, description, userId, institutionId],
       );
     }
 
+    await client.query("COMMIT");
     return NextResponse.json({ success: true });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("POST /api/profile error:", error);
-    return NextResponse.json(
-      { error: "Failed to save profile" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+  } finally {
+    client.release();
   }
 }
