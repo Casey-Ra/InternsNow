@@ -86,9 +86,9 @@ We use a branching workflow with CI/CD. **Never push directly to `main`.**
 ### Making Changes
 
 ```bash
-# 1. Start from develop (always pull latest first)
-git checkout develop
-git pull origin develop
+# 1. Start from main (always pull latest first)
+git checkout main
+git pull origin
 
 # 2. Create a feature branch
 git checkout -b feature/your-feature-name
