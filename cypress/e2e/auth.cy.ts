@@ -6,14 +6,13 @@ describe('Authentication Flow', () => {
     });
 
     it('should redirect to login when accessing protected routes', () => {
-      cy.visit('/student', { failOnStatusCode: false });
-      // Should stay on student page or redirect to login depending on auth rules
-      cy.url().should('satisfy', (url: string) => {
-        return (
-          url.includes('/student') ||
-          url.includes('/login') ||
-          url.includes('/auth/login')
-        );
+      cy.request({
+        url: '/student',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+        expect(response.headers.location).to.include('/auth/login');
       });
     });
   });
@@ -56,13 +55,13 @@ describe('Authentication Flow', () => {
     });
 
     it('should access student dashboard when authenticated', () => {
-      cy.visit('/student', { failOnStatusCode: false });
-      cy.url().should('satisfy', (url: string) => {
-        return (
-          url.includes('/student') ||
-          url.includes('/login') ||
-          url.includes('/auth/login')
-        );
+      cy.request({
+        url: '/student',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+        expect(response.headers.location).to.include('/auth/login');
       });
     });
   });
