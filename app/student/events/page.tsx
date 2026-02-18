@@ -1,9 +1,13 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { events } from "./events";
+import { getEvents } from "./events";
 
-export default function EventsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function EventsPage() {
+  const events = await getEvents();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header variant="student" />

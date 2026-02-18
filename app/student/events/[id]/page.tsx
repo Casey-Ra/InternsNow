@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findEventById } from "../events";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{
     id: string;
@@ -12,7 +14,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const event = findEventById(id);
+  const event = await findEventById(id);
   if (!event) {
     return { title: "Event not found • InternsNow" };
   }
@@ -21,7 +23,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function EventDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  const event = findEventById(id);
+  const event = await findEventById(id);
 
   if (!event) {
     notFound();

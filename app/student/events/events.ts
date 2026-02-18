@@ -1,3 +1,5 @@
+import pool from "@/lib/db";
+
 export type EventItem = {
   id: string;
   title: string;
@@ -12,7 +14,7 @@ export type EventItem = {
   tags: string[];
 };
 
-export const events: EventItem[] = [
+const sampleEvents: EventItem[] = [
   {
     id: "evt-001",
     title: "Grow Your Circle: Tech Mixer",
@@ -90,6 +92,63 @@ export const events: EventItem[] = [
   },
 ];
 
-export function findEventById(id: string) {
-  return events.find((event) => event.id === id);
+export async function getEvents(): Promise<EventItem[]> {
+  try {
+    const result = await pool.query(
+      `SELECT id, title, date, time, location, description, details, host, price, registration_link, tags
+       FROM events
+       ORDER BY created_at DESC`,
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      date: row.date,
+      time: row.time,
+      location: row.location,
+      description: row.description,
+      details: row.details,
+      host: row.host,
+      price: row.price,
+      registrationLink: row.registration_link,
+      tags: Array.isArray(row.tags) ? row.tags : [],
+    }));
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return sampleEvents;
+  }
+}
+
+export async function findEventById(id: string) {
+  try {
+    const result = await pool.query(
+      `SELECT id, title, date, time, location, description, details, host, price, registration_link, tags
+       FROM events
+       WHERE id = $1
+       LIMIT 1`,
+      [id],
+    );
+
+    if (result.rowCount === 0) {
+      return sampleEvents.find((event) => event.id === id);
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      title: row.title,
+      date: row.date,
+      time: row.time,
+      location: row.location,
+      description: row.description,
+      details: row.details,
+      host: row.host,
+      price: row.price,
+      registrationLink: row.registration_link,
+      tags: Array.isArray(row.tags) ? row.tags : [],
+    } as EventItem;
+  } catch (error) {
+    console.error("Error fetching event by id:", error);
+    return sampleEvents.find((event) => event.id === id);
+  }
 }
