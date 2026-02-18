@@ -41,6 +41,34 @@ export async function initDb() {
     );
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      location TEXT NOT NULL,
+      description TEXT NOT NULL,
+      details TEXT NOT NULL,
+      host TEXT NOT NULL,
+      price TEXT NOT NULL,
+      registration_link TEXT NOT NULL,
+      tags TEXT[] NOT NULL DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_events_registration_link
+    ON events (registration_link);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_events_date_time
+    ON events (date, time);
+  `);
+
   initialized = true; // ✅ mark as done
   console.log("✅ Database tables verified / initialized");
 }
