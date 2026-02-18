@@ -1,8 +1,17 @@
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
 export async function middleware(request: NextRequest) {
-  return await auth0.middleware(request);
+  try {
+    return await auth0.middleware(request);
+  } catch (error) {
+    // In CI/dev, avoid hard failures when Auth0 discovery is unavailable.
+    if (process.env.NODE_ENV !== "production") {
+      return NextResponse.next();
+    }
+    throw error;
+  }
 }
 
 export const config = {
