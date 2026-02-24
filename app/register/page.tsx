@@ -29,6 +29,13 @@ export default function RegisterPage() {
             Sign Up with Auth0
           </button>
 
+          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            Not ready to sign up?{" "}
+            <a href="/intake" className="text-blue-600 hover:underline dark:text-blue-400">
+              Try the quick intake survey
+            </a>
+          </p>
+
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
             <a href="/login" className="text-blue-600 hover:underline dark:text-blue-400">

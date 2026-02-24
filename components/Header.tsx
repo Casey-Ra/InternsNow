@@ -58,6 +58,7 @@ export default function Header({ variant }: HeaderProps) {
         ];
       default:
         return [
+          { href: "/intake", label: "Quick Match" },
           { href: "/about", label: "About" },
           { href: "/features", label: "Features" },
           { href: "/contact", label: "Contact" },
@@ -81,6 +82,12 @@ export default function Header({ variant }: HeaderProps) {
 
   const { user, isLoading } = useUser();
 
+  const logoHref = user
+    ? resolvedVariant === "employer"
+      ? "/employer"
+      : "/student"
+    : "/";
+
   const returnTo =
     resolvedVariant === "student"
       ? "/student"
@@ -91,7 +98,7 @@ export default function Header({ variant }: HeaderProps) {
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href={logoHref} className="flex items-center space-x-2">
           <div
             className={`w-8 h-8 ${colors.logo} rounded-lg flex items-center justify-center`}
           >

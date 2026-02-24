@@ -1,14 +1,10 @@
-import { redirect } from "next/navigation";
 import { auth0 } from "@/lib/auth0";
 import Link from "next/link";
 import Header from "../components/Header";
 
 export default async function HomeLandingPage() {
   const session = await auth0.getSession();
-
-  if (session) {
-    redirect("/student");
-  }
+  const studentCtaHref = session ? "/student" : "/intake";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -31,7 +27,7 @@ export default async function HomeLandingPage() {
           {/* CTA Cards */}
           <div className="grid md:grid-cols-1 gap-8 max-w-4xl mx-auto">
             {/* Student Card */}
-            <Link href="/student" className="group">
+            <Link href={studentCtaHref} className="group">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-500">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg
@@ -49,7 +45,7 @@ export default async function HomeLandingPage() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  I'm a Student
+                  I&apos;m a Student
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Find internships and entry-level positions that match your
