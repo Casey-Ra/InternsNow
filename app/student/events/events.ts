@@ -1,3 +1,9 @@
+import {
+  getEventById as getEventRecordById,
+  getEvents,
+  toEventView,
+} from "@/app/lib/models/Event";
+
 export type EventItem = {
   id: string;
   title: string;
@@ -90,6 +96,41 @@ export const events: EventItem[] = [
   },
 ];
 
-export function findEventById(id: string) {
+function mapDbEventToEventItem(event: ReturnType<typeof toEventView>): EventItem {
+  return {
+    id: event.id,
+    title: event.title,
+    date: event.date,
+    time: event.time,
+    location: event.location,
+    description: event.description,
+    details: event.details,
+    host: event.host,
+    price: event.price,
+    registrationLink: event.registrationLink,
+    tags: event.tags,
+  };
+}
+
+export async function getLiveEvents(): Promise<EventItem[]> {
+  try {
+    const dbEvents = await getEvents();
+    return dbEvents.map((event) => mapDbEventToEventItem(toEventView(event)));
+  } catch (error) {
+    console.error("Failed to load DB events; using fallback events:", error);
+    return events;
+  }
+}
+
+export async function findEventById(id: string): Promise<EventItem | undefined> {
+  try {
+    const dbEvent = await getEventRecordById(id);
+    if (dbEvent) {
+      return mapDbEventToEventItem(toEventView(dbEvent));
+    }
+  } catch (error) {
+    console.error("Failed to load DB event by id; using fallback event:", error);
+  }
+
   return events.find((event) => event.id === id);
 }

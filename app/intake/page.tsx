@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { getAllInternships } from "@/app/lib/models/Internship";
-import { events } from "@/app/student/events/events";
+import { getLiveEvents } from "@/app/student/events/events";
 import {
   buildIntakeRecommendations,
   defaultIntakeInterests,
@@ -71,7 +71,10 @@ export default async function IntakePage({ searchParams }: PageProps) {
   let eventMatches: EventRecommendation[] = [];
 
   if (submitted) {
-    const internships = await getAllInternships();
+    const [internships, events] = await Promise.all([
+      getAllInternships(),
+      getLiveEvents(),
+    ]);
     const recommendations = buildIntakeRecommendations({
       internships,
       eventList: events,
