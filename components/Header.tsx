@@ -52,13 +52,14 @@ export default function Header({ variant }: HeaderProps) {
         return [
           { href: "/student", label: "Home" },
           { href: "/student/find-opportunities", label: "Find Opportunities" },
-          { href: "/student/events", label: "Events" },
+          { href: "/events", label: "Events" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/fluency-test", label: "AI Fluency Test" },
         ];
       default:
         return [
           { href: "/intake", label: "Quick Match" },
+          { href: "/events", label: "Events" },
           { href: "/about", label: "About" },
           { href: "/features", label: "Features" },
           { href: "/contact", label: "Contact" },
