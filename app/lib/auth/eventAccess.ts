@@ -43,28 +43,33 @@ function isAdminRole(role: string): boolean {
 }
 
 export async function getEventActor(): Promise<EventActor | null> {
-  const session = await auth0.getSession();
-  const user = session?.user as Record<string, unknown> | undefined;
+  try {
+    const session = await auth0.getSession();
+    const user = session?.user as Record<string, unknown> | undefined;
 
-  if (!user || typeof user.sub !== "string") {
+    if (!user || typeof user.sub !== "string") {
+      return null;
+    }
+
+    const dbRole = await getDbRole(user.sub);
+    const claimRoles = extractClaimRoles(user);
+    const roles = Array.from(
+      new Set([
+        ...claimRoles,
+        ...(dbRole ? [dbRole] : []),
+      ]),
+    );
+
+    return {
+      sub: user.sub,
+      email: typeof user.email === "string" ? user.email : null,
+      roles,
+      isAdmin: roles.some(isAdminRole),
+    };
+  } catch (error) {
+    console.error("Failed to resolve event actor:", error);
     return null;
   }
-
-  const dbRole = await getDbRole(user.sub);
-  const claimRoles = extractClaimRoles(user);
-  const roles = Array.from(
-    new Set([
-      ...claimRoles,
-      ...(dbRole ? [dbRole] : []),
-    ]),
-  );
-
-  return {
-    sub: user.sub,
-    email: typeof user.email === "string" ? user.email : null,
-    roles,
-    isAdmin: roles.some(isAdminRole),
-  };
 }
 
 export function canManageEvent(

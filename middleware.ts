@@ -6,11 +6,10 @@ export async function middleware(request: NextRequest) {
   try {
     return await auth0.middleware(request);
   } catch (error) {
-    // In CI/dev, avoid hard failures when Auth0 discovery is unavailable.
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.next();
-    }
-    throw error;
+    // Avoid hard 500s from middleware invocation failures. Route-level handlers
+    // still enforce auth and permissions where required.
+    console.error("Auth0 middleware error:", error);
+    return NextResponse.next();
   }
 }
 

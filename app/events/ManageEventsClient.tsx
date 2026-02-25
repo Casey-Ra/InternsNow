@@ -42,6 +42,7 @@ interface ManageEventsClientProps {
   initialArchivedEvents: ManagedEventItem[];
   currentUserSub: string;
   isAdmin: boolean;
+  isAuthenticated: boolean;
 }
 
 const emptyFormState: EventFormState = {
@@ -138,6 +139,7 @@ export default function ManageEventsClient({
   initialArchivedEvents,
   currentUserSub,
   isAdmin,
+  isAuthenticated,
 }: ManageEventsClientProps) {
   const router = useRouter();
   const [activeEvents, setActiveEvents] =
@@ -170,6 +172,11 @@ export default function ManageEventsClient({
     event.preventDefault();
     setError(null);
     setSuccess(null);
+
+    if (!isAuthenticated) {
+      setError("Please sign in to post an event.");
+      return;
+    }
 
     const validationError = validateFormState(newEvent);
     if (validationError) {
@@ -522,7 +529,7 @@ export default function ManageEventsClient({
 
           <button
             type="submit"
-            disabled={creating}
+            disabled={creating || !isAuthenticated}
             className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {creating ? "Posting..." : "Post Event"}
