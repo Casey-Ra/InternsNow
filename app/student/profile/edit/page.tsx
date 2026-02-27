@@ -1,7 +1,7 @@
 // app/student/profile/edit/page.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -307,6 +307,15 @@ export default function StudentProfilePage() {
     });
   };
 
+  // ✅ IMPORTANT: compute this OUTSIDE of JSX (this fixes your Turbopack parse error)
+  const institutionValue =
+    formData.university && selectedInstitutionName
+      ? {
+          id: Number(formData.university),
+          name: selectedInstitutionName,
+        }
+      : null;
+
   // Simple “profile completeness”
   const completion = useMemo(() => {
     const checks = [
@@ -533,8 +542,7 @@ export default function StudentProfilePage() {
                   </label>
                   <div className="rounded-xl border border-gray-200/70 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur px-2 py-2">
                     <InstitutionAutocomplete
-                      selectedId={formData.university}
-                      selectedLabel={selectedInstitutionName}
+                      value={institutionValue}
                       onSelect={(it) => {
                         setFormData((prev) => ({
                           ...prev,
