@@ -14,12 +14,12 @@ export default function UserMenu({ profileImage, name }: UserMenuProps) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="flex items-center focus:outline-none">
+        <Menu.Button className="flex items-center focus:outline-none cursor-pointer">
           <Image
             src={profileImage || "/default-avatar.png"}
             alt="Profile"
-            width={36}
-            height={36}
+            width={44}
+            height={44}
             className="rounded-full border border-gray-600 hover:opacity-90"
           />
         </Menu.Button>

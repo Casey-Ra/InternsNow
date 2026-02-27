@@ -52,11 +52,14 @@ export default function Header({ variant }: HeaderProps) {
         return [
           { href: "/student", label: "Home" },
           { href: "/student/find-opportunities", label: "Find Opportunities" },
+          { href: "/events", label: "Events" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/fluency-test", label: "AI Fluency Test" },
         ];
       default:
         return [
+          { href: "/intake", label: "Quick Match" },
+          { href: "/events", label: "Events" },
           { href: "/about", label: "About" },
           { href: "/features", label: "Features" },
           { href: "/contact", label: "Contact" },
@@ -80,6 +83,12 @@ export default function Header({ variant }: HeaderProps) {
 
   const { user, isLoading } = useUser();
 
+  const logoHref = user
+    ? resolvedVariant === "employer"
+      ? "/employer"
+      : "/student"
+    : "/";
+
   const returnTo =
     resolvedVariant === "student"
       ? "/student"
@@ -90,7 +99,7 @@ export default function Header({ variant }: HeaderProps) {
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href={logoHref} className="flex items-center space-x-2">
           <div
             className={`w-8 h-8 ${colors.logo} rounded-lg flex items-center justify-center`}
           >
@@ -106,7 +115,7 @@ export default function Header({ variant }: HeaderProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              className="text-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               {link.label}
             </Link>

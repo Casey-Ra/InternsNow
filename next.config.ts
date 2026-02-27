@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -5,6 +6,7 @@ const nextConfig = {
       { protocol: "https", hostname: "s.gravatar.com" },
       { protocol: "https", hostname: "www.gravatar.com" },
       { protocol: "https", hostname: "cdn.auth0.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
 };
