@@ -55,6 +55,12 @@ const edges: Edge[] = [
   { from: "n4", to: "n9" },
 ];
 
+const initialAnimatedNodes: AnimatedNode[] = nodes.map((node) => ({
+  ...node,
+  tx: node.x,
+  ty: node.y,
+}));
+
 function BriefcaseIcon() {
   return (
     <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
@@ -124,12 +130,11 @@ function SchoolIcon() {
 
 export default function HomeLandingPage() {
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-  const [animatedNodes, setAnimatedNodes] = useState<AnimatedNode[]>(
-    nodes.map((node) => ({ ...node, tx: node.x, ty: node.y })),
-  );
+  const [animatedNodes, setAnimatedNodes] = useState<AnimatedNode[]>(initialAnimatedNodes);
   const rafRef = useRef<number | null>(null);
-  const targetNodesRef = useRef<AnimatedNode[]>(
-    nodes.map((node) => ({ ...node, tx: node.x, ty: node.y })),
+  const targetNodesRef = useRef<AnimatedNode[]>(initialAnimatedNodes);
+  const targetMapRef = useRef<Map<string, AnimatedNode>>(
+    new Map(initialAnimatedNodes.map((node) => [node.id, node])),
   );
   const sceneRef = useRef<HTMLDivElement | null>(null);
 
@@ -157,6 +162,7 @@ export default function HomeLandingPage() {
 
   useEffect(() => {
     targetNodesRef.current = targetNodes;
+    targetMapRef.current = new Map(targetNodes.map((node) => [node.id, node]));
   }, [targetNodes]);
 
   useEffect(() => {
@@ -164,19 +170,26 @@ export default function HomeLandingPage() {
     const epsilon = 0.025;
 
     const tick = () => {
-      const targetMap = new Map(targetNodesRef.current.map((node) => [node.id, node]));
-      setAnimatedNodes((prev) =>
-        prev.map((node) => {
-          const target = targetMap.get(node.id);
+      setAnimatedNodes((prev) => {
+        let changed = false;
+        const next = prev.map((node) => {
+          const target = targetMapRef.current.get(node.id);
           if (!target) return node;
 
           const dx = target.tx - node.tx;
           const dy = target.ty - node.ty;
           const ntx = Math.abs(dx) < epsilon ? target.tx : node.tx + dx * lerp;
           const nty = Math.abs(dy) < epsilon ? target.ty : node.ty + dy * lerp;
-          return { ...node, tx: ntx, ty: nty };
-        }),
-      );
+
+          if (ntx !== node.tx || nty !== node.ty) {
+            changed = true;
+            return { ...node, tx: ntx, ty: nty };
+          }
+          return node;
+        });
+
+        return changed ? next : prev;
+      });
       rafRef.current = requestAnimationFrame(tick);
     };
 
