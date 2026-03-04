@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const handleAuth0Login = async () => {
-    window.location.href = "/api/auth/login";
+    window.location.href = "/auth/login";
   };
 
   return (

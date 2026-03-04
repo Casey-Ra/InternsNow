@@ -36,7 +36,7 @@ describe('Login & Register Pages', () => {
       // Ensure the route behind the button exists and performs a redirect.
       cy.request({
         method: 'GET',
-        url: '/api/auth/login',
+        url: '/auth/login',
         failOnStatusCode: false,
         followRedirect: false,
       }).then((response) => {
@@ -69,7 +69,7 @@ describe('Login & Register Pages', () => {
     it('clicking Sign Up with Auth0 uses a valid auth route', () => {
       cy.request({
         method: 'GET',
-        url: '/api/auth/login?screen_hint=signup',
+        url: '/auth/login?screen_hint=signup',
         failOnStatusCode: false,
         followRedirect: false,
       }).then((response) => {
