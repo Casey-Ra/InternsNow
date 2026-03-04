@@ -106,22 +106,22 @@ export default function HomeLandingPage() {
 
   const targetNodes = useMemo(() => {
     if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
-    const repelRadius = 240;
-    const maxPush = 34;
+    const influenceRadius = 210;
+    const maxAttract = 0.9;
 
     return nodes.map((node) => {
-      const dx = node.x - pointer.x;
-      const dy = node.y - pointer.y;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      if (dist >= repelRadius) {
+      const dx = pointer.x - node.x;
+      const dy = pointer.y - node.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist >= influenceRadius) {
         return { ...node, tx: node.x, ty: node.y };
       }
-      const influence = Math.pow((repelRadius - dist) / repelRadius, 1.35);
-      const push = influence * maxPush;
+      const t = 1 - dist / influenceRadius;
+      const attract = Math.pow(t, 1.7) * maxAttract;
       return {
         ...node,
-        tx: node.x + (dx / dist) * push,
-        ty: node.y + (dy / dist) * push,
+        tx: node.x + dx * attract,
+        ty: node.y + dy * attract,
       };
     });
   }, [pointer]);
@@ -196,6 +196,20 @@ export default function HomeLandingPage() {
     return set;
   }, [pointer, animatedNodes]);
 
+  const nodeIntensity = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!pointer) return map;
+    const blowupRadius = 190;
+    for (const node of animatedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const intensity = Math.max(0, 1 - dist / blowupRadius);
+      map.set(node.id, intensity);
+    }
+    return map;
+  }, [pointer, animatedNodes]);
+
   return (
     <div
       className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden"
@@ -215,29 +229,50 @@ export default function HomeLandingPage() {
           viewBox="0 0 1200 800"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g stroke="rgba(125,211,252,0.45)" strokeWidth="1.2" fill="none">
+          <g fill="none">
             {edges.map((edge) => {
               const from = nodeMap.get(edge.from);
               const to = nodeMap.get(edge.to);
               if (!from || !to) return null;
-              return <line key={`${edge.from}-${edge.to}`} x1={from.tx} y1={from.ty} x2={to.tx} y2={to.ty} />;
+              const intensity = Math.max(
+                nodeIntensity.get(edge.from) ?? 0,
+                nodeIntensity.get(edge.to) ?? 0,
+              );
+              return (
+                <line
+                  key={`${edge.from}-${edge.to}`}
+                  x1={from.tx}
+                  y1={from.ty}
+                  x2={to.tx}
+                  y2={to.ty}
+                  stroke={`rgba(125,211,252,${0.28 + intensity * 0.62})`}
+                  strokeWidth={1 + intensity * 3.4}
+                  style={{ transition: "stroke-width 120ms linear, stroke 120ms linear" }}
+                />
+              );
             })}
           </g>
           {animatedNodes.map((node) => {
-            const active = node.id === hoveredNodeId;
+            const intensity = nodeIntensity.get(node.id) ?? 0;
+            const active = node.id === hoveredNodeId || intensity > 0.62;
             const near = activeNodeIdSet.has(node.id);
+            const radius = 6 + intensity * 22 + (near ? 1 : 0);
             return (
               <g key={node.id}>
                 <circle
                   cx={node.tx}
                   cy={node.ty}
-                  r={active ? 24 : near ? 8 : 6}
+                  r={radius}
                   fill={active ? "rgba(14,165,233,0.42)" : "rgba(56,189,248,0.95)"}
                   stroke={active ? "rgba(224,242,254,0.95)" : "transparent"}
                   strokeWidth={active ? 1.5 : 0}
+                  style={{ transition: "r 120ms linear, fill 120ms linear, stroke 120ms linear" }}
                 />
                 {active && (
-                  <g transform={`translate(${node.tx}, ${node.ty}) scale(1.15)`} className="text-sky-50">
+                  <g
+                    transform={`translate(${node.tx}, ${node.ty}) scale(${1.1 + intensity * 0.95})`}
+                    className="text-sky-50"
+                  >
                     {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
                   </g>
                 )}
