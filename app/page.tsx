@@ -11,6 +11,11 @@ type NodePoint = {
   icon: "briefcase" | "person";
 };
 
+type Edge = {
+  from: string;
+  to: string;
+};
+
 const nodes: NodePoint[] = [
   { id: "n1", x: 120, y: 160, icon: "briefcase" },
   { id: "n2", x: 330, y: 250, icon: "person" },
@@ -26,6 +31,23 @@ const nodes: NodePoint[] = [
   { id: "n12", x: 420, y: 520, icon: "person" },
   { id: "n13", x: 640, y: 610, icon: "briefcase" },
   { id: "n14", x: 870, y: 540, icon: "person" },
+];
+
+const edges: Edge[] = [
+  { from: "n1", to: "n2" },
+  { from: "n2", to: "n3" },
+  { from: "n3", to: "n4" },
+  { from: "n4", to: "n5" },
+  { from: "n6", to: "n7" },
+  { from: "n7", to: "n8" },
+  { from: "n8", to: "n9" },
+  { from: "n9", to: "n10" },
+  { from: "n11", to: "n12" },
+  { from: "n12", to: "n13" },
+  { from: "n13", to: "n14" },
+  { from: "n2", to: "n7" },
+  { from: "n3", to: "n8" },
+  { from: "n4", to: "n9" },
 ];
 
 function BriefcaseIcon() {
@@ -81,66 +103,109 @@ function PersonTieIcon() {
 export default function HomeLandingPage() {
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
 
+  const transformedNodes = useMemo(() => {
+    if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
+    const repelRadius = 240;
+    const maxPush = 28;
+
+    return nodes.map((node) => {
+      const dx = node.x - pointer.x;
+      const dy = node.y - pointer.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (dist >= repelRadius) {
+        return { ...node, tx: node.x, ty: node.y };
+      }
+      const influence = (repelRadius - dist) / repelRadius;
+      const push = influence * maxPush;
+      return {
+        ...node,
+        tx: node.x + (dx / dist) * push,
+        ty: node.y + (dy / dist) * push,
+      };
+    });
+  }, [pointer]);
+
   const hoveredNodeId = useMemo(() => {
     if (!pointer) return null;
     let winner: { id: string; dist: number } | null = null;
-    for (const node of nodes) {
-      const dx = pointer.x - node.x;
-      const dy = pointer.y - node.y;
+    for (const node of transformedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist <= 40 && (!winner || dist < winner.dist)) {
+      if (dist <= 42 && (!winner || dist < winner.dist)) {
         winner = { id: node.id, dist };
       }
     }
     return winner?.id ?? null;
+  }, [pointer, transformedNodes]);
+
+  const nodeMap = useMemo(() => {
+    const map = new Map<string, (typeof transformedNodes)[number]>();
+    for (const node of transformedNodes) {
+      map.set(node.id, node);
+    }
+    return map;
+  }, [transformedNodes]);
+
+  const activeNodeIdSet = useMemo(() => {
+    const set = new Set<string>();
+    if (!pointer) return set;
+    for (const node of nodes) {
+      const dx = pointer.x - node.x;
+      const dy = pointer.y - node.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 170) {
+        set.add(node.id);
+      }
+    }
+    return set;
   }, [pointer]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden">
+    <div
+      className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden"
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 1200;
+        const y = ((e.clientY - rect.top) / rect.height) * 800;
+        setPointer({ x, y });
+      }}
+      onMouseLeave={() => setPointer(null)}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.18),transparent_45%),radial-gradient(circle_at_80%_15%,rgba(14,165,233,0.14),transparent_40%),radial-gradient(circle_at_50%_70%,rgba(16,185,129,0.12),transparent_45%)]" />
 
-      <div
-        className="pointer-events-auto absolute inset-0 opacity-40"
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 1200;
-          const y = ((e.clientY - rect.top) / rect.height) * 800;
-          setPointer({ x, y });
-        }}
-        onMouseLeave={() => setPointer(null)}
-      >
+      <div className="pointer-events-none absolute inset-0 opacity-100">
         <svg
           className="h-full w-full"
           viewBox="0 0 1200 800"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g stroke="rgba(125,211,252,0.35)" strokeWidth="1.2" fill="none">
-            <path d="M120 160 L330 250 L560 170 L760 290 L1010 190" />
-            <path d="M180 470 L360 350 L580 460 L780 390 L1030 520" />
-            <path d="M270 620 L420 520 L640 610 L870 540" />
-            <path d="M330 250 L360 350" />
-            <path d="M560 170 L580 460" />
-            <path d="M760 290 L780 390" />
+          <g stroke="rgba(125,211,252,0.45)" strokeWidth="1.2" fill="none">
+            {edges.map((edge) => {
+              const from = nodeMap.get(edge.from);
+              const to = nodeMap.get(edge.to);
+              if (!from || !to) return null;
+              return <line key={`${edge.from}-${edge.to}`} x1={from.tx} y1={from.ty} x2={to.tx} y2={to.ty} />;
+            })}
           </g>
-          {nodes.map((node) => {
+          {transformedNodes.map((node) => {
             const active = node.id === hoveredNodeId;
+            const near = activeNodeIdSet.has(node.id);
             return (
               <g key={node.id}>
                 <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={active ? 22 : 6}
-                  fill={active ? "rgba(14,165,233,0.35)" : "rgba(56,189,248,0.9)"}
-                  stroke={active ? "rgba(186,230,253,0.9)" : "transparent"}
+                  cx={node.tx}
+                  cy={node.ty}
+                  r={active ? 24 : near ? 8 : 6}
+                  fill={active ? "rgba(14,165,233,0.42)" : "rgba(56,189,248,0.95)"}
+                  stroke={active ? "rgba(224,242,254,0.95)" : "transparent"}
                   strokeWidth={active ? 1.5 : 0}
-                  style={{ transition: "all 160ms ease" }}
+                  style={{ transition: "all 180ms ease" }}
                 />
                 {active && (
-                  <foreignObject x={node.x - 16} y={node.y - 16} width="32" height="32">
-                    <div className="h-8 w-8 flex items-center justify-center">
-                      {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
-                    </div>
-                  </foreignObject>
+                  <g transform={`translate(${node.tx - 16}, ${node.ty - 16})`}>
+                    {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
+                  </g>
                 )}
               </g>
             );
@@ -153,7 +218,7 @@ export default function HomeLandingPage() {
 
         <main className="px-6 pb-16 pt-10">
           <div className="max-w-6xl mx-auto">
-            <section className="rounded-3xl border border-sky-400/25 bg-slate-900/35 backdrop-blur-sm p-8 md:p-12 shadow-[0_0_60px_rgba(14,165,233,0.2)]">
+            <section className="rounded-3xl border border-sky-400/25 bg-slate-900/18 p-8 md:p-12 shadow-[0_0_60px_rgba(14,165,233,0.2)]">
               <div className="max-w-4xl mx-auto text-center">
                 <p className="inline-flex items-center rounded-full border border-sky-300/40 bg-sky-950/60 px-4 py-1 text-sm text-sky-200">
                   Tech Careers Start with Better Signals
