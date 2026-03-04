@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const handleAuth0Login = async () => {
-    window.location.href = "/api/auth/login-auth0";
+    window.location.href = "/api/auth/login";
   };
 
   return (
