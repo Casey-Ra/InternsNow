@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 
 export default function RegisterPage() {
   const handleAuth0Signup = () => {
-    window.location.href = "/api/auth/register-auth0";
+    window.location.href = "/auth/login?screen_hint=signup";
   };
 
   return (

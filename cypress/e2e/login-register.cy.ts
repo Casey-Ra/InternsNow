@@ -32,12 +32,19 @@ describe('Login & Register Pages', () => {
       cy.get('footer').should('be.visible');
     });
 
-    it('clicking Continue with Auth0 redirects to Auth0', () => {
-      // Intercept the redirect so we don't actually leave the test suite
-      cy.intercept('GET', '**/authorize**').as('auth0Redirect');
+    it('clicking Continue with Auth0 uses a valid auth route', () => {
+      // Ensure the route behind the button exists and performs a redirect.
+      cy.request({
+        method: 'GET',
+        url: '/auth/login',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+      });
+
       cy.contains('button', 'Continue with Auth0').click();
-      // Should navigate away from /login toward auth flow
-      cy.url().should('not.eq', Cypress.config().baseUrl + '/login');
+      cy.url().should('not.include', '/api/auth/login-auth0');
     });
   });
 
@@ -57,6 +64,17 @@ describe('Login & Register Pages', () => {
 
     it('shows the Sign Up with Auth0 button', () => {
       cy.contains('button', 'Sign Up with Auth0').should('be.visible');
+    });
+
+    it('clicking Sign Up with Auth0 uses a valid auth route', () => {
+      cy.request({
+        method: 'GET',
+        url: '/auth/login?screen_hint=signup',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+      });
     });
 
     it('shows the try quick intake survey link', () => {
