@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateInternship } from "../../../lib/models/Internship";
 import { revalidatePath } from "next/cache";
+import { auth0 } from "@/lib/auth0";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth0.getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const raw = await request.text();
     let body: any = {};
     try {

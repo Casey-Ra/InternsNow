@@ -11,9 +11,6 @@ export async function GET() {
     return NextResponse.json(r.rows);
   } catch (e) {
     console.error("GET /api/lookups/degree-types error:", e);
-    return NextResponse.json(
-      { error: "Failed to load degree types" },
-      { status: 500 },
-    );
+    return NextResponse.json([]);
   }
 }

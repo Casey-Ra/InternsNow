@@ -32,7 +32,7 @@ export function InstitutionAutocomplete({
           `/api/institutions/search?q=${encodeURIComponent(q)}`,
         );
         const data = await res.json();
-        setItems(data.items ?? []);
+        setItems(Array.isArray(data) ? data : (data.items ?? []));
       } finally {
         setLoading(false);
       }

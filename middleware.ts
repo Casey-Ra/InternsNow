@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
 export async function middleware(request: NextRequest) {
+  // Keep /auth/login stable in CI/dev even when Auth0 discovery is unavailable.
+  if (request.nextUrl.pathname === "/auth/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   try {
     return await auth0.middleware(request);
   } catch (error) {
