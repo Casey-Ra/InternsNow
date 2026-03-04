@@ -12,9 +12,6 @@ export async function GET() {
     return NextResponse.json(r.rows); // [{ name: "Computer Science" }, ...]
   } catch (e) {
     console.error("GET /api/lookups/majors error:", e);
-    return NextResponse.json(
-      { error: "Failed to load majors" },
-      { status: 500 },
-    );
+    return NextResponse.json([]);
   }
 }

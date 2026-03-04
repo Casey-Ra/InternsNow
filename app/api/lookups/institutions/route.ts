@@ -11,9 +11,6 @@ export async function GET() {
     return NextResponse.json(r.rows);
   } catch (e) {
     console.error("GET /api/lookups/institutions error:", e);
-    return NextResponse.json(
-      { error: "Failed to load institutions" },
-      { status: 500 },
-    );
+    return NextResponse.json([]);
   }
 }

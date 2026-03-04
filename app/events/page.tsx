@@ -2,10 +2,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { getLiveEvents } from "@/app/student/events/events";
+import { auth0 } from "@/lib/auth0";
 
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
+  const session = await auth0.getSession();
+  const isAuthenticated = Boolean(session);
   const events = await getLiveEvents();
 
   return (
@@ -16,12 +19,21 @@ export default async function EventsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Grow Your Circle
+              Events
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Local networking events to meet peers, mentors, and employers.
+              Grow Your Circle: local networking events to meet peers, mentors, and employers.
             </p>
           </div>
+          {!isAuthenticated && (
+            <section className="mb-6 rounded-lg border border-blue-100 bg-blue-50/60 p-4 text-sm text-blue-900 dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-200">
+              Sign in to post events.{" "}
+              <Link href="/login" className="font-semibold underline">
+                Go to login
+              </Link>
+              .
+            </section>
+          )}
 
           {events.length === 0 ? (
             <div className="text-center py-12">
