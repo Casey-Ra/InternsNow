@@ -239,15 +239,14 @@ export default function HomeLandingPage() {
 
   const backgroundStyle = useMemo(() => {
     const slider = pointer ? (pointer.y / 800) * 100 : 50;
-    const stop1 = Math.max(0, slider - 14);
-    const stop2 = Math.min(100, slider + 8);
-    const stop3 = Math.min(100, slider + 18);
-    const xTilt = pointer ? ((pointer.x / 1200) * 20) - 10 : 0;
+    const stop1 = Math.max(0, slider - 28);
+    const stop2 = Math.min(100, slider + 10);
+    const stop3 = Math.min(100, slider + 34);
 
     return {
       backgroundImage: [
-        `linear-gradient(${180 + xTilt}deg, rgba(5,12,28,0.98) 0%, rgba(8,24,52,0.98) ${stop1}%, rgba(24,122,184,0.42) ${stop2}%, rgba(10,37,76,0.94) ${stop3}%, rgba(3,10,26,0.99) 100%)`,
-        "linear-gradient(120deg, rgba(56,189,248,0.2), rgba(34,197,94,0.14) 45%, rgba(2,132,199,0.16))",
+        `linear-gradient(180deg, rgba(4,10,24,0.985) 0%, rgba(7,19,40,0.985) ${stop1}%, rgba(25,124,186,0.2) ${stop2}%, rgba(9,28,58,0.97) ${stop3}%, rgba(3,8,22,0.99) 100%)`,
+        "linear-gradient(180deg, rgba(56,189,248,0.08), rgba(34,197,94,0.05) 46%, rgba(2,132,199,0.07))",
       ].join(","),
       backgroundSize: "100% 100%, 100% 100%",
       backgroundPosition: "center, center",
@@ -287,7 +286,7 @@ export default function HomeLandingPage() {
       }}
       onMouseLeave={() => setPointer(null)}
     >
-      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out" style={backgroundStyle} />
+      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out opacity-80" style={backgroundStyle} />
 
       <div className="pointer-events-none absolute inset-0 opacity-100">
         <svg
@@ -417,12 +416,12 @@ export default function HomeLandingPage() {
 
         @keyframes gradientWaveDrift {
           0% {
-            filter: saturate(100%) brightness(100%);
-            transform: translate3d(-1%, -0.6%, 0);
+            filter: saturate(96%) brightness(98%);
+            transform: translate3d(-0.5%, -0.25%, 0);
           }
           100% {
-            filter: saturate(108%) brightness(104%);
-            transform: translate3d(1%, 0.8%, 0);
+            filter: saturate(100%) brightness(100%);
+            transform: translate3d(0.5%, 0.25%, 0);
           }
         }
       `}</style>
