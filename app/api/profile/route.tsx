@@ -33,7 +33,7 @@ export async function GET() {
   try {
     const session = await auth0.getSession();
     if (!session) {
-      return NextResponse.json({ authenticated: false }, { status: 200 });
+      return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
     const auth0Sub = session.user.sub;

@@ -1,6 +1,7 @@
 import { auth0 } from "@/lib/auth0";
 import Link from "next/link";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 export default async function HomeLandingPage() {
   const session = await auth0.getSession();
@@ -13,6 +14,11 @@ export default async function HomeLandingPage() {
 
       {/* Hero Section */}
       <main className="px-6 py-11">
+        <img
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
+          alt=""
+          className="sr-only"
+        />
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
             Connect Students with
@@ -96,15 +102,7 @@ export default async function HomeLandingPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="px-6 py-8 mt-16 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto text-center text-gray-600 dark:text-gray-400">
-          <p>
-            &copy; 2025 InternsNow. Built for connecting talent with
-            opportunity.
-          </p>
-        </div>
-      </footer>
+      <Footer variant="default" />
     </div>
   );
 }
