@@ -199,16 +199,17 @@ export default function HomeLandingPage() {
   const nodeIntensity = useMemo(() => {
     const map = new Map<string, number>();
     if (!pointer) return map;
-    const blowupRadius = 190;
-    for (const node of animatedNodes) {
-      const dx = pointer.x - node.tx;
-      const dy = pointer.y - node.ty;
+    const blowupRadius = 140;
+    for (const node of nodes) {
+      const dx = pointer.x - node.x;
+      const dy = pointer.y - node.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const intensity = Math.max(0, 1 - dist / blowupRadius);
+      const normalized = Math.max(0, 1 - dist / blowupRadius);
+      const intensity = Math.pow(normalized, 1.8);
       map.set(node.id, intensity);
     }
     return map;
-  }, [pointer, animatedNodes]);
+  }, [pointer]);
 
   return (
     <div
@@ -245,8 +246,8 @@ export default function HomeLandingPage() {
                   y1={from.ty}
                   x2={to.tx}
                   y2={to.ty}
-                  stroke={`rgba(125,211,252,${0.28 + intensity * 0.62})`}
-                  strokeWidth={1 + intensity * 3.4}
+                  stroke={`rgba(125,211,252,${0.24 + intensity * 0.42})`}
+                  strokeWidth={0.9 + intensity * 1.5}
                   style={{ transition: "stroke-width 120ms linear, stroke 120ms linear" }}
                 />
               );
@@ -254,9 +255,10 @@ export default function HomeLandingPage() {
           </g>
           {animatedNodes.map((node) => {
             const intensity = nodeIntensity.get(node.id) ?? 0;
-            const active = node.id === hoveredNodeId || intensity > 0.62;
+            const active = node.id === hoveredNodeId || intensity > 0.14;
             const near = activeNodeIdSet.has(node.id);
-            const radius = 6 + intensity * 22 + (near ? 1 : 0);
+            const radius = 6 + intensity * 25 + (near ? 0.5 : 0);
+            const iconScale = 0.72 + intensity * 1.35;
             return (
               <g key={node.id}>
                 <circle
@@ -266,12 +268,12 @@ export default function HomeLandingPage() {
                   fill={active ? "rgba(14,165,233,0.42)" : "rgba(56,189,248,0.95)"}
                   stroke={active ? "rgba(224,242,254,0.95)" : "transparent"}
                   strokeWidth={active ? 1.5 : 0}
-                  style={{ transition: "r 120ms linear, fill 120ms linear, stroke 120ms linear" }}
                 />
                 {active && (
                   <g
-                    transform={`translate(${node.tx}, ${node.ty}) scale(${1.1 + intensity * 0.95})`}
+                    transform={`translate(${node.tx}, ${node.ty}) scale(${iconScale})`}
                     className="text-sky-50"
+                    opacity={Math.min(1, 0.25 + intensity * 1.15)}
                   >
                     {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
                   </g>
