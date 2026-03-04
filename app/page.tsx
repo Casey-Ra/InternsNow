@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 
@@ -9,6 +9,11 @@ type NodePoint = {
   x: number;
   y: number;
   icon: "briefcase" | "person";
+};
+
+type AnimatedNode = NodePoint & {
+  tx: number;
+  ty: number;
 };
 
 type Edge = {
@@ -52,61 +57,57 @@ const edges: Edge[] = [
 
 function BriefcaseIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8 text-slate-100" fill="none">
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
       <path
-        d="M8 7V5.5C8 4.67 8.67 4 9.5 4h5c.83 0 1.5.67 1.5 1.5V7"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M-4 -4.5V-5.4C-4 -6.2 -3.3 -6.9 -2.5 -6.9h5c0.8 0 1.5 0.7 1.5 1.5v0.9"
+        strokeWidth="1.4"
       />
       <rect
-        x="4"
-        y="7"
+        x="-8"
+        y="-4.5"
         width="16"
-        height="12"
+        height="10.5"
         rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.4"
       />
       <path
-        d="M4 12h16M10 12v2h4v-2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M-8 0h16M-2 0.1v2h4v-2"
+        strokeWidth="1.4"
       />
-    </svg>
+    </g>
   );
 }
 
 function PersonTieIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8 text-slate-100" fill="none">
-      <circle cx="12" cy="7" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="0" cy="-4.5" r="3" strokeWidth="1.4" />
       <path
-        d="M6.5 20v-2.2c0-2.7 2.8-4.8 5.5-4.8s5.5 2.1 5.5 4.8V20"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M11 13.2l1 1.4 1-1.4-.7 3.2.7 2.6h-2l.7-2.6-.7-3.2Z"
-        stroke="currentColor"
+        d="M-5.5 6v-1.8c0-2.5 2.7-4.4 5.5-4.4s5.5 1.9 5.5 4.4V6"
         strokeWidth="1.4"
-        strokeLinejoin="round"
       />
-    </svg>
+      <path
+        d="M-1 -0.2L0 1.4 1 -0.2 0.3 2.5 1 5.3H-1L-0.3 2.5-1 -0.2Z"
+        strokeWidth="1.2"
+      />
+    </g>
   );
 }
 
 export default function HomeLandingPage() {
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [animatedNodes, setAnimatedNodes] = useState<AnimatedNode[]>(
+    nodes.map((node) => ({ ...node, tx: node.x, ty: node.y })),
+  );
+  const rafRef = useRef<number | null>(null);
+  const targetNodesRef = useRef<AnimatedNode[]>(
+    nodes.map((node) => ({ ...node, tx: node.x, ty: node.y })),
+  );
 
-  const transformedNodes = useMemo(() => {
+  const targetNodes = useMemo(() => {
     if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
     const repelRadius = 240;
-    const maxPush = 28;
+    const maxPush = 34;
 
     return nodes.map((node) => {
       const dx = node.x - pointer.x;
@@ -115,7 +116,7 @@ export default function HomeLandingPage() {
       if (dist >= repelRadius) {
         return { ...node, tx: node.x, ty: node.y };
       }
-      const influence = (repelRadius - dist) / repelRadius;
+      const influence = Math.pow((repelRadius - dist) / repelRadius, 1.35);
       const push = influence * maxPush;
       return {
         ...node,
@@ -125,10 +126,44 @@ export default function HomeLandingPage() {
     });
   }, [pointer]);
 
+  useEffect(() => {
+    targetNodesRef.current = targetNodes;
+  }, [targetNodes]);
+
+  useEffect(() => {
+    const lerp = 0.14;
+    const epsilon = 0.025;
+
+    const tick = () => {
+      const targetMap = new Map(targetNodesRef.current.map((node) => [node.id, node]));
+      setAnimatedNodes((prev) =>
+        prev.map((node) => {
+          const target = targetMap.get(node.id);
+          if (!target) return node;
+
+          const dx = target.tx - node.tx;
+          const dy = target.ty - node.ty;
+          const ntx = Math.abs(dx) < epsilon ? target.tx : node.tx + dx * lerp;
+          const nty = Math.abs(dy) < epsilon ? target.ty : node.ty + dy * lerp;
+          return { ...node, tx: ntx, ty: nty };
+        }),
+      );
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
+
   const hoveredNodeId = useMemo(() => {
     if (!pointer) return null;
     let winner: { id: string; dist: number } | null = null;
-    for (const node of transformedNodes) {
+    for (const node of animatedNodes) {
       const dx = pointer.x - node.tx;
       const dy = pointer.y - node.ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -137,29 +172,29 @@ export default function HomeLandingPage() {
       }
     }
     return winner?.id ?? null;
-  }, [pointer, transformedNodes]);
+  }, [pointer, animatedNodes]);
 
   const nodeMap = useMemo(() => {
-    const map = new Map<string, (typeof transformedNodes)[number]>();
-    for (const node of transformedNodes) {
+    const map = new Map<string, (typeof animatedNodes)[number]>();
+    for (const node of animatedNodes) {
       map.set(node.id, node);
     }
     return map;
-  }, [transformedNodes]);
+  }, [animatedNodes]);
 
   const activeNodeIdSet = useMemo(() => {
     const set = new Set<string>();
     if (!pointer) return set;
-    for (const node of nodes) {
-      const dx = pointer.x - node.x;
-      const dy = pointer.y - node.y;
+    for (const node of animatedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 170) {
         set.add(node.id);
       }
     }
     return set;
-  }, [pointer]);
+  }, [pointer, animatedNodes]);
 
   return (
     <div
@@ -188,7 +223,7 @@ export default function HomeLandingPage() {
               return <line key={`${edge.from}-${edge.to}`} x1={from.tx} y1={from.ty} x2={to.tx} y2={to.ty} />;
             })}
           </g>
-          {transformedNodes.map((node) => {
+          {animatedNodes.map((node) => {
             const active = node.id === hoveredNodeId;
             const near = activeNodeIdSet.has(node.id);
             return (
@@ -200,10 +235,9 @@ export default function HomeLandingPage() {
                   fill={active ? "rgba(14,165,233,0.42)" : "rgba(56,189,248,0.95)"}
                   stroke={active ? "rgba(224,242,254,0.95)" : "transparent"}
                   strokeWidth={active ? 1.5 : 0}
-                  style={{ transition: "all 180ms ease" }}
                 />
                 {active && (
-                  <g transform={`translate(${node.tx - 16}, ${node.ty - 16})`}>
+                  <g transform={`translate(${node.tx}, ${node.ty}) scale(1.15)`} className="text-sky-50">
                     {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
                   </g>
                 )}
