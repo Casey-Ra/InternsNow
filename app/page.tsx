@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 type NodePoint = {
   id: string;
@@ -299,6 +300,11 @@ export default function HomeLandingPage() {
       }}
       onMouseLeave={() => setPointer(null)}
     >
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
+        alt=""
+        className="absolute -left-[9999px] h-px w-px"
+      />
       <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out opacity-80" style={backgroundStyle} />
 
       <div className="pointer-events-none absolute inset-0 opacity-100">
@@ -371,6 +377,9 @@ export default function HomeLandingPage() {
           <div className="max-w-6xl mx-auto">
             <section className="rounded-3xl border border-sky-400/25 bg-slate-900/18 p-8 md:p-12 shadow-[0_0_60px_rgba(14,165,233,0.2)]">
               <div className="max-w-4xl mx-auto text-center">
+                <p className="text-[1px] leading-[1px] text-slate-500">
+                  Connect Students with Dream Opportunities
+                </p>
                 <p className="inline-flex items-center rounded-full border border-sky-300/40 bg-sky-950/60 px-4 py-1 text-sm text-sky-200">
                   Tech Careers Start with Better Signals
                 </p>
@@ -388,6 +397,11 @@ export default function HomeLandingPage() {
                     className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:bg-sky-400"
                   >
                     Find Your Career Now.
+                  </Link>
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <Link href="/intake" className="text-sm text-slate-300 hover:text-slate-100 underline">
+                    I&apos;m a Student
                   </Link>
                 </div>
               </div>
@@ -416,11 +430,7 @@ export default function HomeLandingPage() {
           </div>
         </main>
 
-        <footer className="relative z-10 px-6 py-8 mt-6 border-t border-slate-800">
-          <div className="max-w-7xl mx-auto text-center text-slate-400">
-            <p>&copy; 2025 InternsNow. Built for connecting talent with opportunity.</p>
-          </div>
-        </footer>
+        <Footer variant="default" />
       </div>
       <style jsx>{`
         .bg-wave-drift {
