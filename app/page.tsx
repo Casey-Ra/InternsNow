@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 
@@ -8,7 +8,7 @@ type NodePoint = {
   id: string;
   x: number;
   y: number;
-  icon: "briefcase" | "person";
+  icon: "briefcase" | "person" | "resume" | "pen" | "school";
 };
 
 type AnimatedNode = NodePoint & {
@@ -24,18 +24,18 @@ type Edge = {
 const nodes: NodePoint[] = [
   { id: "n1", x: 120, y: 160, icon: "briefcase" },
   { id: "n2", x: 330, y: 250, icon: "person" },
-  { id: "n3", x: 560, y: 170, icon: "briefcase" },
-  { id: "n4", x: 760, y: 290, icon: "person" },
-  { id: "n5", x: 1010, y: 190, icon: "briefcase" },
+  { id: "n3", x: 560, y: 170, icon: "resume" },
+  { id: "n4", x: 760, y: 290, icon: "school" },
+  { id: "n5", x: 1010, y: 190, icon: "pen" },
   { id: "n6", x: 180, y: 470, icon: "person" },
-  { id: "n7", x: 360, y: 350, icon: "briefcase" },
-  { id: "n8", x: 580, y: 460, icon: "person" },
-  { id: "n9", x: 780, y: 390, icon: "briefcase" },
-  { id: "n10", x: 1030, y: 520, icon: "person" },
-  { id: "n11", x: 270, y: 620, icon: "briefcase" },
+  { id: "n7", x: 360, y: 350, icon: "resume" },
+  { id: "n8", x: 580, y: 460, icon: "briefcase" },
+  { id: "n9", x: 780, y: 390, icon: "school" },
+  { id: "n10", x: 1030, y: 520, icon: "pen" },
+  { id: "n11", x: 270, y: 620, icon: "resume" },
   { id: "n12", x: 420, y: 520, icon: "person" },
   { id: "n13", x: 640, y: 610, icon: "briefcase" },
-  { id: "n14", x: 870, y: 540, icon: "person" },
+  { id: "n14", x: 870, y: 540, icon: "school" },
 ];
 
 const edges: Edge[] = [
@@ -90,6 +90,34 @@ function PersonTieIcon() {
         d="M-1 -0.2L0 1.4 1 -0.2 0.3 2.5 1 5.3H-1L-0.3 2.5-1 -0.2Z"
         strokeWidth="1.2"
       />
+    </g>
+  );
+}
+
+function ResumeIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="-7" y="-7" width="14" height="14" rx="2" strokeWidth="1.4" />
+      <path d="M-3.8 -3.6h7.6M-3.8 -0.8h7.6M-3.8 2h5.8" strokeWidth="1.4" />
+    </g>
+  );
+}
+
+function PenIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M-5.4 5.6l2.2-0.4 7.4-7.4-1.8-1.8-7.4 7.4-0.4 2.2Z" strokeWidth="1.4" />
+      <path d="M1.6-4.6l1.8 1.8M-4.8 4.8l1.9-1.9" strokeWidth="1.4" />
+    </g>
+  );
+}
+
+function SchoolIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M-8 -1l8-4 8 4-8 4-8-4Z" strokeWidth="1.4" />
+      <path d="M-4 1.4V4c0 1.8 2.2 3.1 4 3.1s4-1.3 4-3.1V1.4" strokeWidth="1.4" />
+      <path d="M8-1v4.4" strokeWidth="1.4" />
     </g>
   );
 }
@@ -200,15 +228,34 @@ export default function HomeLandingPage() {
     const map = new Map<string, number>();
     if (!pointer) return map;
     const blowupRadius = 140;
-    for (const node of nodes) {
-      const dx = pointer.x - node.x;
-      const dy = pointer.y - node.y;
+    for (const node of animatedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const normalized = Math.max(0, 1 - dist / blowupRadius);
       const intensity = Math.pow(normalized, 1.8);
       map.set(node.id, intensity);
     }
     return map;
+  }, [pointer, animatedNodes]);
+
+  const backgroundStyle = useMemo(() => {
+    const px = pointer ? `${(pointer.x / 1200) * 100}%` : "50%";
+    const py = pointer ? `${(pointer.y / 800) * 100}%` : "50%";
+    const waveShiftX = pointer ? `${pointer.x / 10}px` : "0px";
+    const waveShiftY = pointer ? `${pointer.y / 14}px` : "0px";
+
+    return {
+      backgroundImage: [
+        `radial-gradient(circle at ${px} ${py}, rgba(56,189,248,0.24), transparent 40%)`,
+        "radial-gradient(circle at 18% 18%, rgba(56,189,248,0.16), transparent 46%)",
+        "radial-gradient(circle at 82% 14%, rgba(14,165,233,0.13), transparent 42%)",
+        "radial-gradient(circle at 50% 74%, rgba(16,185,129,0.1), transparent 47%)",
+        "repeating-linear-gradient(115deg, rgba(125,211,252,0.065) 0 2px, transparent 2px 26px)",
+      ].join(","),
+      backgroundSize: "100% 100%, 100% 100%, 100% 100%, 100% 100%, 180% 180%",
+      backgroundPosition: `center, center, center, center, ${waveShiftX} ${waveShiftY}`,
+    } as CSSProperties;
   }, [pointer]);
 
   return (
@@ -222,12 +269,13 @@ export default function HomeLandingPage() {
       }}
       onMouseLeave={() => setPointer(null)}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.18),transparent_45%),radial-gradient(circle_at_80%_15%,rgba(14,165,233,0.14),transparent_40%),radial-gradient(circle_at_50%_70%,rgba(16,185,129,0.12),transparent_45%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-position] duration-200 ease-out" style={backgroundStyle} />
 
       <div className="pointer-events-none absolute inset-0 opacity-100">
         <svg
           className="h-full w-full"
           viewBox="0 0 1200 800"
+          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <g fill="none">
@@ -257,7 +305,7 @@ export default function HomeLandingPage() {
             const intensity = nodeIntensity.get(node.id) ?? 0;
             const active = node.id === hoveredNodeId || intensity > 0.14;
             const near = activeNodeIdSet.has(node.id);
-            const radius = 6 + intensity * 25 + (near ? 0.5 : 0);
+            const radius = 6 + intensity * 30 + (near ? 0.6 : 0);
             const iconScale = 0.72 + intensity * 1.35;
             return (
               <g key={node.id}>
@@ -275,7 +323,11 @@ export default function HomeLandingPage() {
                     className="text-sky-50"
                     opacity={Math.min(1, 0.25 + intensity * 1.15)}
                   >
-                    {node.icon === "briefcase" ? <BriefcaseIcon /> : <PersonTieIcon />}
+                    {node.icon === "briefcase" && <BriefcaseIcon />}
+                    {node.icon === "person" && <PersonTieIcon />}
+                    {node.icon === "resume" && <ResumeIcon />}
+                    {node.icon === "pen" && <PenIcon />}
+                    {node.icon === "school" && <SchoolIcon />}
                   </g>
                 )}
               </g>
@@ -342,6 +394,22 @@ export default function HomeLandingPage() {
           </div>
         </footer>
       </div>
+      <style jsx>{`
+        .bg-wave-drift {
+          animation: gradientWaveDrift 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientWaveDrift {
+          0% {
+            filter: saturate(100%) brightness(100%);
+            transform: translate3d(-1%, -0.6%, 0);
+          }
+          100% {
+            filter: saturate(108%) brightness(104%);
+            transform: translate3d(1%, 0.8%, 0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
