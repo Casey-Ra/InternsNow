@@ -131,6 +131,7 @@ export default function HomeLandingPage() {
   const targetNodesRef = useRef<AnimatedNode[]>(
     nodes.map((node) => ({ ...node, tx: node.x, ty: node.y })),
   );
+  const sceneRef = useRef<HTMLDivElement | null>(null);
 
   const targetNodes = useMemo(() => {
     if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
@@ -210,72 +211,88 @@ export default function HomeLandingPage() {
     return map;
   }, [animatedNodes]);
 
-  const activeNodeIdSet = useMemo(() => {
-    const set = new Set<string>();
-    if (!pointer) return set;
+  const focusedNode = useMemo(() => {
+    if (!pointer) return null;
+    const blowupRadius = 160;
+    let winner: { id: string; intensity: number; dist: number } | null = null;
     for (const node of animatedNodes) {
       const dx = pointer.x - node.tx;
       const dy = pointer.y - node.ty;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 170) {
-        set.add(node.id);
+      if (dist > blowupRadius) continue;
+      const normalized = Math.max(0, 1 - dist / blowupRadius);
+      const intensity = Math.pow(normalized, 1.85);
+      if (!winner || dist < winner.dist) {
+        winner = { id: node.id, intensity, dist };
       }
     }
-    return set;
+    return winner;
   }, [pointer, animatedNodes]);
 
   const nodeIntensity = useMemo(() => {
     const map = new Map<string, number>();
-    if (!pointer) return map;
-    const blowupRadius = 140;
     for (const node of animatedNodes) {
-      const dx = pointer.x - node.tx;
-      const dy = pointer.y - node.ty;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const normalized = Math.max(0, 1 - dist / blowupRadius);
-      const intensity = Math.pow(normalized, 1.8);
-      map.set(node.id, intensity);
+      map.set(node.id, focusedNode?.id === node.id ? focusedNode.intensity : 0);
     }
     return map;
-  }, [pointer, animatedNodes]);
+  }, [animatedNodes, focusedNode]);
 
   const backgroundStyle = useMemo(() => {
-    const px = pointer ? `${(pointer.x / 1200) * 100}%` : "50%";
-    const py = pointer ? `${(pointer.y / 800) * 100}%` : "50%";
-    const waveShiftX = pointer ? `${pointer.x / 10}px` : "0px";
-    const waveShiftY = pointer ? `${pointer.y / 14}px` : "0px";
+    const slider = pointer ? (pointer.y / 800) * 100 : 50;
+    const stop1 = Math.max(0, slider - 14);
+    const stop2 = Math.min(100, slider + 8);
+    const stop3 = Math.min(100, slider + 18);
+    const xTilt = pointer ? ((pointer.x / 1200) * 20) - 10 : 0;
 
     return {
       backgroundImage: [
-        `radial-gradient(circle at ${px} ${py}, rgba(56,189,248,0.24), transparent 40%)`,
-        "radial-gradient(circle at 18% 18%, rgba(56,189,248,0.16), transparent 46%)",
-        "radial-gradient(circle at 82% 14%, rgba(14,165,233,0.13), transparent 42%)",
-        "radial-gradient(circle at 50% 74%, rgba(16,185,129,0.1), transparent 47%)",
-        "repeating-linear-gradient(115deg, rgba(125,211,252,0.065) 0 2px, transparent 2px 26px)",
+        `linear-gradient(${180 + xTilt}deg, rgba(5,12,28,0.98) 0%, rgba(8,24,52,0.98) ${stop1}%, rgba(24,122,184,0.42) ${stop2}%, rgba(10,37,76,0.94) ${stop3}%, rgba(3,10,26,0.99) 100%)`,
+        "linear-gradient(120deg, rgba(56,189,248,0.2), rgba(34,197,94,0.14) 45%, rgba(2,132,199,0.16))",
       ].join(","),
-      backgroundSize: "100% 100%, 100% 100%, 100% 100%, 100% 100%, 180% 180%",
-      backgroundPosition: `center, center, center, center, ${waveShiftX} ${waveShiftY}`,
+      backgroundSize: "100% 100%, 100% 100%",
+      backgroundPosition: "center, center",
     } as CSSProperties;
   }, [pointer]);
 
   return (
     <div
+      ref={sceneRef}
       className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden"
       onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 1200;
-        const y = ((e.clientY - rect.top) / rect.height) * 800;
+        const rect = sceneRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const viewW = 1200;
+        const viewH = 800;
+        const viewRatio = viewW / viewH;
+        const rectRatio = rect.width / rect.height;
+
+        let renderW = rect.width;
+        let renderH = rect.height;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (rectRatio > viewRatio) {
+          renderW = rect.height * viewRatio;
+          offsetX = (rect.width - renderW) / 2;
+        } else {
+          renderH = rect.width / viewRatio;
+          offsetY = (rect.height - renderH) / 2;
+        }
+
+        const localX = Math.min(Math.max(e.clientX - rect.left - offsetX, 0), renderW);
+        const localY = Math.min(Math.max(e.clientY - rect.top - offsetY, 0), renderH);
+        const x = (localX / renderW) * viewW;
+        const y = (localY / renderH) * viewH;
         setPointer({ x, y });
       }}
       onMouseLeave={() => setPointer(null)}
     >
-      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-position] duration-200 ease-out" style={backgroundStyle} />
+      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out" style={backgroundStyle} />
 
       <div className="pointer-events-none absolute inset-0 opacity-100">
         <svg
           className="h-full w-full"
           viewBox="0 0 1200 800"
-          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <g fill="none">
@@ -303,9 +320,8 @@ export default function HomeLandingPage() {
           </g>
           {animatedNodes.map((node) => {
             const intensity = nodeIntensity.get(node.id) ?? 0;
-            const active = node.id === hoveredNodeId || intensity > 0.14;
-            const near = activeNodeIdSet.has(node.id);
-            const radius = 6 + intensity * 30 + (near ? 0.6 : 0);
+            const active = node.id === hoveredNodeId || intensity > 0.06;
+            const radius = 6 + intensity * 32;
             const iconScale = 0.72 + intensity * 1.35;
             return (
               <g key={node.id}>
@@ -313,8 +329,8 @@ export default function HomeLandingPage() {
                   cx={node.tx}
                   cy={node.ty}
                   r={radius}
-                  fill={active ? "rgba(14,165,233,0.42)" : "rgba(56,189,248,0.95)"}
-                  stroke={active ? "rgba(224,242,254,0.95)" : "transparent"}
+                  fill={active ? "rgba(30,170,240,0.48)" : "rgba(92,226,255,0.96)"}
+                  stroke={active ? "rgba(224,242,254,0.98)" : "transparent"}
                   strokeWidth={active ? 1.5 : 0}
                 />
                 {active && (
