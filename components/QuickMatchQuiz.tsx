@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import {
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import {
   type IntakeInterest,
   defaultIntakeInterests,
@@ -103,8 +108,20 @@ export default function QuickMatchQuiz({
     }
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (step < totalSteps) {
+      event.preventDefault();
+      moveStep(1);
+    }
+  }
+
+  function handleNextButtonClick(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    moveStep(1);
+  }
+
   return (
-    <form action={action} method="GET" className={className}>
+    <form action={action} method="GET" className={className} onSubmit={handleSubmit}>
       <input type="hidden" name="submitted" value="1" />
       <input type="hidden" name="location" value={location} />
       <input type="hidden" name="major" value={major} />
@@ -288,14 +305,16 @@ export default function QuickMatchQuiz({
 
             {step < totalSteps ? (
               <button
+                key="next-question"
                 type="button"
-                onClick={() => moveStep(1)}
+                onClick={handleNextButtonClick}
                 className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
               >
                 Next Question
               </button>
             ) : (
               <button
+                key="show-matches"
                 type="submit"
                 className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
               >
