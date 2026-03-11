@@ -43,13 +43,12 @@ describe("HomeLandingPage", () => {
 
     expect(
       screen.getByRole("link", { name: "Find Your Career Now." }),
-    ).toHaveAttribute("href", "/intake");
-    expect(screen.getByRole("link", { name: "I'm a Student" })).toHaveAttribute(
-      "href",
+    ).toHaveProperty("href", expect.stringContaining("/intake"));
+    expect(screen.getByRole("link", { name: "I'm a Student" }).getAttribute("href")).toBe(
       "/intake",
     );
-    expect(screen.getByTestId("header")).toHaveAttribute("data-tone", "dark");
-    expect(screen.getByTestId("footer")).toHaveAttribute("data-tone", "dark");
+    expect(screen.getByTestId("header").getAttribute("data-tone")).toBe("dark");
+    expect(screen.getByTestId("footer").getAttribute("data-tone")).toBe("dark");
   });
 
   it("routes student CTAs to the dashboard for signed-in users", () => {
@@ -62,9 +61,8 @@ describe("HomeLandingPage", () => {
 
     expect(
       screen.getByRole("link", { name: "Find Your Career Now." }),
-    ).toHaveAttribute("href", "/student");
-    expect(screen.getByRole("link", { name: "I'm a Student" })).toHaveAttribute(
-      "href",
+    ).toHaveProperty("href", expect.stringContaining("/student"));
+    expect(screen.getByRole("link", { name: "I'm a Student" }).getAttribute("href")).toBe(
       "/student",
     );
   });
