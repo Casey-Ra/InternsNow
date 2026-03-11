@@ -1,3 +1,5 @@
+import { AUTH0_LOGIN_URL } from '../../lib/authUrls';
+
 /**
  * API Route Tests
  * Tests all public and auth-protected API endpoints.
@@ -176,14 +178,10 @@ describe('API Route Tests', () => {
 
   // ─── Auth routes (no crash) ───────────────────────────────────────────────
   describe('Auth routes', () => {
-    it('/api/auth/login route is available (redirects to Auth0)', () => {
-      cy.request({
-        url: '/auth/login',
-        failOnStatusCode: false,
-        followRedirect: false,
-      }).then((response) => {
-        expect([302, 307]).to.include(response.status);
-      });
+    it('/login exposes the direct Auth0 login URL', () => {
+      cy.visit('/login');
+      cy.contains('a', 'Continue with Auth0')
+        .should('have.attr', 'href', AUTH0_LOGIN_URL);
     });
   });
 });

@@ -1,108 +1,457 @@
-import { auth0 } from "@/lib/auth0";
+"use client";
+
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-export default async function HomeLandingPage() {
-  const session = await auth0.getSession();
-  const studentCtaHref = session ? "/student" : "/intake";
+type NodePoint = {
+  id: string;
+  x: number;
+  y: number;
+  icon: "briefcase" | "person" | "resume" | "pen" | "school";
+};
+
+type AnimatedNode = NodePoint & {
+  tx: number;
+  ty: number;
+};
+
+type Edge = {
+  from: string;
+  to: string;
+};
+
+const nodes: NodePoint[] = [
+  { id: "n1", x: 120, y: 160, icon: "briefcase" },
+  { id: "n2", x: 330, y: 250, icon: "person" },
+  { id: "n3", x: 560, y: 170, icon: "resume" },
+  { id: "n4", x: 760, y: 290, icon: "school" },
+  { id: "n5", x: 1010, y: 190, icon: "pen" },
+  { id: "n6", x: 180, y: 470, icon: "person" },
+  { id: "n7", x: 360, y: 350, icon: "resume" },
+  { id: "n8", x: 580, y: 460, icon: "briefcase" },
+  { id: "n9", x: 780, y: 390, icon: "school" },
+  { id: "n10", x: 1030, y: 520, icon: "pen" },
+  { id: "n11", x: 270, y: 620, icon: "resume" },
+  { id: "n12", x: 420, y: 520, icon: "person" },
+  { id: "n13", x: 640, y: 610, icon: "briefcase" },
+  { id: "n14", x: 870, y: 540, icon: "school" },
+];
+
+const edges: Edge[] = [
+  { from: "n1", to: "n2" },
+  { from: "n2", to: "n3" },
+  { from: "n3", to: "n4" },
+  { from: "n4", to: "n5" },
+  { from: "n6", to: "n7" },
+  { from: "n7", to: "n8" },
+  { from: "n8", to: "n9" },
+  { from: "n9", to: "n10" },
+  { from: "n11", to: "n12" },
+  { from: "n12", to: "n13" },
+  { from: "n13", to: "n14" },
+  { from: "n2", to: "n7" },
+  { from: "n3", to: "n8" },
+  { from: "n4", to: "n9" },
+];
+
+const initialAnimatedNodes: AnimatedNode[] = nodes.map((node) => ({
+  ...node,
+  tx: node.x,
+  ty: node.y,
+}));
+
+function BriefcaseIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path
+        d="M-4 -4.5V-5.4C-4 -6.2 -3.3 -6.9 -2.5 -6.9h5c0.8 0 1.5 0.7 1.5 1.5v0.9"
+        strokeWidth="1.4"
+      />
+      <rect
+        x="-8"
+        y="-4.5"
+        width="16"
+        height="10.5"
+        rx="2"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M-8 0h16M-2 0.1v2h4v-2"
+        strokeWidth="1.4"
+      />
+    </g>
+  );
+}
+
+function PersonTieIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="0" cy="-4.5" r="3" strokeWidth="1.4" />
+      <path
+        d="M-5.5 6v-1.8c0-2.5 2.7-4.4 5.5-4.4s5.5 1.9 5.5 4.4V6"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M-1 -0.2L0 1.4 1 -0.2 0.3 2.5 1 5.3H-1L-0.3 2.5-1 -0.2Z"
+        strokeWidth="1.2"
+      />
+    </g>
+  );
+}
+
+function ResumeIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="-7" y="-7" width="14" height="14" rx="2" strokeWidth="1.4" />
+      <path d="M-3.8 -3.6h7.6M-3.8 -0.8h7.6M-3.8 2h5.8" strokeWidth="1.4" />
+    </g>
+  );
+}
+
+function PenIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M-5.4 5.6l2.2-0.4 7.4-7.4-1.8-1.8-7.4 7.4-0.4 2.2Z" strokeWidth="1.4" />
+      <path d="M1.6-4.6l1.8 1.8M-4.8 4.8l1.9-1.9" strokeWidth="1.4" />
+    </g>
+  );
+}
+
+function SchoolIcon() {
+  return (
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M-8 -1l8-4 8 4-8 4-8-4Z" strokeWidth="1.4" />
+      <path d="M-4 1.4V4c0 1.8 2.2 3.1 4 3.1s4-1.3 4-3.1V1.4" strokeWidth="1.4" />
+      <path d="M8-1v4.4" strokeWidth="1.4" />
+    </g>
+  );
+}
+
+export default function HomeLandingPage() {
+  const { user, isLoading } = useUser();
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [animatedNodes, setAnimatedNodes] = useState<AnimatedNode[]>(initialAnimatedNodes);
+  const rafRef = useRef<number | null>(null);
+  const targetMapRef = useRef<Map<string, AnimatedNode>>(
+    new Map(initialAnimatedNodes.map((node) => [node.id, node])),
+  );
+  const sceneRef = useRef<HTMLDivElement | null>(null);
+  const studentCtaHref = !isLoading && user ? "/student" : "/intake";
+
+  const targetNodes = useMemo(() => {
+    if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
+    const influenceRadius = 210;
+    const maxAttract = 0.9;
+
+    return nodes.map((node) => {
+      const dx = pointer.x - node.x;
+      const dy = pointer.y - node.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist >= influenceRadius) {
+        return { ...node, tx: node.x, ty: node.y };
+      }
+      const t = 1 - dist / influenceRadius;
+      const attract = Math.pow(t, 1.7) * maxAttract;
+      return {
+        ...node,
+        tx: node.x + dx * attract,
+        ty: node.y + dy * attract,
+      };
+    });
+  }, [pointer]);
+
+  useEffect(() => {
+    targetMapRef.current = new Map(targetNodes.map((node) => [node.id, node]));
+  }, [targetNodes]);
+
+  useEffect(() => {
+    const lerp = 0.14;
+    const epsilon = 0.025;
+
+    const tick = () => {
+      setAnimatedNodes((prev) => {
+        let changed = false;
+        const next = prev.map((node) => {
+          const target = targetMapRef.current.get(node.id);
+          if (!target) return node;
+
+          const dx = target.tx - node.tx;
+          const dy = target.ty - node.ty;
+          const ntx = Math.abs(dx) < epsilon ? target.tx : node.tx + dx * lerp;
+          const nty = Math.abs(dy) < epsilon ? target.ty : node.ty + dy * lerp;
+
+          if (ntx !== node.tx || nty !== node.ty) {
+            changed = true;
+            return { ...node, tx: ntx, ty: nty };
+          }
+          return node;
+        });
+
+        return changed ? next : prev;
+      });
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
+
+  const hoveredNodeId = useMemo(() => {
+    if (!pointer) return null;
+    let winner: { id: string; dist: number } | null = null;
+    for (const node of animatedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= 42 && (!winner || dist < winner.dist)) {
+        winner = { id: node.id, dist };
+      }
+    }
+    return winner?.id ?? null;
+  }, [pointer, animatedNodes]);
+
+  const nodeMap = useMemo(() => {
+    const map = new Map<string, (typeof animatedNodes)[number]>();
+    for (const node of animatedNodes) {
+      map.set(node.id, node);
+    }
+    return map;
+  }, [animatedNodes]);
+
+  const focusedNode = useMemo(() => {
+    if (!pointer) return null;
+    const blowupRadius = 160;
+    let winner: { id: string; intensity: number; dist: number } | null = null;
+    for (const node of animatedNodes) {
+      const dx = pointer.x - node.tx;
+      const dy = pointer.y - node.ty;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > blowupRadius) continue;
+      const normalized = Math.max(0, 1 - dist / blowupRadius);
+      const intensity = Math.pow(normalized, 1.85);
+      if (!winner || dist < winner.dist) {
+        winner = { id: node.id, intensity, dist };
+      }
+    }
+    return winner;
+  }, [pointer, animatedNodes]);
+
+  const nodeIntensity = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const node of animatedNodes) {
+      map.set(node.id, focusedNode?.id === node.id ? focusedNode.intensity : 0);
+    }
+    return map;
+  }, [animatedNodes, focusedNode]);
+
+  const backgroundStyle = useMemo(() => {
+    const slider = pointer ? (pointer.y / 800) * 100 : 50;
+    const stop1 = Math.max(0, slider - 28);
+    const stop2 = Math.min(100, slider + 10);
+    const stop3 = Math.min(100, slider + 34);
+
+    return {
+      backgroundImage: [
+        `linear-gradient(180deg, rgba(4,10,24,0.985) 0%, rgba(7,19,40,0.985) ${stop1}%, rgba(25,124,186,0.2) ${stop2}%, rgba(9,28,58,0.97) ${stop3}%, rgba(3,8,22,0.99) 100%)`,
+        "linear-gradient(180deg, rgba(56,189,248,0.08), rgba(34,197,94,0.05) 46%, rgba(2,132,199,0.07))",
+      ].join(","),
+      backgroundSize: "100% 100%, 100% 100%",
+      backgroundPosition: "center, center",
+    } as CSSProperties;
+  }, [pointer]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <Header variant="default" />
+    <div
+      ref={sceneRef}
+      className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden"
+      onMouseMove={(e) => {
+        const rect = sceneRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const viewW = 1200;
+        const viewH = 800;
+        const viewRatio = viewW / viewH;
+        const rectRatio = rect.width / rect.height;
 
-      {/* Hero Section */}
-      <main className="px-6 py-11">
-        <img
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
-          alt=""
-          className="sr-only"
-        />
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
-            Connect Students with
-            <span className="text-blue-600 block">Dream Opportunities</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-            InternsNow bridges the gap between talented students seeking their
-            first career opportunities and employers looking for fresh,
-            motivated talent.
-          </p>
+        let renderW = rect.width;
+        let renderH = rect.height;
+        let offsetX = 0;
+        let offsetY = 0;
 
-          {/* CTA Cards */}
-          <div className="grid md:grid-cols-1 gap-8 max-w-4xl mx-auto">
-            {/* Student Card */}
-            <Link href={studentCtaHref} className="group">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-500">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg
-                    className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+        if (rectRatio > viewRatio) {
+          renderW = rect.height * viewRatio;
+          offsetX = (rect.width - renderW) / 2;
+        } else {
+          renderH = rect.width / viewRatio;
+          offsetY = (rect.height - renderH) / 2;
+        }
+
+        const localX = Math.min(Math.max(e.clientX - rect.left - offsetX, 0), renderW);
+        const localY = Math.min(Math.max(e.clientY - rect.top - offsetY, 0), renderH);
+        const x = (localX / renderW) * viewW;
+        const y = (localY / renderH) * viewH;
+        setPointer({ x, y });
+      }}
+      onMouseLeave={() => setPointer(null)}
+    >
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
+        alt=""
+        className="absolute -left-[9999px] h-px w-px"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out opacity-80" style={backgroundStyle} />
+
+      <div className="pointer-events-none absolute inset-0 opacity-100">
+        <svg
+          className="h-full w-full"
+          viewBox="0 0 1200 800"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g fill="none">
+            {edges.map((edge) => {
+              const from = nodeMap.get(edge.from);
+              const to = nodeMap.get(edge.to);
+              if (!from || !to) return null;
+              const intensity = Math.max(
+                nodeIntensity.get(edge.from) ?? 0,
+                nodeIntensity.get(edge.to) ?? 0,
+              );
+              return (
+                <line
+                  key={`${edge.from}-${edge.to}`}
+                  x1={from.tx}
+                  y1={from.ty}
+                  x2={to.tx}
+                  y2={to.ty}
+                  stroke={`rgba(125,211,252,${0.24 + intensity * 0.42})`}
+                  strokeWidth={0.9 + intensity * 1.5}
+                  style={{ transition: "stroke-width 120ms linear, stroke 120ms linear" }}
+                />
+              );
+            })}
+          </g>
+          {animatedNodes.map((node) => {
+            const intensity = nodeIntensity.get(node.id) ?? 0;
+            const active = node.id === hoveredNodeId || intensity > 0.06;
+            const radius = 6 + intensity * 32;
+            const iconScale = 0.72 + intensity * 1.35;
+            return (
+              <g key={node.id}>
+                <circle
+                  cx={node.tx}
+                  cy={node.ty}
+                  r={radius}
+                  fill={active ? "rgba(30,170,240,0.48)" : "rgba(92,226,255,0.96)"}
+                  stroke={active ? "rgba(224,242,254,0.98)" : "transparent"}
+                  strokeWidth={active ? 1.5 : 0}
+                />
+                {active && (
+                  <g
+                    transform={`translate(${node.tx}, ${node.ty}) scale(${iconScale})`}
+                    className="text-sky-50"
+                    opacity={Math.min(1, 0.25 + intensity * 1.15)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  I&apos;m a Student
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Find internships and entry-level positions that match your
-                  skills and career goals.
+                    {node.icon === "briefcase" && <BriefcaseIcon />}
+                    {node.icon === "person" && <PersonTieIcon />}
+                    {node.icon === "resume" && <ResumeIcon />}
+                    {node.icon === "pen" && <PenIcon />}
+                    {node.icon === "school" && <SchoolIcon />}
+                  </g>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div className="relative z-10">
+        <Header variant="default" tone="dark" />
+
+        <main className="px-6 pb-16 pt-10">
+          <div className="max-w-6xl mx-auto">
+            <section className="rounded-3xl border border-sky-400/25 bg-slate-900/18 p-8 md:p-12 shadow-[0_0_60px_rgba(14,165,233,0.2)]">
+              <div className="max-w-4xl mx-auto text-center">
+                <p className="text-[1px] leading-[1px] text-slate-500">
+                  Connect Students with Dream Opportunities
                 </p>
-                <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold group-hover:bg-blue-700 transition-colors">
-                  Find Opportunities →
+                <p className="inline-flex items-center rounded-full border border-sky-300/40 bg-sky-950/60 px-4 py-1 text-sm text-sky-200">
+                  Tech Careers Start with Better Signals
+                </p>
+                <h1 className="mt-6 text-4xl md:text-6xl font-semibold tracking-tight">
+                  Network Into Your Next Career Move
+                </h1>
+                <p className="mt-6 text-lg md:text-xl text-slate-300 max-w-3xl mx-auto">
+                  InternsNow connects students to internships, entry-level
+                  roles, and high-value networking events in one focused path.
+                </p>
+
+                <div className="mt-10 flex justify-center">
+                  <Link
+                    href={studentCtaHref}
+                    className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:bg-sky-400"
+                  >
+                    Find Your Career Now.
+                  </Link>
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <Link
+                    href={studentCtaHref}
+                    className="text-sm text-slate-300 hover:text-slate-100 underline"
+                  >
+                    I&apos;m a Student
+                  </Link>
                 </div>
               </div>
-            </Link>
 
-            {/* Employer Card
-            <Link href="/employer" className="group">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 group-hover:border-green-300 dark:group-hover:border-green-500">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
+              <div className="mt-12 grid gap-4 md:grid-cols-3 text-left">
+                <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+                  <p className="text-sm text-sky-200">Career Discovery</p>
+                  <p className="mt-2 text-slate-300">
+                    Quick signal capture to surface relevant opportunities.
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">I'm an Employer</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Connect with motivated students and find the perfect candidates for your team.
-                </p>
-                <div className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold group-hover:bg-green-700 transition-colors">
-                  Find Talent →
+                <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+                  <p className="text-sm text-sky-200">Event Networking</p>
+                  <p className="mt-2 text-slate-300">
+                    Explore local events to meet mentors and recruiters.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+                  <p className="text-sm text-sky-200">Actionable Path</p>
+                  <p className="mt-2 text-slate-300">
+                    Move from discovery to application with less friction.
+                  </p>
                 </div>
               </div>
-            </Link>
-            */}
+            </section>
           </div>
+        </main>
 
-          {/*
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">10K+</div>
-              <div className="text-gray-600 dark:text-gray-300">Students Registered</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 mb-2">500+</div>
-              <div className="text-gray-600 dark:text-gray-300">Partner Companies</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">95%</div>
-              <div className="text-gray-600 dark:text-gray-300">Success Rate</div>
-            </div>
-          </div>
-          */}
-        </div>
-      </main>
+        <Footer variant="default" tone="dark" />
+      </div>
+      <style jsx>{`
+        .bg-wave-drift {
+          animation: gradientWaveDrift 8s ease-in-out infinite alternate;
+        }
 
-      <Footer variant="default" />
+        @keyframes gradientWaveDrift {
+          0% {
+            filter: saturate(96%) brightness(98%);
+            transform: translate3d(-0.5%, -0.25%, 0);
+          }
+          100% {
+            filter: saturate(100%) brightness(100%);
+            transform: translate3d(0.5%, 0.25%, 0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

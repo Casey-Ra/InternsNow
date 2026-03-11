@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import UserMenu from "@/components/UserMenu";
+import { AUTH0_LOGIN_URL, AUTH0_SIGNUP_URL } from "@/lib/authUrls";
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
+  tone?: "light" | "dark";
 }
 
-export default function Header({ variant }: HeaderProps) {
+export default function Header({ variant, tone = "light" }: HeaderProps) {
   const pathname = usePathname();
 
   const pathVariant = pathname?.startsWith("/student")
@@ -45,6 +47,15 @@ export default function Header({ variant }: HeaderProps) {
   };
 
   const colors = getThemeColors();
+  const isDarkTone = tone === "dark";
+
+  const logoTextClass = isDarkTone ? "text-slate-100" : "text-gray-900";
+  const navTextClass = isDarkTone
+    ? "text-slate-300 hover:text-slate-100"
+    : "text-gray-600 hover:text-gray-900";
+  const secondaryButtonClass = isDarkTone
+    ? "text-sky-200 hover:text-slate-100"
+    : colors.textButton;
 
   const getNavLinks = () => {
     switch (resolvedVariant) {
@@ -89,13 +100,6 @@ export default function Header({ variant }: HeaderProps) {
       : "/student"
     : "/";
 
-  const returnTo =
-    resolvedVariant === "student"
-      ? "/student"
-      : resolvedVariant === "employer"
-        ? "/employer"
-        : "/";
-
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -105,7 +109,7 @@ export default function Header({ variant }: HeaderProps) {
           >
             <span className="text-white font-bold text-sm">IN</span>
           </div>
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+          <span className={`text-2xl font-bold ${logoTextClass}`}>
             InternsNow
           </span>
         </Link>
@@ -115,7 +119,7 @@ export default function Header({ variant }: HeaderProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="text-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              className={`text-lg ${navTextClass}`}
             >
               {link.label}
             </Link>
@@ -133,16 +137,14 @@ export default function Header({ variant }: HeaderProps) {
           ) : (
             <>
               <a
-                href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
-                className={`px-4 py-2 ${colors.textButton} font-medium`}
+                href={AUTH0_LOGIN_URL}
+                className={`px-4 py-2 font-medium ${secondaryButtonClass}`}
               >
                 {buttonText.secondary}
               </a>
 
               <a
-                href={`/auth/login?screen_hint=signup&returnTo=${encodeURIComponent(
-                  returnTo,
-                )}`}
+                href={AUTH0_SIGNUP_URL}
                 className={`px-6 py-2 ${colors.button} text-white rounded-lg font-medium`}
               >
                 {buttonText.primary}
