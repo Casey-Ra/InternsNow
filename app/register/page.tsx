@@ -2,12 +2,9 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { AUTH0_SIGNUP_URL } from "@/lib/authUrls";
 
 export default function RegisterPage() {
-  const handleAuth0Signup = () => {
-    window.location.href = "/auth/login?screen_hint=signup";
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Header variant="student" />
@@ -22,12 +19,12 @@ export default function RegisterPage() {
             Create your account securely with Auth0
           </p>
 
-          <button
-            onClick={handleAuth0Signup}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          <a
+            href={AUTH0_SIGNUP_URL}
+            className="block w-full rounded-lg bg-blue-600 px-4 py-2 text-center font-semibold text-white transition-colors hover:bg-blue-700"
           >
             Sign Up with Auth0
-          </button>
+          </a>
 
           <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             Not ready to sign up?{" "}

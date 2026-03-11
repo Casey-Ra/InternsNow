@@ -2,34 +2,36 @@
 import React from 'react';
 import { Auth0Provider } from '@auth0/nextjs-auth0/client';
 import Header from '../../components/Header';
+import { AUTH0_LOGIN_URL, AUTH0_SIGNUP_URL } from '../../lib/authUrls';
+
+type AuthUser = {
+  sub: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+};
 
 /**
- * NOTE: Header derives its nav variant from usePathname().  In component
- * tests the pathname resolves to '/' so `resolvedVariant` is always
- * "default".  Student-nav behaviour is verified in the E2E suite
- * (navigation.cy.ts, fluency-test.cy.ts, etc.).
+ * Header derives its nav variant from usePathname(). In component tests the
+ * pathname resolves to '/', so resolvedVariant stays "default".
  */
-const mountHeader = () =>
+const mountHeader = (user?: AuthUser) =>
   cy.mount(
-    <Auth0Provider>
+    <Auth0Provider user={user}>
       <Header variant="default" />
     </Auth0Provider>
   );
 
-const mountDarkHeader = () =>
+const mountDarkHeader = (user?: AuthUser) =>
   cy.mount(
-    <Auth0Provider>
+    <Auth0Provider user={user}>
       <Header variant="default" tone="dark" />
     </Auth0Provider>
   );
 
 describe('Header Component', () => {
-  // ─── Unauthenticated – default variant ────────────────────────────────────
-  describe('default variant – unauthenticated', () => {
+  describe('default variant - unauthenticated', () => {
     beforeEach(() => {
-      cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} }).as(
-        'authMe'
-      );
       mountHeader();
     });
 
@@ -62,58 +64,41 @@ describe('Header Component', () => {
     it('Sign In link points to Auth0 login', () => {
       cy.get('header')
         .contains('Sign In')
-        .should('have.attr', 'href')
-        .and('include', '/auth/login');
+        .should('have.attr', 'href', AUTH0_LOGIN_URL);
     });
 
-    it('Get Started link carries signup hint', () => {
+    it('Get Started link points to the direct Auth0 URL', () => {
       cy.get('header')
         .contains('Get Started')
-        .should('have.attr', 'href')
-        .and('include', 'screen_hint=signup');
+        .should('have.attr', 'href', AUTH0_SIGNUP_URL);
     });
 
     it('logo link points to /', () => {
       cy.get('header').find('a[href="/"]').first().should('be.visible');
     });
 
-    it('does not show loading placeholder after auth check completes', () => {
-      cy.wait('@authMe');
+    it('does not show the loading placeholder', () => {
       cy.get('header').should('not.contain.text', '...');
     });
   });
 
-  // ─── Authenticated user ────────────────────────────────────────────────────
   describe('authenticated user', () => {
     beforeEach(() => {
-      cy.intercept('GET', '/api/auth/me', {
-        statusCode: 200,
-        body: {
-          sub: 'auth0|test123',
-          email: 'student@test.edu',
-          name: 'Test Student',
-          picture: 'https://example.com/avatar.png',
-        },
-      }).as('authMe');
-      mountHeader();
-    });
-
-    it('hides Sign In / Get Started once user data loads', () => {
-      cy.wait('@authMe');
-      cy.get('header').contains('Sign In').should('not.exist');
-      cy.get('header').contains('Get Started').should('not.exist');
+      mountHeader({
+        sub: 'auth0|test123',
+        email: 'student@test.edu',
+        name: 'Test Student',
+        picture: 'https://example.com/avatar.png',
+      });
     });
 
     it('does not show the loading placeholder after auth resolves', () => {
-      cy.wait('@authMe');
       cy.get('header').should('not.contain.text', '...');
     });
   });
 
-  // ─── Nav link href values ──────────────────────────────────────────────────
   describe('navigation link href values', () => {
     beforeEach(() => {
-      cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} });
       mountHeader();
     });
 
@@ -146,18 +131,13 @@ describe('Header Component', () => {
     });
   });
 
-  // ─── Accessibility ─────────────────────────────────────────────────────────
   describe('dark tone', () => {
     beforeEach(() => {
-      cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} }).as(
-        'authMe'
-      );
       mountDarkHeader();
     });
 
     it('uses high-contrast text classes for dark surfaces', () => {
-      cy.wait('@authMe');
-      cy.get('header').contains('InternsNow').should('have.class', 'text-slate-100');
+      cy.get('header span').contains('InternsNow').should('have.class', 'text-slate-100');
       cy.get('header').contains('Quick Match').should('have.class', 'text-slate-300');
       cy.get('header').contains('Sign In').should('have.class', 'text-sky-200');
     });
@@ -165,7 +145,6 @@ describe('Header Component', () => {
 
   describe('accessibility', () => {
     beforeEach(() => {
-      cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} });
       mountHeader();
     });
 

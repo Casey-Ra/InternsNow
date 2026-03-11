@@ -1,8 +1,10 @@
+import { AUTH0_LOGIN_URL } from '../../lib/authUrls';
+
 describe('Authentication Flow', () => {
   describe('Unauthenticated User', () => {
     it('should show login button on home page', () => {
       cy.visit('/');
-      cy.get('a[href^="/auth/login"]').first().should('be.visible');
+      cy.get(`a[href="${AUTH0_LOGIN_URL}"]`).first().should('be.visible');
     });
 
     it('should redirect to login when accessing protected routes', () => {
@@ -12,7 +14,7 @@ describe('Authentication Flow', () => {
         followRedirect: false,
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
-        expect(response.headers.location).to.include('/auth/login');
+        expect(response.headers.location).to.include('auth0.com/u/login');
       });
     });
   });
@@ -61,7 +63,7 @@ describe('Authentication Flow', () => {
         followRedirect: false,
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
-        expect(response.headers.location).to.include('/auth/login');
+        expect(response.headers.location).to.include('auth0.com/u/login');
       });
     });
   });
