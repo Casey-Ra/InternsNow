@@ -5,7 +5,6 @@ import {
   type IntakeInterest,
   defaultIntakeInterests,
 } from "@/app/lib/utils/intakeRecommendations";
-import { AUTH0_SIGNUP_URL } from "@/lib/authUrls";
 
 type QuickMatchQuizProps = {
   initialLocation: string;
@@ -305,7 +304,7 @@ export default function QuickMatchQuiz({
             )}
 
             <a
-              href={AUTH0_SIGNUP_URL}
+              href="/auth/login?screen_hint=signup&returnTo=%2Fstudent"
               className="rounded-lg border border-blue-200 px-5 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
             >
               Create Full Account

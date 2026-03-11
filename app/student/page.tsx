@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { auth0 } from "@/lib/auth0";
-import { AUTH0_LOGIN_URL } from "@/lib/authUrls";
 import { redirect } from "next/navigation";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -28,7 +27,7 @@ export default async function StudentLandingPage() {
   const session = await auth0.getSession();
 
   if (!session) {
-    redirect(AUTH0_LOGIN_URL);
+    redirect("/auth/login");
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
