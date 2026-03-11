@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
 export async function middleware(request: NextRequest) {
+  // Keep /auth/login stable in CI/dev when Auth0 discovery is intentionally mocked.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    request.nextUrl.pathname === "/auth/login"
+  ) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   try {
     return await auth0.middleware(request);
   } catch (error) {

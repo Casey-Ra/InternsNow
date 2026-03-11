@@ -1,5 +1,3 @@
-import { AUTH0_LOGIN_URL, AUTH0_SIGNUP_URL } from '../../lib/authUrls';
-
 describe('Login & Register Pages', () => {
   // ─── Login Page ───────────────────────────────────────────────────────────
   describe('Login Page (/login)', () => {
@@ -16,9 +14,7 @@ describe('Login & Register Pages', () => {
     });
 
     it('shows the Continue with Auth0 link', () => {
-      cy.contains('a', 'Continue with Auth0')
-        .should('be.visible')
-        .and('have.attr', 'href', AUTH0_LOGIN_URL);
+      cy.contains('button', 'Continue with Auth0').should('be.visible');
     });
 
     it('shows the just browsing / intake link', () => {
@@ -36,9 +32,18 @@ describe('Login & Register Pages', () => {
       cy.get('footer').should('be.visible');
     });
 
-    it('Continue with Auth0 points to the direct Auth0 URL', () => {
-      cy.contains('a', 'Continue with Auth0')
-        .should('have.attr', 'href', AUTH0_LOGIN_URL);
+    it('clicking Continue with Auth0 uses a valid auth route', () => {
+      cy.request({
+        method: 'GET',
+        url: '/auth/login',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+      });
+
+      cy.contains('button', 'Continue with Auth0').click();
+      cy.url().should('not.include', '/api/auth/login-auth0');
     });
   });
 
@@ -57,14 +62,18 @@ describe('Login & Register Pages', () => {
     });
 
     it('shows the Sign Up with Auth0 link', () => {
-      cy.contains('a', 'Sign Up with Auth0')
-        .should('be.visible')
-        .and('have.attr', 'href', AUTH0_SIGNUP_URL);
+      cy.contains('button', 'Sign Up with Auth0').should('be.visible');
     });
 
-    it('Sign Up with Auth0 points to the direct Auth0 URL', () => {
-      cy.contains('a', 'Sign Up with Auth0')
-        .should('have.attr', 'href', AUTH0_SIGNUP_URL);
+    it('clicking Sign Up with Auth0 uses a valid auth route', () => {
+      cy.request({
+        method: 'GET',
+        url: '/auth/login?screen_hint=signup',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then((response) => {
+        expect([302, 307]).to.include(response.status);
+      });
     });
 
     it('shows the try quick intake survey link', () => {

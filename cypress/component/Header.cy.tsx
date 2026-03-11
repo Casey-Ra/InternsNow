@@ -2,7 +2,6 @@
 import React from 'react';
 import { Auth0Provider } from '@auth0/nextjs-auth0/client';
 import Header from '../../components/Header';
-import { AUTH0_LOGIN_URL, AUTH0_SIGNUP_URL } from '../../lib/authUrls';
 
 type AuthUser = {
   sub: string;
@@ -64,13 +63,13 @@ describe('Header Component', () => {
     it('Sign In link points to Auth0 login', () => {
       cy.get('header')
         .contains('Sign In')
-        .should('have.attr', 'href', AUTH0_LOGIN_URL);
+        .should('have.attr', 'href', '/auth/login?returnTo=%2F');
     });
 
-    it('Get Started link points to the direct Auth0 URL', () => {
+    it('Get Started link carries signup hint', () => {
       cy.get('header')
         .contains('Get Started')
-        .should('have.attr', 'href', AUTH0_SIGNUP_URL);
+        .should('have.attr', 'href', '/auth/login?screen_hint=signup&returnTo=%2F');
     });
 
     it('logo link points to /', () => {

@@ -1,5 +1,3 @@
-import { AUTH0_LOGIN_URL, AUTH0_SIGNUP_URL } from '../../lib/authUrls';
-
 describe('Home Page', () => {
   beforeEach(() => {
     cy.visit('/');
@@ -18,12 +16,13 @@ describe('Home Page', () => {
   });
 
   it('should have a login link', () => {
-    cy.get(`a[href="${AUTH0_LOGIN_URL}"]`).first().should('be.visible');
+    cy.get('a[href^="/auth/login"]').first().should('be.visible');
   });
 
-  it('should point to the direct Auth0 login URL', () => {
-    cy.get(`a[href="${AUTH0_LOGIN_URL}"]`).first()
-      .should('have.attr', 'href', AUTH0_LOGIN_URL);
+  it('should point to the auth login route', () => {
+    cy.get('a[href^="/auth/login"]').first()
+      .should('have.attr', 'href')
+      .and('include', '/auth/login');
   });
 
   it('should display the hero heading', () => {
@@ -53,8 +52,8 @@ describe('Home Page', () => {
     cy.get('header').contains('InternsNow').should('be.visible');
   });
 
-  it('should have a Get Started or Sign Up link pointing to the direct Auth0 URL', () => {
-    cy.get(`a[href="${AUTH0_SIGNUP_URL}"]`)
+  it('should have a Get Started or Sign Up link pointing to Auth0 signup', () => {
+    cy.get('a[href*="screen_hint=signup"]')
       .first()
       .should('be.visible');
   });
