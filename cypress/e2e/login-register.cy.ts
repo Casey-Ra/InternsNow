@@ -110,7 +110,7 @@ describe('Login & Register Pages', () => {
         followRedirect: false,
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
-        expect(response.headers.location).to.include('auth0.com/u/login');
+        expect(response.headers.location).to.include('/auth/login');
       });
     });
   });
