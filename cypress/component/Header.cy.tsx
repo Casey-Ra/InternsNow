@@ -16,6 +16,13 @@ const mountHeader = () =>
     </Auth0Provider>
   );
 
+const mountDarkHeader = () =>
+  cy.mount(
+    <Auth0Provider>
+      <Header variant="default" tone="dark" />
+    </Auth0Provider>
+  );
+
 describe('Header Component', () => {
   // ─── Unauthenticated – default variant ────────────────────────────────────
   describe('default variant – unauthenticated', () => {
@@ -140,6 +147,22 @@ describe('Header Component', () => {
   });
 
   // ─── Accessibility ─────────────────────────────────────────────────────────
+  describe('dark tone', () => {
+    beforeEach(() => {
+      cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} }).as(
+        'authMe'
+      );
+      mountDarkHeader();
+    });
+
+    it('uses high-contrast text classes for dark surfaces', () => {
+      cy.wait('@authMe');
+      cy.get('header').contains('InternsNow').should('have.class', 'text-slate-100');
+      cy.get('header').contains('Quick Match').should('have.class', 'text-slate-300');
+      cy.get('header').contains('Sign In').should('have.class', 'text-sky-200');
+    });
+  });
+
   describe('accessibility', () => {
     beforeEach(() => {
       cy.intercept('GET', '/api/auth/me', { statusCode: 404, body: {} });

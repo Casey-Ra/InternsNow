@@ -86,6 +86,19 @@ describe('Footer Component', () => {
     });
   });
 
+  describe('dark tone', () => {
+    beforeEach(() => {
+      cy.mount(<Footer variant="default" tone="dark" />);
+    });
+
+    it('uses high-contrast text classes for dark surfaces', () => {
+      cy.get('footer').contains('InternsNow').should('have.class', 'text-slate-100');
+      cy.get('footer').contains('About Us').should('have.class', 'hover:text-sky-200');
+      cy.get('footer').contains('Connecting students with their dream internships and first jobs.')
+        .should('have.class', 'text-slate-300');
+    });
+  });
+
   describe('accessibility', () => {
     it('renders accessible links with text content', () => {
       cy.mount(<Footer variant="default" />);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -130,14 +131,15 @@ function SchoolIcon() {
 }
 
 export default function HomeLandingPage() {
+  const { user, isLoading } = useUser();
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const [animatedNodes, setAnimatedNodes] = useState<AnimatedNode[]>(initialAnimatedNodes);
   const rafRef = useRef<number | null>(null);
-  const targetNodesRef = useRef<AnimatedNode[]>(initialAnimatedNodes);
   const targetMapRef = useRef<Map<string, AnimatedNode>>(
     new Map(initialAnimatedNodes.map((node) => [node.id, node])),
   );
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const studentCtaHref = !isLoading && user ? "/student" : "/intake";
 
   const targetNodes = useMemo(() => {
     if (!pointer) return nodes.map((node) => ({ ...node, tx: node.x, ty: node.y }));
@@ -162,7 +164,6 @@ export default function HomeLandingPage() {
   }, [pointer]);
 
   useEffect(() => {
-    targetNodesRef.current = targetNodes;
     targetMapRef.current = new Map(targetNodes.map((node) => [node.id, node]));
   }, [targetNodes]);
 
@@ -371,7 +372,7 @@ export default function HomeLandingPage() {
       </div>
 
       <div className="relative z-10">
-        <Header variant="default" />
+        <Header variant="default" tone="dark" />
 
         <main className="px-6 pb-16 pt-10">
           <div className="max-w-6xl mx-auto">
@@ -393,14 +394,17 @@ export default function HomeLandingPage() {
 
                 <div className="mt-10 flex justify-center">
                   <Link
-                    href="/intake"
+                    href={studentCtaHref}
                     className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-8 py-4 text-lg font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:bg-sky-400"
                   >
                     Find Your Career Now.
                   </Link>
                 </div>
                 <div className="mt-4 flex justify-center">
-                  <Link href="/intake" className="text-sm text-slate-300 hover:text-slate-100 underline">
+                  <Link
+                    href={studentCtaHref}
+                    className="text-sm text-slate-300 hover:text-slate-100 underline"
+                  >
                     I&apos;m a Student
                   </Link>
                 </div>
@@ -430,7 +434,7 @@ export default function HomeLandingPage() {
           </div>
         </main>
 
-        <Footer variant="default" />
+        <Footer variant="default" tone="dark" />
       </div>
       <style jsx>{`
         .bg-wave-drift {

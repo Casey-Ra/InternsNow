@@ -26,20 +26,26 @@ describe('Home Page', () => {
   });
 
   it('should display the hero heading', () => {
-    cy.contains('Connect Students with').should('be.visible');
-    cy.contains('Dream Opportunities').should('be.visible');
+    cy.contains('Network Into Your Next Career Move').should('be.visible');
+    cy.contains(
+      'InternsNow connects students to internships, entry-level roles, and high-value networking events in one focused path.'
+    ).should('be.visible');
   });
 
-  it('should display the student CTA card', () => {
+  it('should display the student CTA links', () => {
+    cy.contains('Find Your Career Now.').should('be.visible');
     cy.contains("I'm a Student").should('be.visible');
   });
 
-  it('student CTA card links to /intake when unauthenticated', () => {
-    // Unauthenticated users get directed to /intake
+  it('student CTA links to intake or the student dashboard depending on auth state', () => {
     cy.contains("I'm a Student")
+      .should('have.attr', 'href')
+      .and('match', /\/(intake|student)$/);
+
+    cy.contains('Find Your Career Now.')
       .closest('a')
       .should('have.attr', 'href')
-      .and('match', /\/(intake|student)/);
+      .and('match', /\/(intake|student)$/);
   });
 
   it('should display the InternsNow brand in the header', () => {
@@ -50,6 +56,11 @@ describe('Home Page', () => {
     cy.get('a[href*="screen_hint=signup"]')
       .first()
       .should('be.visible');
+  });
+
+  it('should render readable header and footer text on the dark landing page', () => {
+    cy.get('header').contains('InternsNow').should('have.class', 'text-slate-100');
+    cy.get('footer').contains('InternsNow').should('have.class', 'text-slate-100');
   });
 
   it('should have a main element', () => {

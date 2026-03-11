@@ -2,10 +2,18 @@ import Link from "next/link";
 
 interface FooterProps {
   variant?: "student" | "employer" | "default";
+  tone?: "light" | "dark";
 }
 
-export default function Footer({ variant = "default" }: FooterProps) {
+export default function Footer({
+  variant = "default",
+  tone = "light",
+}: FooterProps) {
   const getThemeColor = () => {
+    if (tone === "dark") {
+      return "hover:text-sky-200";
+    }
+
     switch (variant) {
       case "student":
         return "hover:text-blue-600";
@@ -17,6 +25,14 @@ export default function Footer({ variant = "default" }: FooterProps) {
   };
 
   const hoverColor = getThemeColor();
+  const isDarkTone = tone === "dark";
+  const borderClass = isDarkTone ? "border-slate-800" : "border-gray-200";
+  const headingClass = isDarkTone ? "text-slate-100" : "text-gray-900";
+  const bodyClass = isDarkTone ? "text-slate-300" : "text-gray-600";
+  const disabledClass = isDarkTone
+    ? "text-slate-500 cursor-not-allowed"
+    : "text-gray-400 cursor-not-allowed";
+  const copyrightClass = isDarkTone ? "text-slate-400" : "text-gray-600";
 
   const getLinks = () => {
     const baseLinks = {
@@ -69,7 +85,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
         : "Company";
 
   return (
-    <footer className="px-6 py-8 mt-16 border-t border-gray-200 dark:border-gray-700">
+    <footer className={`px-6 py-8 mt-16 border-t ${borderClass}`}>
       <div className="max-w-7xl mx-auto">
         <div className={`grid ${links.specific.length > 0 ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-8`}>
           <div>
@@ -77,11 +93,11 @@ export default function Footer({ variant = "default" }: FooterProps) {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">IN</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className={`text-xl font-bold ${headingClass}`}>
                 InternsNow
               </span>
             </Link>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className={bodyClass}>
               {variant === "employer"
                 ? "The premier platform for connecting employers with exceptional student talent."
                 : "Connecting students with their dream internships and first jobs."}
@@ -90,14 +106,14 @@ export default function Footer({ variant = "default" }: FooterProps) {
 
           {links.specific.length > 0 && (
             <div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4">
+              <h3 className={`font-bold mb-4 ${headingClass}`}>
                 {specificTitle}
               </h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+              <ul className={`space-y-2 ${bodyClass}`}>
                 {links.specific.map((link) => (
                   <li key={link.label}>
                     {link.href === "#" ? (
-                      <span className="text-gray-400 dark:text-gray-500 cursor-not-allowed">
+                      <span className={disabledClass}>
                         {link.label}
                       </span>
                     ) : (
@@ -112,10 +128,10 @@ export default function Footer({ variant = "default" }: FooterProps) {
           )}
 
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-4">
+            <h3 className={`font-bold mb-4 ${headingClass}`}>
               Company
             </h3>
-            <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+            <ul className={`space-y-2 ${bodyClass}`}>
               {links.company.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={hoverColor}>
@@ -127,10 +143,10 @@ export default function Footer({ variant = "default" }: FooterProps) {
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-4">
+            <h3 className={`font-bold mb-4 ${headingClass}`}>
               Support
             </h3>
-            <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+            <ul className={`space-y-2 ${bodyClass}`}>
               {links.support.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className={hoverColor}>
@@ -142,7 +158,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+        <div className={`border-t mt-8 pt-8 text-center ${borderClass} ${copyrightClass}`}>
           <p>&copy; 2025 InternsNow. All rights reserved.</p>
         </div>
       </div>
