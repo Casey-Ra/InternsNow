@@ -2,9 +2,10 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginPageInner() {
   const searchParams = useSearchParams();
   const auth0Unavailable = searchParams.get("auth0") === "unavailable";
 
@@ -59,5 +60,13 @@ export default function LoginPage() {
 
       <Footer variant="student" />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
   );
 }
