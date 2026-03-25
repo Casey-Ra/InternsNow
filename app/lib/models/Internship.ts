@@ -10,6 +10,9 @@ export interface Internship {
 
 export type InternshipSyncStatus = "created" | "updated" | "unchanged";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 let schemaEnsured = false;
 
 async function ensureInternshipSchema() {
@@ -83,6 +86,10 @@ export const createInternship = async (
 
 export const findInternshipById = async (id: string): Promise<Internship | null> => {
   try {
+    if (!UUID_RE.test(id)) {
+      return null;
+    }
+
     await ensureInternshipSchema();
     const result = await pool.query(
       "SELECT id, company_name, job_description, url, created_at FROM internships WHERE id = $1",

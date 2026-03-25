@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { relationExists } from "@/app/lib/dbRelations";
+
+const institutionsRelation = '"INSTITUTION"';
 
 export async function GET(req: Request) {
   try {
@@ -10,10 +13,14 @@ export async function GET(req: Request) {
       return NextResponse.json([]);
     }
 
+    if (!(await relationExists(institutionsRelation))) {
+      return NextResponse.json([]);
+    }
+
     const result = await pool.query(
       `
       SELECT institution_id AS id, name
-      FROM "INSTITUTION"
+      FROM ${institutionsRelation}
       WHERE name ILIKE $1
       ORDER BY name
       LIMIT 20
