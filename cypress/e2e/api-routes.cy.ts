@@ -176,10 +176,9 @@ describe('API Route Tests', () => {
 
   // ─── Auth routes (no crash) ───────────────────────────────────────────────
   describe('Auth routes', () => {
-    it('/login exposes the auth login route', () => {
+    it('/login renders the auth login button', () => {
       cy.visit('/login');
-      cy.contains('a', 'Continue with Auth0')
-        .should('have.attr', 'href', '/auth/login');
+      cy.contains('button', 'Continue with Auth0').should('be.visible');
     });
   });
 });

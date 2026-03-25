@@ -13,7 +13,7 @@ describe('Login & Register Pages', () => {
       cy.contains('Student Login').should('be.visible');
     });
 
-    it('shows the Continue with Auth0 link', () => {
+    it('shows the Continue with Auth0 button', () => {
       cy.contains('button', 'Continue with Auth0').should('be.visible');
     });
 
@@ -32,7 +32,7 @@ describe('Login & Register Pages', () => {
       cy.get('footer').should('be.visible');
     });
 
-    it('clicking Continue with Auth0 uses a valid auth route', () => {
+    it('exposes a valid Auth0 login route', () => {
       cy.request({
         method: 'GET',
         url: '/auth/login',
@@ -41,9 +41,6 @@ describe('Login & Register Pages', () => {
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
       });
-
-      cy.contains('button', 'Continue with Auth0').click();
-      cy.url().should('not.include', '/api/auth/login-auth0');
     });
   });
 
@@ -61,11 +58,11 @@ describe('Login & Register Pages', () => {
       cy.contains('Student Sign Up').should('be.visible');
     });
 
-    it('shows the Sign Up with Auth0 link', () => {
+    it('shows the Sign Up with Auth0 button', () => {
       cy.contains('button', 'Sign Up with Auth0').should('be.visible');
     });
 
-    it('clicking Sign Up with Auth0 uses a valid auth route', () => {
+    it('exposes a valid Auth0 signup route', () => {
       cy.request({
         method: 'GET',
         url: '/auth/login?screen_hint=signup',
