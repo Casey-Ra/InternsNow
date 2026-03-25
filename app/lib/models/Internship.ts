@@ -82,14 +82,19 @@ export const createInternship = async (
 };
 
 export const findInternshipById = async (id: string): Promise<Internship | null> => {
-  await ensureInternshipSchema();
-  const result = await pool.query(
-    "SELECT id, company_name, job_description, url, created_at FROM internships WHERE id = $1",
-    [id]
-  );
-  return result.rows[0]
-    ? mapInternshipRow(result.rows[0] as Record<string, unknown>)
-    : null;
+  try {
+    await ensureInternshipSchema();
+    const result = await pool.query(
+      "SELECT id, company_name, job_description, url, created_at FROM internships WHERE id = $1",
+      [id]
+    );
+    return result.rows[0]
+      ? mapInternshipRow(result.rows[0] as Record<string, unknown>)
+      : null;
+  } catch (err) {
+    console.error("Error fetching internship by id:", err);
+    return null;
+  }
 };
 
 export const getAllInternships = async (): Promise<Internship[]> => {
