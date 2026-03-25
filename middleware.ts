@@ -2,11 +2,24 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
+function hasAuth0Config() {
+  const requiredValues = [
+    process.env.APP_BASE_URL,
+    process.env.AUTH0_DOMAIN,
+    process.env.AUTH0_CLIENT_ID,
+    process.env.AUTH0_CLIENT_SECRET,
+    process.env.AUTH0_SECRET,
+  ];
+
+  return requiredValues.every((value) => typeof value === "string" && value.trim());
+}
+
 export async function middleware(request: NextRequest) {
-  // Keep /auth/login stable in CI/dev when Auth0 discovery is intentionally mocked.
+  // Keep /auth/login stable in CI/dev only when Auth0 is intentionally unavailable.
   if (
     process.env.NODE_ENV !== "production" &&
-    request.nextUrl.pathname === "/auth/login"
+    request.nextUrl.pathname === "/auth/login" &&
+    !hasAuth0Config()
   ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

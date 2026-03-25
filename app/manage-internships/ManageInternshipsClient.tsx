@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export interface InternshipItem {
@@ -11,13 +11,29 @@ export interface InternshipItem {
   created_at: string;
 }
 
-export default function ManageInternshipsClient({ initialData }: { initialData: InternshipItem[] }) {
+export default function ManageInternshipsClient({
+  initialData,
+  initialGreenhouseBoards,
+}: {
+  initialData: InternshipItem[];
+  initialGreenhouseBoards: string;
+}) {
   const [items, setItems] = useState<InternshipItem[]>(initialData || []);
   const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [greenhouseBoards, setGreenhouseBoards] = useState(initialGreenhouseBoards);
+  const [syncingGreenhouse, setSyncingGreenhouse] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setItems(initialData || []);
+  }, [initialData]);
 
   const startEdit = (id: string) => {
     setEditingId(id);
@@ -25,6 +41,73 @@ export default function ManageInternshipsClient({ initialData }: { initialData: 
   };
 
   const cancelEdit = () => setEditingId(null);
+
+  const handleGreenhouseSync = async () => {
+    setError(null);
+    setSyncFeedback(null);
+    setSyncingGreenhouse(true);
+
+    try {
+      const res = await fetch("/api/internships/greenhouse/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          boardsText: greenhouseBoards.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncFeedback({
+          tone: "error",
+          text: data?.error || "Failed to sync Greenhouse jobs.",
+        });
+        return;
+      }
+
+      const failedBoards = Array.isArray(data?.boards)
+        ? data.boards.filter((board: { error?: string }) => Boolean(board.error))
+        : [];
+      const totals = data?.totals ?? {};
+      const summary = [
+        `${totals.created ?? 0} created`,
+        `${totals.updated ?? 0} updated`,
+        `${totals.unchanged ?? 0} unchanged`,
+        `${totals.matched ?? 0} matched`,
+      ].join(", ");
+      const failures =
+        failedBoards.length > 0
+          ? ` Failed boards: ${failedBoards
+              .map(
+                (board: {
+                  token: string;
+                  companyName: string;
+                  error?: string;
+                }) =>
+                  `${board.companyName || board.token} (${board.error ?? "unknown error"})`,
+              )
+              .join("; ")}`
+          : "";
+
+      setSyncFeedback({
+        tone: "success",
+        text: `${data?.msg || "Greenhouse sync completed."} ${summary}.${failures}`,
+      });
+
+      try {
+        router.refresh();
+      } catch {
+        window.location.reload();
+      }
+    } catch (e: any) {
+      setSyncFeedback({
+        tone: "error",
+        text: e?.message || "Unexpected Greenhouse sync error",
+      });
+    } finally {
+      setSyncingGreenhouse(false);
+    }
+  };
 
   const handleSave = async (id: string) => {
     setError(null);
@@ -113,6 +196,50 @@ export default function ManageInternshipsClient({ initialData }: { initialData: 
   return (
     <div className="space-y-4">
       {error && <div className="text-sm text-red-600">{error}</div>}
+
+      <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/20">
+        <div className="flex flex-col gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Import from Greenhouse
+            </h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+              Use one board per line in the format <code>board_token|Company Name</code>.
+              Leave it as-is to use <code>GREENHOUSE_BOARDS</code>. Internship-style
+              roles are filtered with <code>GREENHOUSE_KEYWORDS</code>.
+            </p>
+          </div>
+
+          <textarea
+            className="min-h-28 w-full rounded border border-emerald-200 bg-white p-3 font-mono text-sm dark:border-emerald-800 dark:bg-gray-900"
+            placeholder={"openai|OpenAI\nstripe|Stripe"}
+            value={greenhouseBoards}
+            onChange={(event) => setGreenhouseBoards(event.target.value)}
+          />
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              disabled={syncingGreenhouse}
+              onClick={handleGreenhouseSync}
+              className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {syncingGreenhouse ? "Syncing..." : "Sync Greenhouse"}
+            </button>
+
+            {syncFeedback && (
+              <p
+                className={`text-sm ${
+                  syncFeedback.tone === "error"
+                    ? "text-red-600"
+                    : "text-emerald-700 dark:text-emerald-300"
+                }`}
+              >
+                {syncFeedback.text}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {items.length === 0 && <div className="text-sm text-gray-600">No internships found.</div>}
 

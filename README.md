@@ -60,6 +60,7 @@ Your app will be available at:
 
 - `POST /api/auth/register` - Create new user account
 - `POST /api/auth/login` - User authentication
+- `POST /api/internships/greenhouse/sync` - Import internship-style postings from configured Greenhouse boards
 
 ## Tech Stack
 
@@ -128,6 +129,27 @@ npm run test:watch # Run tests in watch mode
 npm run lint       # Run ESLint
 npm run type-check # Run TypeScript type checking
 ```
+
+### Greenhouse Import
+
+Internship-style postings can be pulled from public Greenhouse job boards on the Manage Internships page.
+
+Add this to `.env.local`:
+
+```env
+GREENHOUSE_BOARDS=stripe|Stripe;datadog|Datadog;figma|Figma;cloudflare|Cloudflare;robinhood|Robinhood;jumptrading|Jump Trading;c3iot|C3 AI;flexport|Flexport;coinbase|Coinbase;klaviyo|Klaviyo;indeedflex|Indeed Flex
+GREENHOUSE_KEYWORDS=intern,internship,co-op,apprentice,apprenticeship,fellowship
+CRON_SECRET=replace_with_a_long_random_string
+```
+
+Notes:
+- Use one Greenhouse board per entry in the format `board_token|Company Name`
+- Separate entries with `;`
+- If `GREENHOUSE_BOARDS` is unset, the app falls back to the starter set above
+- Only postings matching the keyword list are imported
+- Existing records are deduped by URL and refreshed when the Greenhouse description changes
+- A Vercel Cron job calls `/api/cron/greenhouse-sync` once per day at `10:00 UTC` (`6:00 AM EDT` / `5:00 AM EST`)
+- Set `CRON_SECRET` in Vercel so the scheduled route accepts the request
 
 ### CI/CD Pipeline
 
