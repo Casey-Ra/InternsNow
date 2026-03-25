@@ -2,8 +2,12 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const auth0Unavailable = searchParams.get("auth0") === "unavailable";
+
   const handleAuth0Login = async () => {
     window.location.href = "/auth/login";
   };
@@ -21,6 +25,14 @@ export default function LoginPage() {
           <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
             Sign in securely using Auth0
           </p>
+
+          {auth0Unavailable && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+              Auth0 is unavailable for this deployment. On Vercel previews, this
+              usually means the Preview environment variables or Auth0 callback/logout
+              URLs are not configured for the preview URL yet.
+            </div>
+          )}
 
           <button
             onClick={handleAuth0Login}
@@ -49,4 +61,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

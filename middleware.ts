@@ -4,7 +4,6 @@ import { auth0 } from "@/lib/auth0";
 
 function hasAuth0Config() {
   const requiredValues = [
-    process.env.APP_BASE_URL,
     process.env.AUTH0_DOMAIN,
     process.env.AUTH0_CLIENT_ID,
     process.env.AUTH0_CLIENT_SECRET,
@@ -15,13 +14,13 @@ function hasAuth0Config() {
 }
 
 export async function middleware(request: NextRequest) {
+  const isAuthRoute = request.nextUrl.pathname.startsWith("/auth/");
+
   // Keep /auth/login stable in CI/dev only when Auth0 is intentionally unavailable.
-  if (
-    process.env.NODE_ENV !== "production" &&
-    request.nextUrl.pathname === "/auth/login" &&
-    !hasAuth0Config()
-  ) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!hasAuth0Config() && isAuthRoute) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("auth0", "unavailable");
+    return NextResponse.redirect(loginUrl);
   }
 
   try {
@@ -30,6 +29,13 @@ export async function middleware(request: NextRequest) {
     // Avoid hard 500s from middleware invocation failures. Route-level handlers
     // still enforce auth and permissions where required.
     console.error("Auth0 middleware error:", error);
+
+    if (isAuthRoute) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("auth0", "unavailable");
+      return NextResponse.redirect(loginUrl);
+    }
+
     return NextResponse.next();
   }
 }
