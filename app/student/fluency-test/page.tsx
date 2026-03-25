@@ -51,11 +51,11 @@ export default function FluencyTestPage() {
   if (showResults && testResult) {
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <Header variant="student" />
+      <div className="min-h-screen bg-slate-950">
+        <Header variant="student" tone="dark" />
         <main className="px-6 py-12">
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 md:p-12">
               <div className="text-center mb-8">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +155,7 @@ export default function FluencyTestPage() {
             </div>
           </div>
         </main>
-        <Footer variant="student" />
+        <Footer variant="student" tone="dark" />
       </div>
     );
   }
@@ -194,7 +194,7 @@ export default function FluencyTestPage() {
           </div>
 
           {/* Question Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12 mb-8">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 md:p-12 mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
               {fluencyTestQuestions[currentQuestion].question}
             </h2>

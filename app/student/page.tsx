@@ -3,6 +3,7 @@ import { auth0 } from "@/lib/auth0";
 import { redirect } from "next/navigation";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export const metadata: Metadata = {
   title: "Student Portal - Find Your Dream Internship | InternsNow",
@@ -30,8 +31,8 @@ export default async function StudentLandingPage() {
     redirect("/auth/login");
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="student" />
+    <AnimatedBackground subtle>
+      <Header variant="student" tone="dark" />
 
       {/* Hero Section */}
       <main className="px-6 py-12">
@@ -49,7 +50,7 @@ export default async function StudentLandingPage() {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-8">
-              <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg">
+              <div className="flex flex-col md:flex-row gap-4 bg-slate-900 border border-slate-700 p-4 rounded-xl">
                 <input
                   type="text"
                   placeholder="Job title, company, or keywords"
@@ -69,7 +70,7 @@ export default async function StudentLandingPage() {
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4">
                 <svg
                   className="w-6 h-6 text-blue-600 dark:text-blue-400"
@@ -94,7 +95,7 @@ export default async function StudentLandingPage() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4">
                 <svg
                   className="w-6 h-6 text-green-600 dark:text-green-400"
@@ -119,7 +120,7 @@ export default async function StudentLandingPage() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4">
                 <svg
                   className="w-6 h-6 text-purple-600 dark:text-purple-400"
@@ -212,7 +213,7 @@ export default async function StudentLandingPage() {
         </div>
       </main>
 
-      <Footer variant="student" />
-    </div>
+      <Footer variant="student" tone="dark" />
+    </AnimatedBackground>
   );
 }

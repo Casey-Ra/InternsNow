@@ -409,7 +409,7 @@ export default function StudentProfilePage() {
       <div className="absolute -z-10 left-[-10%] top-[-10%] h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
       <div className="absolute -z-10 right-[-10%] top-[20%] h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
 
-      <Header variant="student" />
+      <Header variant="student" tone="dark" />
 
       <main className="px-6 py-10">
         <div className="max-w-5xl mx-auto space-y-8">
@@ -818,7 +818,7 @@ export default function StudentProfilePage() {
         </div>
       </main>
 
-      <Footer variant="student" />
+      <Footer variant="student" tone="dark" />
     </div>
   );
 }

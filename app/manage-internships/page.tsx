@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { getAllInternships } from "@/app/lib/models/Internship";
 import ManageInternshipsClient from "@/app/manage-internships/ManageInternshipsClient";
 
@@ -12,11 +13,11 @@ export default async function ManageInternshipsPage() {
   const initialData = internships.map((it) => ({ ...it, created_at: it.created_at?.toISOString?.() ?? String(it.created_at) }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="max-w-5xl mx-auto px-6 py-16">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-8">
           <h1 className="text-2xl font-semibold mb-4">Manage Internships</h1>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Edit or remove internships you've posted.</p>
 
@@ -25,7 +26,7 @@ export default async function ManageInternshipsPage() {
         </div>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }

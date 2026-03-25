@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import ManageEventsClient, {
   type ManagedEventItem,
 } from "@/app/events/ManageEventsClient";
@@ -33,11 +34,11 @@ export default async function EventsManagementPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
-        <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <section className="bg-slate-900 border border-slate-700 rounded-xl p-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Events Management
           </h1>
@@ -67,7 +68,7 @@ export default async function EventsManagementPage() {
         </section>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }

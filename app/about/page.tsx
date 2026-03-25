@@ -1,10 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="px-6 py-16">
         <div className="max-w-4xl mx-auto text-gray-800 dark:text-gray-100">
@@ -18,7 +19,7 @@ export default function AboutPage() {
           </section>
 
           {/* Mission Section */}
-          <section className="mb-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+          <section className="mb-16 bg-slate-900 border border-slate-700 rounded-2xl p-8">
             <h2 className="text-2xl font-semibold mb-3">Our Mission</h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               We believe internships should be accessible, transparent, and rewarding. 
@@ -29,7 +30,7 @@ export default function AboutPage() {
           </section>
 
           {/* How It Works */}
-          <section className="mb-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+          <section className="mb-16 bg-slate-900 border border-slate-700 rounded-2xl p-8">
             <h2 className="text-2xl font-semibold mb-4">How It Works</h2>
             <div className="space-y-6">
               <div>
@@ -62,7 +63,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }

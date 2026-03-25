@@ -1,10 +1,11 @@
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function ResourcesPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <Header variant="student" />
+    <AnimatedBackground subtle>
+      <Header variant="student" tone="dark" />
 
       <main className="flex-grow px-6 py-12">
         <div className="max-w-7xl mx-auto">
@@ -12,7 +13,7 @@ export default function ResourcesPage() {
             Student Resources
           </h1>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+          <div className="bg-slate-900 border border-slate-700 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
               Career Resources Coming Soon!
             </h2>
@@ -28,7 +29,7 @@ export default function ResourcesPage() {
         </div>
       </main>
 
-      <Footer variant="student" />
-    </div>
+      <Footer variant="student" tone="dark" />
+    </AnimatedBackground>
   );
 }

@@ -1,10 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function AIInterviewPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header variant="student" />
+    <AnimatedBackground subtle>
+      <Header variant="student" tone="dark" />
       
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
@@ -19,7 +20,7 @@ export default function AIInterviewPage() {
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* AI Interview Features */}
           <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Master Your Interview Skills
               </h2>
@@ -94,7 +95,7 @@ export default function AIInterviewPage() {
           </div>
 
           {/* Interview Simulator Preview */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-lg p-8">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               AI Interview Simulator
             </h3>
@@ -117,7 +118,7 @@ export default function AIInterviewPage() {
         </div>
       </main>
 
-      <Footer variant="student" />
-    </div>
+      <Footer variant="student" tone="dark" />
+    </AnimatedBackground>
   );
 }

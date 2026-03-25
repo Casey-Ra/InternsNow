@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import QuickMatchQuiz from "@/components/QuickMatchQuiz";
 import { parseIntakeParams, type IntakeSearchParams } from "./intakeParams";
 
@@ -14,11 +15,11 @@ export default async function IntakePage({ searchParams }: PageProps) {
   const { location, major, effectiveInterests } = parseIntakeParams(params);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="flex-grow max-w-5xl mx-auto px-6 py-12 w-full">
-        <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <section className="bg-slate-900 border border-slate-700 rounded-xl p-8">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Quick Match
@@ -38,7 +39,7 @@ export default async function IntakePage({ searchParams }: PageProps) {
         </section>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }

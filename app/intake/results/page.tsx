@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import QuickMatchQuiz from "@/components/QuickMatchQuiz";
 import QuickMatchResults from "@/components/QuickMatchResults";
 import Link from "next/link";
@@ -48,11 +49,11 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
   const eventMatches = recommendations.events.slice(0, 6);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="flex-grow max-w-5xl mx-auto px-6 py-12 w-full">
-        <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <section className="bg-slate-900 border border-slate-700 rounded-xl p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-3xl">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-300">
@@ -81,7 +82,7 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
           eventMatches={eventMatches}
         />
 
-        <section className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <section className="mt-8 bg-slate-900 border border-slate-700 rounded-xl p-8">
           <details className="group">
             <summary className="cursor-pointer list-none">
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -110,7 +111,7 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
         </section>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }

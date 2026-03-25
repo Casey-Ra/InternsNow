@@ -2,6 +2,7 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function LoginPage() {
   const handleAuth0Login = async () => {
@@ -9,11 +10,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <Header variant="student" />
+    <AnimatedBackground subtle>
+      <Header variant="student" tone="dark" />
 
       <main className="flex-grow flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
+        <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-lg p-8">
           <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
             Student Login
           </h1>
@@ -45,8 +46,8 @@ export default function LoginPage() {
         </div>
       </main>
 
-      <Footer variant="student" />
-    </div>
+      <Footer variant="student" tone="dark" />
+    </AnimatedBackground>
   );
 }
 

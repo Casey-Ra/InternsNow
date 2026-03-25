@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findEventById } from "@/app/student/events/events";
@@ -28,11 +29,11 @@ export default async function EventDetailsPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="default" />
+    <AnimatedBackground subtle>
+      <Header variant="default" tone="dark" />
 
       <main className="max-w-3xl mx-auto px-6 py-16">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-8 space-y-6">
           <Link
             href="/events"
             className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -106,7 +107,7 @@ export default async function EventDetailsPage({ params }: PageProps) {
         </div>
       </main>
 
-      <Footer variant="default" />
-    </div>
+      <Footer variant="default" tone="dark" />
+    </AnimatedBackground>
   );
 }
