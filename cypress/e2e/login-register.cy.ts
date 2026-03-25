@@ -40,6 +40,9 @@ describe('Login & Register Pages', () => {
         followRedirect: false,
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
+        expect(response.headers.location).to.match(
+          /^\/login(\?auth0=unavailable)?/,
+        );
       });
     });
   });
@@ -70,6 +73,9 @@ describe('Login & Register Pages', () => {
         followRedirect: false,
       }).then((response) => {
         expect([302, 307]).to.include(response.status);
+        expect(response.headers.location).to.match(
+          /^\/login(\?auth0=unavailable)?/,
+        );
       });
     });
 

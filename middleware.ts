@@ -2,6 +2,20 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
+function isPlaceholder(value?: string) {
+  if (!value) {
+    return true;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized === "ci-example.auth0.com" ||
+    normalized === "ci-client-id" ||
+    normalized === "ci-client-secret" ||
+    normalized === "ci-test-secret-not-for-production"
+  );
+}
+
 function hasAuth0Config() {
   const requiredValues = [
     process.env.AUTH0_DOMAIN,
@@ -10,7 +24,11 @@ function hasAuth0Config() {
     process.env.AUTH0_SECRET,
   ];
 
-  return requiredValues.every((value) => typeof value === "string" && value.trim());
+  return (
+    requiredValues.every(
+      (value) => typeof value === "string" && value.trim(),
+    ) && requiredValues.every((value) => !isPlaceholder(value))
+  );
 }
 
 export async function middleware(request: NextRequest) {
