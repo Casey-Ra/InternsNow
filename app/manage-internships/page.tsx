@@ -1,6 +1,10 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getAllInternships } from "@/app/lib/models/Internship";
+import {
+  getConfiguredGreenhouseBoards,
+  serializeGreenhouseBoards,
+} from "@/app/lib/integrations/greenhouse";
 import ManageInternshipsClient from "@/app/manage-internships/ManageInternshipsClient";
 
 // Prevent static generation - this page needs database access at runtime
@@ -8,6 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function ManageInternshipsPage() {
   const internships = await getAllInternships();
+  const initialGreenhouseBoards = serializeGreenhouseBoards(
+    getConfiguredGreenhouseBoards(),
+  );
   // Next.js serializes props to the client; ensure dates are strings
   const initialData = internships.map((it) => ({ ...it, created_at: it.created_at?.toISOString?.() ?? String(it.created_at) }));
 
@@ -21,7 +28,10 @@ export default async function ManageInternshipsPage() {
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Edit or remove internships you've posted.</p>
 
           {/* Client-side component handles editing/deleting */}
-          <ManageInternshipsClient initialData={initialData} />
+          <ManageInternshipsClient
+            initialData={initialData}
+            initialGreenhouseBoards={initialGreenhouseBoards}
+          />
         </div>
       </main>
 

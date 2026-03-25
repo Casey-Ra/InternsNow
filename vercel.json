@@ -5,6 +5,12 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/cron/greenhouse-sync",
+      "schedule": "0 10 * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/home",

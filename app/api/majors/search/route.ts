@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { relationExists } from "@/app/lib/dbRelations";
+
+const majorsRelation = '"MAJOR"';
 
 export async function GET(req: Request) {
   try {
@@ -10,10 +13,14 @@ export async function GET(req: Request) {
       return NextResponse.json([]);
     }
 
+    if (!(await relationExists(majorsRelation))) {
+      return NextResponse.json([]);
+    }
+
     const r = await pool.query(
       `
       SELECT major_id AS id, name
-      FROM "MAJOR"
+      FROM ${majorsRelation}
       WHERE name ILIKE $1
       ORDER BY name
       LIMIT 20
