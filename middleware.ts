@@ -33,9 +33,11 @@ function hasAuth0Config() {
 
 export async function middleware(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth/");
+  const allowFallbackRedirect =
+    process.env.NODE_ENV !== "production" && isAuthRoute;
 
   // Keep /auth/login stable in CI/dev only when Auth0 is intentionally unavailable.
-  if (!hasAuth0Config() && isAuthRoute) {
+  if (allowFallbackRedirect && !hasAuth0Config()) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("auth0", "unavailable");
     return NextResponse.redirect(loginUrl);
@@ -48,7 +50,7 @@ export async function middleware(request: NextRequest) {
     // still enforce auth and permissions where required.
     console.error("Auth0 middleware error:", error);
 
-    if (isAuthRoute) {
+    if (allowFallbackRedirect) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("auth0", "unavailable");
       return NextResponse.redirect(loginUrl);
