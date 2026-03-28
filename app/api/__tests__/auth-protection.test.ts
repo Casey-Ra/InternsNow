@@ -1,0 +1,142 @@
+/** @jest-environment node */
+
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
+const mockGetSession = jest.fn<
+  (...args: unknown[]) => Promise<unknown>
+>();
+const mockPoolQuery = jest.fn<
+  (...args: unknown[]) => Promise<{ rows: unknown[] }>
+>();
+const mockGetEventActor = jest.fn<
+  (...args: unknown[]) => Promise<unknown>
+>();
+
+jest.mock("@/lib/auth0", () => ({
+  auth0: {
+    getSession: (...args: unknown[]) => mockGetSession(...args),
+  },
+}));
+
+jest.mock("@/lib/db", () => ({
+  __esModule: true,
+  default: {
+    query: (...args: unknown[]) => mockPoolQuery(...args),
+    connect: jest.fn(),
+  },
+}));
+
+jest.mock("@/app/lib/auth/eventAccess", () => ({
+  getEventActor: (...args: unknown[]) => mockGetEventActor(...args),
+  canManageEvent: jest.fn(),
+}));
+
+const { GET: getProfile } = require("@/app/api/profile/route") as typeof import("@/app/api/profile/route");
+const { GET: getProtected } = require("@/app/api/protected/route") as typeof import("@/app/api/protected/route");
+const { POST: createInternship } = require("@/app/api/internships/create/route") as typeof import("@/app/api/internships/create/route");
+const { POST: updateInternship } = require("@/app/api/internships/update/route") as typeof import("@/app/api/internships/update/route");
+const { POST: deleteInternship } = require("@/app/api/internships/delete/route") as typeof import("@/app/api/internships/delete/route");
+const { POST: createEvent } = require("@/app/api/events/create/route") as typeof import("@/app/api/events/create/route");
+const { POST: updateEvent } = require("@/app/api/events/update/route") as typeof import("@/app/api/events/update/route");
+const { POST: deleteEvent } = require("@/app/api/events/delete/route") as typeof import("@/app/api/events/delete/route");
+
+describe("fast API auth protection tests", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetSession.mockResolvedValue(null);
+    mockGetEventActor.mockResolvedValue(null);
+    mockPoolQuery.mockResolvedValue({ rows: [] });
+  });
+
+  it("rejects unauthenticated profile reads", async () => {
+    const response = await getProfile();
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ authenticated: false });
+  });
+
+  it("rejects unauthenticated protected API reads", async () => {
+    const response = await getProtected(
+      new Request("http://localhost/api/protected") as any,
+    );
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: "Not authenticated" });
+  });
+
+  it("rejects unauthenticated internship mutations", async () => {
+    const createResponse = await createInternship(
+      new Request("http://localhost/api/internships/create", {
+        method: "POST",
+        body: JSON.stringify({
+          company_name: "Test Corp",
+          job_description: "A test internship",
+          url: "https://example.com/jobs/1",
+        }),
+      }) as any,
+    );
+    const updateResponse = await updateInternship(
+      new Request("http://localhost/api/internships/update", {
+        method: "POST",
+        body: JSON.stringify({
+          id: 1,
+          company_name: "Updated Corp",
+          job_description: "Updated description",
+          url: "https://example.com/jobs/2",
+        }),
+      }) as any,
+    );
+    const deleteResponse = await deleteInternship(
+      new Request("http://localhost/api/internships/delete", {
+        method: "POST",
+        body: JSON.stringify({ id: 1 }),
+      }) as any,
+    );
+
+    expect(createResponse.status).toBe(401);
+    expect(await createResponse.json()).toEqual({ error: "Unauthorized" });
+    expect(updateResponse.status).toBe(401);
+    expect(await updateResponse.json()).toEqual({ error: "Unauthorized" });
+    expect(deleteResponse.status).toBe(401);
+    expect(await deleteResponse.json()).toEqual({ error: "Unauthorized" });
+  });
+
+  it("rejects unauthenticated event mutations", async () => {
+    const createResponse = await createEvent(
+      new Request("http://localhost/api/events/create", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Test Event",
+          date: "Fri, Jun 15",
+          time: "6:00 PM",
+          location: "Austin, TX",
+          description: "Networking event",
+          details: "Meet founders",
+          host: "InternsNow",
+          price: "Free",
+          registrationLink: "https://example.com/events/1",
+          tags: ["networking"],
+        }),
+      }) as any,
+    );
+    const updateResponse = await updateEvent(
+      new Request("http://localhost/api/events/update", {
+        method: "POST",
+        body: JSON.stringify({ id: "evt_1" }),
+      }) as any,
+    );
+    const deleteResponse = await deleteEvent(
+      new Request("http://localhost/api/events/delete", {
+        method: "POST",
+        body: JSON.stringify({ id: "evt_1" }),
+      }) as any,
+    );
+
+    expect(createResponse.status).toBe(401);
+    expect(await createResponse.json()).toEqual({ error: "Unauthorized" });
+    expect(updateResponse.status).toBe(401);
+    expect(await updateResponse.json()).toEqual({ error: "Unauthorized" });
+    expect(deleteResponse.status).toBe(401);
+    expect(await deleteResponse.json()).toEqual({ error: "Unauthorized" });
+  });
+});

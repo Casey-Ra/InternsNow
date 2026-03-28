@@ -52,9 +52,10 @@ describe('Footer Component', () => {
     });
 
     it('renders student-specific links', () => {
-      cy.get('footer').contains('Find Opportunities').should('be.visible');
+      cy.get('footer').contains('Jobs & Internships').should('be.visible');
       cy.get('footer').contains('Career Resources').should('be.visible');
       cy.get('footer').contains('Resume Builder').should('be.visible');
+      cy.get('footer').contains('AI Interview').should('be.visible');
     });
 
     it('still renders common company links', () => {
@@ -91,9 +92,9 @@ describe('Footer Component', () => {
     });
 
     it('uses high-contrast text classes for dark surfaces', () => {
-      cy.get('footer').contains('InternsNow').should('have.class', 'text-slate-100');
+      cy.get('footer span').contains('InternsNow').should('have.class', 'text-slate-100');
       cy.get('footer').contains('About Us').should('have.class', 'hover:text-sky-200');
-      cy.get('footer').contains('Connecting students with their dream internships and first jobs.')
+      cy.get('footer p').contains('Connecting students with their dream internships and first jobs.')
         .should('have.class', 'text-slate-300');
     });
   });

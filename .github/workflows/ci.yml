@@ -22,14 +22,22 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       
       - name: Run tests
         run: npm test
 
   cypress-e2e:
-    name: Cypress E2E
+    name: Cypress E2E (${{ matrix.group.name }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        group:
+          - name: Marketing & Auth
+            command: npm run cypress:e2e:marketing
+          - name: App Flows
+            command: npm run cypress:e2e:app
 
     services:
       postgres:
@@ -56,14 +64,17 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          install: true
+          install: false
           start: npm run dev
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
-          command: npm run cypress:headless
+          command: ${{ matrix.group.command }}
         env:
           AUTH0_DOMAIN: ci-example.auth0.com
           AUTH0_CLIENT_ID: ci-client-id
@@ -88,7 +99,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       
       - name: Run linter
         run: npm run lint
@@ -111,7 +122,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       
       - name: Build Next.js app
         run: npm run build

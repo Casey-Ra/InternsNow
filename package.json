@@ -16,7 +16,9 @@
     "cypress": "cypress open",
     "cypress:headless": "cypress run",
     "cypress:e2e": "cypress run --e2e",
-    "cypress:component": "cypress run --component"
+    "cypress:component": "cypress run --component",
+    "cypress:e2e:marketing": "cypress run --e2e --spec cypress/e2e/home.cy.ts,cypress/e2e/navigation.cy.ts,cypress/e2e/static-pages.cy.ts,cypress/e2e/login-register.cy.ts,cypress/e2e/intake.cy.ts",
+    "cypress:e2e:app": "cypress run --e2e --spec cypress/e2e/manage-internships.cy.ts,cypress/e2e/events.cy.ts,cypress/e2e/student/events.cy.ts,cypress/e2e/student/find-opportunities.cy.ts"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.14.1",
