@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
 
+type SessionUser = {
+  sub: string;
+  email?: string | null;
+};
+
 function splitName(fullName?: string | null) {
   const s = (fullName ?? "").trim();
   if (!s) return { first: null, last: null };
@@ -59,8 +64,9 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    const auth0Sub = session.user.sub;
-    const email = (session.user as any).email ?? null;
+    const user = session.user as SessionUser;
+    const auth0Sub = user.sub;
+    const email = user.email ?? null;
 
     const u = await getOrCreateUserId(auth0Sub, email);
 
@@ -200,10 +206,11 @@ export async function POST(request: Request) {
     if (!session)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const auth0Sub = session.user.sub;
-    const emailFromAuth0 = (session.user as any).email ?? null;
+    const user = session.user as SessionUser;
+    const auth0Sub = user.sub;
+    const emailFromAuth0 = user.email ?? null;
 
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const fullName = (body.fullName ?? null) as string | null;
     const { first, last } = splitName(fullName);
@@ -219,9 +226,11 @@ export async function POST(request: Request) {
     const github = (body.github ?? null) as string | null;
     const portfolio = (body.portfolio ?? null) as string | null;
 
-    const education = Array.isArray(body.education) ? body.education : [];
+    const education = Array.isArray(body.education)
+      ? (body.education as Record<string, unknown>[])
+      : [];
     const workExperience = Array.isArray(body.workExperience)
-      ? body.workExperience
+      ? (body.workExperience as Record<string, unknown>[])
       : [];
 
     await ensureProfileColumns();

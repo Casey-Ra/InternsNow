@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { beforeEach, describe, expect, jest, test } from "@jest/globals";
 
 jest.mock("@/app/lib/models/Event", () => ({
@@ -6,8 +7,32 @@ jest.mock("@/app/lib/models/Event", () => ({
   toEventView: jest.fn(),
 }));
 
-const eventModel = require("@/app/lib/models/Event");
-const { events, getLiveEvents, findEventById } = require("./events");
+const mockedEventModel = jest.requireMock(
+  "@/app/lib/models/Event",
+) as jest.Mocked<typeof import("@/app/lib/models/Event")>;
+const { events, findEventById, getLiveEvents } = require("./events") as typeof import("./events");
+
+function createEventRecord(id: string): import("@/app/lib/models/Event").EventRecord {
+  return {
+    id,
+    title: "DB Event",
+    date: "Mon, Mar 10",
+    time: "6:00 PM - 8:00 PM",
+    location: "Downtown Hub",
+    description: "From DB",
+    details: "Details from DB",
+    host: "DB Host",
+    price: "Free",
+    registration_link: `https://example.com/${id}`,
+    tags: ["Networking"],
+    created_by: null,
+    created_by_email: null,
+    deleted_at: null,
+    deleted_by: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+}
 
 describe("student events data mapping", () => {
   beforeEach(() => {
@@ -15,7 +40,7 @@ describe("student events data mapping", () => {
   });
 
   test("getLiveEvents maps DB event view fields to EventItem", async () => {
-    const dbRow = { id: "evt-db-1" };
+    const dbRow = createEventRecord("evt-db-1");
     const eventView = {
       id: "evt-db-1",
       title: "DB Event",
@@ -36,8 +61,8 @@ describe("student events data mapping", () => {
       updatedAt: new Date().toISOString(),
     };
 
-    eventModel.getEvents.mockResolvedValue([dbRow]);
-    eventModel.toEventView.mockReturnValue(eventView);
+    mockedEventModel.getEvents.mockResolvedValue([dbRow]);
+    mockedEventModel.toEventView.mockReturnValue(eventView);
 
     const result = await getLiveEvents();
 
@@ -61,7 +86,7 @@ describe("student events data mapping", () => {
     const consoleSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
-    eventModel.getEvents.mockRejectedValue(new Error("db unavailable"));
+    mockedEventModel.getEvents.mockRejectedValue(new Error("db unavailable"));
 
     const result = await getLiveEvents();
 
@@ -70,7 +95,7 @@ describe("student events data mapping", () => {
   });
 
   test("findEventById returns mapped DB event when available", async () => {
-    const dbRow = { id: "evt-db-2" };
+    const dbRow = createEventRecord("evt-db-2");
     const eventView = {
       id: "evt-db-2",
       title: "DB Event 2",
@@ -91,8 +116,8 @@ describe("student events data mapping", () => {
       updatedAt: new Date().toISOString(),
     };
 
-    eventModel.getEventById.mockResolvedValue(dbRow);
-    eventModel.toEventView.mockReturnValue(eventView);
+    mockedEventModel.getEventById.mockResolvedValue(dbRow);
+    mockedEventModel.toEventView.mockReturnValue(eventView);
 
     const result = await findEventById("evt-db-2");
 
@@ -101,7 +126,7 @@ describe("student events data mapping", () => {
   });
 
   test("findEventById falls back to static event when DB returns null", async () => {
-    eventModel.getEventById.mockResolvedValue(null);
+    mockedEventModel.getEventById.mockResolvedValue(null);
 
     const result = await findEventById("evt-001");
 

@@ -25,7 +25,7 @@ export default async function ManageInternshipsPage() {
       <main className="max-w-5xl mx-auto px-6 py-16">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8">
           <h1 className="text-2xl font-semibold mb-4">Manage Internships</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Edit or remove internships you've posted.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Edit or remove internships you&apos;ve posted.</p>
 
           {/* Client-side component handles editing/deleting */}
           <ManageInternshipsClient

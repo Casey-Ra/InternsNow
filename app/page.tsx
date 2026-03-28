@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import Image from "next/image";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -301,9 +302,12 @@ export default function HomeLandingPage() {
       }}
       onMouseLeave={() => setPointer(null)}
     >
-      <img
+      <Image
         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E"
         alt=""
+        width={1}
+        height={1}
+        unoptimized
         className="absolute -left-[9999px] h-px w-px"
       />
       <div className="pointer-events-none absolute inset-0 bg-wave-drift transition-[background-image] duration-200 ease-out opacity-80" style={backgroundStyle} />

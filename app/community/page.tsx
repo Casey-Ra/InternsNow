@@ -13,7 +13,7 @@ export default function CommunityPage() {
               Community
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're building a vibrant community for students and employers.
+              We&apos;re building a vibrant community for students and employers.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function CommunityPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our community platform is currently under development. We're creating a space where students and employers can connect, share experiences, and support each other.
+              Our community platform is currently under development. We&apos;re creating a space where students and employers can connect, share experiences, and support each other.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Soon you'll be able to join discussions, share career advice, participate in events, and network with peers and industry professionals.
+                Soon you&apos;ll be able to join discussions, share career advice, participate in events, and network with peers and industry professionals.
               </p>
             </div>
           </div>

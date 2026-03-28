@@ -17,7 +17,7 @@ export default function ResourcesPage() {
               Career Resources Coming Soon!
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              We're finding the best career resources, interview tips, and professional 
+              We&apos;re finding the best career resources, interview tips, and professional 
               development guides for students like you.
             </p>
             <div className="text-6xl mb-4">📚</div>

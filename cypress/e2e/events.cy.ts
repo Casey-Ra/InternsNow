@@ -23,7 +23,7 @@ describe('Events Page (/events)', () => {
         text.includes('No events') ||
         $body.find('[data-testid="event-item"], article, .event-card').length > 0 ||
         text.includes('Sign in to post');
-      expect(hasEventContent).to.be.true;
+      expect(hasEventContent).to.equal(true);
     });
   });
 });

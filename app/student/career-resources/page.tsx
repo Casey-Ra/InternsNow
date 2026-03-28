@@ -13,7 +13,7 @@ export default function CareerResourcesPage() {
               Career Resources
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're curating the best career development resources for students.
+              We&apos;re curating the best career development resources for students.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function CareerResourcesPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our career resources section is currently being developed. We're compiling guides, articles, tutorials, and tools to help you build a successful career.
+              Our career resources section is currently being developed. We&apos;re compiling guides, articles, tutorials, and tools to help you build a successful career.
             </p>
             
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                Soon you'll find resume templates, interview tips, industry insights, salary guides, and career planning tools all in one place.
+                Soon you&apos;ll find resume templates, interview tips, industry insights, salary guides, and career planning tools all in one place.
               </p>
             </div>
           </div>

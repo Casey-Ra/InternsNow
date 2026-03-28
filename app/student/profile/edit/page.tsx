@@ -245,7 +245,7 @@ export default function StudentProfilePage() {
             : null;
 
         const primaryMajor =
-          edu0?.majors?.find((m: any) => m?.isPrimary) ??
+          edu0?.majors?.find((m: { isPrimary?: boolean }) => m?.isPrimary) ??
           edu0?.majors?.[0] ??
           null;
 

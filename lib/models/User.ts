@@ -1,10 +1,14 @@
 import pool from "../db";
 
 export interface User {
-  auth0_id: number;
+  auth0_id: string;
   email?: string;
   role: string;
   created_at: Date;
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export const createUser = async (
@@ -26,9 +30,9 @@ export const createUser = async (
     );
 
     return result.rows[0];
-  } catch (err: any) {
-    console.error("Error creating user:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error creating user:", getErrorMessage(error));
+    throw error;
   }
 };
 

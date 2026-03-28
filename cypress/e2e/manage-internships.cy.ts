@@ -16,7 +16,7 @@ describe('Manage Internships Page (/manage-internships)', () => {
         $body.find('table, [role="table"], .internship-row').length > 0 ||
         text.includes('Edit') ||
         text.includes('Delete');
-      expect(hasContent).to.be.true;
+      expect(hasContent).to.equal(true);
     });
   });
 

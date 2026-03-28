@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
               Privacy Policy
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're working on creating comprehensive privacy protection guidelines.
+              We&apos;re working on creating comprehensive privacy protection guidelines.
             </p>
           </div>
           
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our privacy policy is currently being developed. We're committed to protecting your data and will have detailed privacy guidelines available soon.
+              Our privacy policy is currently being developed. We&apos;re committed to protecting your data and will have detailed privacy guidelines available soon.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
