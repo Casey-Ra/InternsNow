@@ -64,7 +64,6 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
           { href: "/opportunities", label: "Jobs & Internships" },
           { href: "/events", label: "Events" },
           { href: "/student/resources", label: "Resources" },
-          { href: "/student/fluency-test", label: "AI Fluency Test" },
         ];
       default:
         return [
