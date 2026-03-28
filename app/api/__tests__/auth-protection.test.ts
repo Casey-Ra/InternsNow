@@ -1,4 +1,5 @@
 /** @jest-environment node */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
@@ -57,7 +58,9 @@ describe("fast API auth protection tests", () => {
 
   it("rejects unauthenticated protected API reads", async () => {
     const response = await getProtected(
-      new Request("http://localhost/api/protected") as any,
+      new Request(
+        "http://localhost/api/protected",
+      ) as unknown as import("next/server").NextRequest,
     );
 
     expect(response.status).toBe(401);
@@ -73,7 +76,7 @@ describe("fast API auth protection tests", () => {
           job_description: "A test internship",
           url: "https://example.com/jobs/1",
         }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
     const updateResponse = await updateInternship(
       new Request("http://localhost/api/internships/update", {
@@ -84,13 +87,13 @@ describe("fast API auth protection tests", () => {
           job_description: "Updated description",
           url: "https://example.com/jobs/2",
         }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
     const deleteResponse = await deleteInternship(
       new Request("http://localhost/api/internships/delete", {
         method: "POST",
         body: JSON.stringify({ id: 1 }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
 
     expect(createResponse.status).toBe(401);
@@ -117,19 +120,19 @@ describe("fast API auth protection tests", () => {
           registrationLink: "https://example.com/events/1",
           tags: ["networking"],
         }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
     const updateResponse = await updateEvent(
       new Request("http://localhost/api/events/update", {
         method: "POST",
         body: JSON.stringify({ id: "evt_1" }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
     const deleteResponse = await deleteEvent(
       new Request("http://localhost/api/events/delete", {
         method: "POST",
         body: JSON.stringify({ id: "evt_1" }),
-      }) as any,
+      }) as unknown as import("next/server").NextRequest,
     );
 
     expect(createResponse.status).toBe(401);
