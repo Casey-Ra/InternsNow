@@ -17,52 +17,28 @@ describe('Static Pages', () => {
   ];
 
   staticPages.forEach(({ path, heading }) => {
-    describe(`${path}`, () => {
-      beforeEach(() => {
-        cy.visit(path);
-      });
-
-      it('loads without error', () => {
-        cy.url().should('include', path);
-      });
-
-      it('renders header and footer', () => {
-        cy.get('header').should('be.visible');
-        cy.get('footer').should('be.visible');
-      });
+    it(`${path} renders the shared shell and main content`, () => {
+      cy.visit(path);
+      cy.url().should('include', path);
+      cy.get('header').should('be.visible');
+      cy.get('footer').should('be.visible');
+      cy.get('main').should('be.visible');
 
       if (heading) {
-        it(`displays the main heading "${heading}"`, () => {
-          cy.contains(heading).should('be.visible');
-        });
+        cy.contains(heading).should('be.visible');
       }
-
-      it('has a visible main element', () => {
-        cy.get('main').should('be.visible');
-      });
     });
   });
 
-  // ─── About page – detailed content ───────────────────────────────────────
-  describe('/about – detailed content', () => {
-    beforeEach(() => {
-      cy.visit('/about');
-    });
-
-    it('shows the mission section', () => {
-      cy.contains('Our Mission').should('be.visible');
-    });
-
-    it('shows the How It Works section', () => {
-      cy.contains('How It Works').should('be.visible');
-    });
-
-    it('shows Create Your Profile step', () => {
-      cy.contains('Create Your Profile').should('be.visible');
-    });
-
-    it('shows Match With Opportunities step', () => {
-      cy.contains('Match With Opportunities').should('be.visible');
+  it('/about shows the detailed explainer content', () => {
+    cy.visit('/about');
+    [
+      'Our Mission',
+      'How It Works',
+      'Create Your Profile',
+      'Match With Opportunities',
+    ].forEach((text) => {
+      cy.contains(text).should('be.visible');
     });
   });
 });

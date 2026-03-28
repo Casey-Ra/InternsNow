@@ -49,11 +49,6 @@ interface ProfileResponse {
   workExperience: WorkRow[];
 }
 
-/** ---------- small helpers ---------- */
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
 function safeText(v?: string | null, fallback = "—") {
   const s = (v ?? "").trim();
   return s ? s : fallback;
