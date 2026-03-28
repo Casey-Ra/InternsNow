@@ -261,7 +261,7 @@ function buildOpportunityRecommendations(
         companyName: internship.company_name,
         description: internship.job_description,
         applyUrl: internship.url,
-        detailsHref: `/student/find-opportunities/${internship.id}`,
+        detailsHref: `/opportunities/${internship.id}`,
         createdAt: internship.created_at,
         label,
         reasons,

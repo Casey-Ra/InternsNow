@@ -150,7 +150,7 @@ export async function runGreenhouseSync(
   if (hasSuccessfulBoard) {
     revalidatePath("/manage-internships");
     revalidatePath("/employer/manage-internships");
-    revalidatePath("/student/find-opportunities");
+    revalidatePath("/opportunities");
   }
 
   return {

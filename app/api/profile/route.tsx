@@ -11,8 +11,27 @@ function splitName(fullName?: string | null) {
   return { first: parts[0], last: parts.slice(1).join(" ") };
 }
 
+let migrated = false;
+async function ensureProfileColumns() {
+  if (migrated) return;
+  try {
+    await pool.query(`
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS bio TEXT;
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS skills TEXT[];
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS interests TEXT[];
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS linkedin VARCHAR(500);
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS github VARCHAR(500);
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS portfolio VARCHAR(500);
+    `);
+  } catch {
+    // Table may not exist locally — ignore so the route still loads
+  }
+  migrated = true;
+}
+
 async function getOrCreateUserId(auth0Sub: string, email?: string | null) {
-  // One atomic operation: if auth0_sub exists, return it; if not, create it.
   const r = await pool.query(
     `
     INSERT INTO "USER" (auth0_sub, first_name, last_name, email, created_at, update_at)
@@ -20,7 +39,9 @@ async function getOrCreateUserId(auth0Sub: string, email?: string | null) {
     ON CONFLICT (auth0_sub) DO UPDATE SET
       email = COALESCE(EXCLUDED.email, "USER".email),
       update_at = NOW()
-    RETURNING user_id, first_name, last_name, email
+    RETURNING user_id, first_name, last_name, email,
+              phone, location, bio, skills, interests,
+              linkedin, github, portfolio
     `,
     [auth0Sub, email],
   );
@@ -31,6 +52,8 @@ async function getOrCreateUserId(auth0Sub: string, email?: string | null) {
 // GET - fetch profile info (from normalized tables)
 export async function GET() {
   try {
+    await ensureProfileColumns();
+
     const session = await auth0.getSession();
     if (!session) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
@@ -114,6 +137,14 @@ export async function GET() {
       userId: u.user_id,
       fullName: [u.first_name, u.last_name].filter(Boolean).join(" "),
       email: u.email,
+      phone: u.phone ?? null,
+      location: u.location ?? null,
+      bio: u.bio ?? null,
+      skills: u.skills ?? [],
+      interests: u.interests ?? [],
+      linkedin: u.linkedin ?? null,
+      github: u.github ?? null,
+      portfolio: u.portfolio ?? null,
 
       education: eduRes.rows.map((e) => ({
         eduId: e.edu_id,
@@ -179,32 +210,59 @@ export async function POST(request: Request) {
 
     const email = (body.email ?? emailFromAuth0 ?? null) as string | null;
 
+    const phone = (body.phone ?? null) as string | null;
+    const location = (body.location ?? null) as string | null;
+    const bio = (body.bio ?? null) as string | null;
+    const skills = Array.isArray(body.skills) ? body.skills : [];
+    const interests = Array.isArray(body.interests) ? body.interests : [];
+    const linkedin = (body.linkedin ?? null) as string | null;
+    const github = (body.github ?? null) as string | null;
+    const portfolio = (body.portfolio ?? null) as string | null;
+
     const education = Array.isArray(body.education) ? body.education : [];
     const workExperience = Array.isArray(body.workExperience)
       ? body.workExperience
       : [];
 
+    await ensureProfileColumns();
     await client.query("BEGIN");
 
     // Upsert USER by auth0_sub
     const userUpsert = await client.query(
       `
-      INSERT INTO "USER" (auth0_sub, first_name, last_name, email, created_at, update_at)
-      VALUES ($1, COALESCE($2,'Unknown'), COALESCE($3,'User'), COALESCE($4,'unknown@example.com'), NOW(), NOW())
+      INSERT INTO "USER" (
+        auth0_sub, first_name, last_name, email,
+        phone, location, bio, skills, interests,
+        linkedin, github, portfolio,
+        created_at, update_at
+      )
+      VALUES (
+        $1, COALESCE($2,'Unknown'), COALESCE($3,'User'), COALESCE($4,'unknown@example.com'),
+        $5, $6, $7, $8::text[], $9::text[],
+        $10, $11, $12,
+        NOW(), NOW()
+      )
       ON CONFLICT (auth0_sub) DO UPDATE SET
         first_name = COALESCE(EXCLUDED.first_name, "USER".first_name),
         last_name = COALESCE(EXCLUDED.last_name, "USER".last_name),
         email = COALESCE(EXCLUDED.email, "USER".email),
+        phone = EXCLUDED.phone,
+        location = EXCLUDED.location,
+        bio = EXCLUDED.bio,
+        skills = EXCLUDED.skills,
+        interests = EXCLUDED.interests,
+        linkedin = EXCLUDED.linkedin,
+        github = EXCLUDED.github,
+        portfolio = EXCLUDED.portfolio,
         update_at = NOW()
       RETURNING user_id
       `,
-      [auth0Sub, first, last, email],
+      [auth0Sub, first, last, email, phone, location, bio, skills, interests, linkedin, github, portfolio],
     );
 
     const userId = userUpsert.rows[0].user_id as number;
 
-    // Replace EDUCATION (simple + reliable)
-    // First delete majors for existing education rows, then delete education rows.
+    // Replace EDUCATION
     const existingEdu = await client.query(
       `SELECT edu_id FROM "EDUCATION" WHERE user_id = $1`,
       [userId],

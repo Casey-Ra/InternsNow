@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     try {
       revalidatePath("/manage-internships");
       revalidatePath("/employer/manage-internships");
-      revalidatePath("/student/find-opportunities");
+      revalidatePath("/opportunities");
     } catch (e) {
       console.warn("revalidatePath failed:", e);
     }
