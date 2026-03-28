@@ -19,7 +19,7 @@ export default function ResumePage() {
               Work in Progress
             </h2>
             <p className="text-yellow-700 dark:text-yellow-300 max-w-md">
-              We're building an amazing resume builder for you. Check back soon for AI-powered resume creation tools!
+              We&apos;re building an amazing resume builder for you. Check back soon for AI-powered resume creation tools!
             </p>
           </div>
         </div>

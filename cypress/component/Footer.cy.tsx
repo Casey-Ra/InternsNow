@@ -106,7 +106,7 @@ describe('Footer Component', () => {
         cy.wrap($link)
           .invoke('text')
           .then((text) => {
-            expect(text.trim()).to.not.be.empty;
+            expect(text.trim()).not.to.equal('');
           });
       });
     });

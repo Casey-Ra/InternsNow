@@ -3,6 +3,17 @@ import { updateInternship } from "../../../lib/models/Internship";
 import { revalidatePath } from "next/cache";
 import { auth0 } from "@/lib/auth0";
 
+type InternshipPayload = {
+  id?: string;
+  company_name?: string;
+  job_description?: string;
+  url?: string;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth0.getSession();
@@ -11,11 +22,11 @@ export async function POST(request: NextRequest) {
     }
 
     const raw = await request.text();
-    let body: any = {};
+    let body: InternshipPayload = {};
     try {
-      body = JSON.parse(raw);
-    } catch (e) {
-      body = await request.json().catch(() => ({}));
+      body = JSON.parse(raw) as InternshipPayload;
+    } catch {
+      body = (await request.json().catch(() => ({}))) as InternshipPayload;
     }
     const { id, company_name, job_description, url } = body || {};
 
@@ -36,15 +47,20 @@ export async function POST(request: NextRequest) {
       revalidatePath("/manage-internships");
       revalidatePath("/employer/manage-internships");
       revalidatePath("/opportunities");
-    } catch (e) {
-      console.warn("revalidatePath failed:", e);
+    } catch (error) {
+      console.warn("revalidatePath failed:", error);
     }
 
     return NextResponse.json({ msg: "Internship updated", data: updated }, { status: 200 });
-  } catch (err: any) {
-    console.error("/api/internships/update error:", err?.message || err);
+  } catch (error: unknown) {
+    console.error("/api/internships/update error:", getErrorMessage(error));
     // Handle unique constraint on URL
-    if (err?.code === "23505") {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "23505"
+    ) {
       return NextResponse.json({ error: "An internship with that URL already exists" }, { status: 409 });
     }
     return NextResponse.json({ error: "Failed to update internship" }, { status: 500 });

@@ -13,7 +13,7 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're working on bringing you the best contact experience.
+              We&apos;re working on bringing you the best contact experience.
             </p>
           </div>
           
@@ -28,7 +28,7 @@ export default function ContactPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our contact page is currently under development. We're building something amazing to help you get in touch with us easily.
+              Our contact page is currently under development. We&apos;re building something amazing to help you get in touch with us easily.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">

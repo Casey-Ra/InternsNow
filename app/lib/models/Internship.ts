@@ -15,6 +15,10 @@ const UUID_RE =
 
 let schemaEnsured = false;
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function ensureInternshipSchema() {
   if (schemaEnsured) {
     return;
@@ -78,9 +82,9 @@ export const createInternship = async (
     );
 
     return mapInternshipRow(existing.rows[0] as Record<string, unknown>);
-  } catch (err: any) {
-    console.error("Error creating internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error creating internship:", getErrorMessage(error));
+    throw error;
   }
 };
 
@@ -113,8 +117,8 @@ export const getAllInternships = async (): Promise<Internship[]> => {
     return result.rows.map((row) =>
       mapInternshipRow(row as Record<string, unknown>)
     );
-  } catch (err: any) {
-    console.error("Error fetching internships:", err);
+  } catch (error: unknown) {
+    console.error("Error fetching internships:", getErrorMessage(error));
     return [];
   }
 };
@@ -151,9 +155,9 @@ export const updateInternship = async (
     return result.rows[0]
       ? mapInternshipRow(result.rows[0] as Record<string, unknown>)
       : null;
-  } catch (err: any) {
-    console.error("Error updating internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error updating internship:", getErrorMessage(error));
+    throw error;
   }
 };
 
@@ -225,9 +229,9 @@ export const deleteInternship = async (id: string): Promise<boolean> => {
     // Log rowCount to aid debugging if deletions fail
     console.log(`deleteInternship: deleted rows for id ${id}:`, result.rowCount);
     return result.rowCount! > 0;
-  } catch (err: any) {
-    console.error("Error deleting internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error deleting internship:", getErrorMessage(error));
+    throw error;
   }
 };
 
@@ -238,10 +242,10 @@ export const deleteInternshipByUrl = async (url: string): Promise<number> => {
       "DELETE FROM internships WHERE url = $1",
       [url]
     );
-  console.log(`deleteInternshipByUrl: deleted rows for url ${url}:`, result.rowCount);
-  return result.rowCount ?? 0;
-  } catch (err: any) {
-    console.error("Error deleting internship by url:", err);
-    throw err;
+    console.log(`deleteInternshipByUrl: deleted rows for url ${url}:`, result.rowCount);
+    return result.rowCount ?? 0;
+  } catch (error: unknown) {
+    console.error("Error deleting internship by url:", getErrorMessage(error));
+    throw error;
   }
 };

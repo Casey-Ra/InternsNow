@@ -77,8 +77,10 @@ export function LocationAutocomplete({
         const data = await res.json();
         setItems(Array.isArray(data) ? data : []);
         setOpen(true);
-      } catch (e: any) {
-        if (e?.name !== "AbortError") setItems([]);
+      } catch (error: unknown) {
+        if (!(error instanceof Error) || error.name !== "AbortError") {
+          setItems([]);
+        }
       } finally {
         setLoading(false);
       }

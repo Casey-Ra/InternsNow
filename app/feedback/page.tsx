@@ -13,7 +13,7 @@ export default function FeedbackPage() {
               Feedback
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're working on creating the best feedback system for you.
+              We&apos;re working on creating the best feedback system for you.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function FeedbackPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our feedback system is currently under development. We're building a comprehensive platform where you can share your thoughts, suggestions, and experiences to help us improve InternsNow.
+              Our feedback system is currently under development. We&apos;re building a comprehensive platform where you can share your thoughts, suggestions, and experiences to help us improve InternsNow.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Your input is valuable to us. Soon you'll be able to submit feedback, report issues, and suggest new features directly through this page.
+                Your input is valuable to us. Soon you&apos;ll be able to submit feedback, report issues, and suggest new features directly through this page.
               </p>
             </div>
           </div>

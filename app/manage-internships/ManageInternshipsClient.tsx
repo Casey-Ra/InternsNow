@@ -11,6 +11,30 @@ export interface InternshipItem {
   created_at: string;
 }
 
+type SyncBoardResult = {
+  token: string;
+  companyName: string;
+  error?: string;
+};
+
+type SyncTotals = {
+  created?: number;
+  updated?: number;
+  unchanged?: number;
+  matched?: number;
+};
+
+type SyncResponse = {
+  error?: string;
+  msg?: string;
+  totals?: SyncTotals;
+  boards?: SyncBoardResult[];
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unexpected error";
+}
+
 export default function ManageInternshipsClient({
   initialData,
   initialGreenhouseBoards,
@@ -56,7 +80,7 @@ export default function ManageInternshipsClient({
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as SyncResponse;
       if (!res.ok) {
         setSyncFeedback({
           tone: "error",
@@ -66,7 +90,7 @@ export default function ManageInternshipsClient({
       }
 
       const failedBoards = Array.isArray(data?.boards)
-        ? data.boards.filter((board: { error?: string }) => Boolean(board.error))
+        ? data.boards.filter((board) => Boolean(board.error))
         : [];
       const totals = data?.totals ?? {};
       const summary = [
@@ -79,11 +103,7 @@ export default function ManageInternshipsClient({
         failedBoards.length > 0
           ? ` Failed boards: ${failedBoards
               .map(
-                (board: {
-                  token: string;
-                  companyName: string;
-                  error?: string;
-                }) =>
+                (board) =>
                   `${board.companyName || board.token} (${board.error ?? "unknown error"})`,
               )
               .join("; ")}`
@@ -99,10 +119,10 @@ export default function ManageInternshipsClient({
       } catch {
         window.location.reload();
       }
-    } catch (e: any) {
+    } catch (error: unknown) {
       setSyncFeedback({
         tone: "error",
-        text: e?.message || "Unexpected Greenhouse sync error",
+        text: getErrorMessage(error),
       });
     } finally {
       setSyncingGreenhouse(false);
@@ -144,13 +164,13 @@ export default function ManageInternshipsClient({
       // refresh server-rendered pages so edits reflect everywhere
       try {
         router.refresh();
-      } catch (e) {
+      } catch {
         window.location.reload();
       }
 
       setEditingId(null);
-    } catch (e: any) {
-      setError(e?.message || "Unexpected error");
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     } finally {
       setSaving(null);
     }
@@ -178,12 +198,12 @@ export default function ManageInternshipsClient({
       setItems((prev) => prev.filter((p) => p.id !== id));
       try {
         router.refresh();
-      } catch (e) {
+      } catch {
         // fallback: full reload
         window.location.reload();
       }
-    } catch (e: any) {
-      setError(e?.message || "Unexpected error");
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     } finally {
       setDeleting(null);
     }

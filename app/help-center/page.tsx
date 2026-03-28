@@ -13,7 +13,7 @@ export default function HelpCenterPage() {
               Help Center
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're building a comprehensive help center to support you.
+              We&apos;re building a comprehensive help center to support you.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function HelpCenterPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our help center is currently under development. We're creating detailed guides, tutorials, and support resources to help you make the most of InternsNow.
+              Our help center is currently under development. We&apos;re creating detailed guides, tutorials, and support resources to help you make the most of InternsNow.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Soon you'll find step-by-step guides, video tutorials, and answers to common questions right here.
+                Soon you&apos;ll find step-by-step guides, video tutorials, and answers to common questions right here.
               </p>
             </div>
           </div>

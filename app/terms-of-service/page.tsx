@@ -13,7 +13,7 @@ export default function TermsOfServicePage() {
               Terms of Service
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're working on creating clear and fair terms of service.
+              We&apos;re working on creating clear and fair terms of service.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function TermsOfServicePage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our terms of service are currently being drafted. We're working to create fair and transparent terms that protect both users and the platform.
+              Our terms of service are currently being drafted. We&apos;re working to create fair and transparent terms that protect both users and the platform.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                We're committed to establishing clear guidelines that ensure a positive experience for all users of InternsNow.
+                We&apos;re committed to establishing clear guidelines that ensure a positive experience for all users of InternsNow.
               </p>
             </div>
           </div>

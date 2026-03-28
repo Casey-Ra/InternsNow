@@ -8,6 +8,10 @@ export interface Internship {
   created_at: Date;
 }
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 // Initialize table (simple convenience; consider migrations)
 const init = async () => {
   try {
@@ -45,9 +49,9 @@ export const createInternship = async (
     );
 
     return result.rows[0];
-  } catch (err: any) {
-    console.error("Error creating internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error creating internship:", getErrorMessage(error));
+    throw error;
   }
 };
 
@@ -92,9 +96,9 @@ export const updateInternship = async (
     );
 
     return result.rows[0] || null;
-  } catch (err: any) {
-    console.error("Error updating internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error updating internship:", getErrorMessage(error));
+    throw error;
   }
 };
 
@@ -106,8 +110,8 @@ export const deleteInternship = async (id: string): Promise<boolean> => {
     );
 
     return result.rowCount! > 0;
-  } catch (err: any) {
-    console.error("Error deleting internship:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error deleting internship:", getErrorMessage(error));
+    throw error;
   }
 };

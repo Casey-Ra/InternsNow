@@ -1,35 +1,16 @@
 import pool from "../db";
 
 export interface User {
-  id: number;
-  username: string;
+  auth0_id: string;
   password?: string;
   email?: string;
+  role: string;
   created_at: Date;
 }
 
-// Initialize table (simple convenience; consider migrations)
-const init = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        auth0_id VARCHAR PRIMARY KEY,
-        email VARCHAR(255) UNIQUE,
-        role VARCHAR(50),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      )
-    `);
-    console.log("Users table initialized successfully");
-  } catch (err) {
-    console.error("Users table init failed:", err);
-  }
-};
-
-// Initialize the table when the module is loaded (skip during build)
-// Auto-init disabled to prevent build failures - call init() manually if needed
-// if (typeof window === 'undefined' && process.env.NEXT_PHASE !== 'phase-production-build') {
-//   init().catch(console.error);
-// }
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
 
 export const createUser = async (
   auth0_id: string,
@@ -50,9 +31,9 @@ export const createUser = async (
     );
 
     return result.rows[0];
-  } catch (err: any) {
-    console.error("Error creating user:", err);
-    throw err;
+  } catch (error: unknown) {
+    console.error("Error creating user:", getErrorMessage(error));
+    throw error;
   }
 };
 

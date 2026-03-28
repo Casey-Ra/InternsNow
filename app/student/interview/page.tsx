@@ -108,7 +108,7 @@ export default function AIInterviewPage() {
                 </p>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 max-w-xs mx-auto">
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    "Tell me about yourself and why you're interested in this role."
+                    &quot;Tell me about yourself and why you&apos;re interested in this role.&quot;
                   </p>
                 </div>
               </div>

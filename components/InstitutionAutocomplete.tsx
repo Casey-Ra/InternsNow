@@ -18,7 +18,7 @@ export function InstitutionAutocomplete({
   React.useEffect(() => {
     // keep input in sync if parent changes value (e.g. initial load)
     setQuery(value?.name ?? "");
-  }, [value?.id]);
+  }, [value?.id, value?.name]);
 
   const justSelected = React.useRef(false);
 

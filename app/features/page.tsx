@@ -12,7 +12,7 @@ export default function FeaturesPage() {
             Features
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            We're working on this page! Check back soon.
+            We&apos;re working on this page! Check back soon.
           </p>
         </div>
         
@@ -27,7 +27,7 @@ export default function FeaturesPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Our features page is under development. Soon you'll find detailed information about all the powerful 
+              Our features page is under development. Soon you&apos;ll find detailed information about all the powerful 
               tools and functionality that make InternsNow the best platform for connecting students with internship opportunities.
             </p>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">

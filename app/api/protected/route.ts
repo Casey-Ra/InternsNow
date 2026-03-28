@@ -4,12 +4,10 @@ import type { NextRequest } from "next/server";
 
 // Optional: type for session
 interface Session {
-  user?: any;
+  user?: Record<string, unknown>;
   accessToken?: string;
   idToken?: string;
-  payload?: {
-    [key: string]: any;
-  };
+  payload?: Record<string, unknown>;
 }
 
 export async function GET(req: NextRequest) {

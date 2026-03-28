@@ -156,7 +156,7 @@ describe('Header Component', () => {
       cy.get('header a').each(($link) => {
         const text = $link.text().trim();
         const hasAriaLabel = !!$link.attr('aria-label');
-        expect(text.length > 0 || hasAriaLabel).to.be.true;
+        expect(text.length > 0 || hasAriaLabel).to.equal(true);
       });
     });
   });

@@ -99,8 +99,6 @@ const samples = [
       console.log("initDb: skipping automatic initialization in production. Set FORCE_INITDB=1 to force.");
       return;
     }
-  const existing = await getAllInternships();
-
   // If duplicates exist (from previous runs without uniqueness), remove duplicates keeping one per URL.
     try {
       const dupRes = await pool.query(

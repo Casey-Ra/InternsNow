@@ -19,7 +19,7 @@ export default function AddInternshipPage() {
       // basic check
       const u = new URL(v);
       return u.protocol === "http:" || u.protocol === "https:";
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -79,8 +79,8 @@ export default function AddInternshipPage() {
       setTimeout(() => {
         router.push("/manage-internships");
       }, 1200);
-    } catch (err: any) {
-      setError(err?.message || "An error occurred");
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ export default function AddInternshipPage() {
       <main className="max-w-3xl mx-auto p-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8">
           <h1 className="text-2xl font-semibold mb-4">Add Internship</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Share an internship opportunity with students. We'll display it on the student opportunities page.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Share an internship opportunity with students. We&apos;ll display it on the student opportunities page.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

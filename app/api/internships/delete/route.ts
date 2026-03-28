@@ -3,6 +3,15 @@ import { deleteInternship, deleteInternshipByUrl } from "../../../lib/models/Int
 import { revalidatePath } from "next/cache";
 import { auth0 } from "@/lib/auth0";
 
+type DeleteInternshipPayload = {
+  id?: string;
+  url?: string;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth0.getSession();
@@ -11,12 +20,12 @@ export async function POST(request: NextRequest) {
     }
 
     const rawBody = await request.text();
-    let body: any = {};
+    let body: DeleteInternshipPayload = {};
     try {
-      body = JSON.parse(rawBody);
-    } catch (e) {
+      body = JSON.parse(rawBody) as DeleteInternshipPayload;
+    } catch {
       // fall back to parsed json
-      body = await request.json().catch(() => ({}));
+      body = (await request.json().catch(() => ({}))) as DeleteInternshipPayload;
     }
 
     const { id, url } = body || {};
@@ -60,13 +69,13 @@ export async function POST(request: NextRequest) {
       revalidatePath("/manage-internships");
       revalidatePath("/employer/manage-internships");
       revalidatePath("/opportunities");
-    } catch (e) {
-      console.warn("revalidatePath failed:", e);
+    } catch (error) {
+      console.warn("revalidatePath failed:", error);
     }
 
     return NextResponse.json({ msg: "Internship deleted", deleted: deletedCount, method }, { status: 200 });
-  } catch (err: any) {
-    console.error("/api/internships/delete error:", err?.message || err);
+  } catch (error: unknown) {
+    console.error("/api/internships/delete error:", getErrorMessage(error));
     return NextResponse.json({ error: "Failed to delete internship" }, { status: 500 });
   }
 }

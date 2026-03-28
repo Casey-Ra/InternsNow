@@ -13,7 +13,7 @@ export default function FAQsPage() {
               Frequently Asked Questions
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              We're compiling the most common questions and answers.
+              We&apos;re compiling the most common questions and answers.
             </p>
           </div>
           
@@ -28,12 +28,12 @@ export default function FAQsPage() {
               Coming Soon
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Our FAQ section is currently being developed. We're gathering the most common questions from users and preparing comprehensive answers.
+              Our FAQ section is currently being developed. We&apos;re gathering the most common questions from users and preparing comprehensive answers.
             </p>
             
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Soon you'll find answers to questions about account setup, job searching, application processes, and more.
+                Soon you&apos;ll find answers to questions about account setup, job searching, application processes, and more.
               </p>
             </div>
           </div>
