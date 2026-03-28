@@ -32,24 +32,45 @@ jest.mock("@/app/lib/auth/eventAccess", () => ({
   canManageEvent: jest.fn(),
 }));
 
-const { GET: getProfile } = require("@/app/api/profile/route") as typeof import("@/app/api/profile/route");
-const { GET: getProtected } = require("@/app/api/protected/route") as typeof import("@/app/api/protected/route");
-const { POST: createInternship } = require("@/app/api/internships/create/route") as typeof import("@/app/api/internships/create/route");
-const { POST: updateInternship } = require("@/app/api/internships/update/route") as typeof import("@/app/api/internships/update/route");
-const { POST: deleteInternship } = require("@/app/api/internships/delete/route") as typeof import("@/app/api/internships/delete/route");
-const { POST: createEvent } = require("@/app/api/events/create/route") as typeof import("@/app/api/events/create/route");
-const { POST: updateEvent } = require("@/app/api/events/update/route") as typeof import("@/app/api/events/update/route");
-const { POST: deleteEvent } = require("@/app/api/events/delete/route") as typeof import("@/app/api/events/delete/route");
+function loadRoutes() {
+  let routes!: {
+    getProfile: typeof import("@/app/api/profile/route").GET;
+    getProtected: typeof import("@/app/api/protected/route").GET;
+    createInternship: typeof import("@/app/api/internships/create/route").POST;
+    updateInternship: typeof import("@/app/api/internships/update/route").POST;
+    deleteInternship: typeof import("@/app/api/internships/delete/route").POST;
+    createEvent: typeof import("@/app/api/events/create/route").POST;
+    updateEvent: typeof import("@/app/api/events/update/route").POST;
+    deleteEvent: typeof import("@/app/api/events/delete/route").POST;
+  };
+
+  jest.isolateModules(() => {
+    routes = {
+      getProfile: require("@/app/api/profile/route").GET,
+      getProtected: require("@/app/api/protected/route").GET,
+      createInternship: require("@/app/api/internships/create/route").POST,
+      updateInternship: require("@/app/api/internships/update/route").POST,
+      deleteInternship: require("@/app/api/internships/delete/route").POST,
+      createEvent: require("@/app/api/events/create/route").POST,
+      updateEvent: require("@/app/api/events/update/route").POST,
+      deleteEvent: require("@/app/api/events/delete/route").POST,
+    };
+  });
+
+  return routes;
+}
 
 describe("fast API auth protection tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
     mockGetSession.mockResolvedValue(null);
     mockGetEventActor.mockResolvedValue(null);
     mockPoolQuery.mockResolvedValue({ rows: [] });
   });
 
   it("rejects unauthenticated profile reads", async () => {
+    const { getProfile } = loadRoutes();
     const response = await getProfile();
 
     expect(response.status).toBe(401);
@@ -57,6 +78,7 @@ describe("fast API auth protection tests", () => {
   });
 
   it("rejects unauthenticated protected API reads", async () => {
+    const { getProtected } = loadRoutes();
     const response = await getProtected(
       new Request(
         "http://localhost/api/protected",
@@ -68,6 +90,8 @@ describe("fast API auth protection tests", () => {
   });
 
   it("rejects unauthenticated internship mutations", async () => {
+    const { createInternship, updateInternship, deleteInternship } =
+      loadRoutes();
     const createResponse = await createInternship(
       new Request("http://localhost/api/internships/create", {
         method: "POST",
@@ -105,6 +129,7 @@ describe("fast API auth protection tests", () => {
   });
 
   it("rejects unauthenticated event mutations", async () => {
+    const { createEvent, updateEvent, deleteEvent } = loadRoutes();
     const createResponse = await createEvent(
       new Request("http://localhost/api/events/create", {
         method: "POST",
