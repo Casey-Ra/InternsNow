@@ -92,6 +92,11 @@ async function run() {
 }
 
 run().catch((err) => {
+  // Connection errors (no DB available) are expected in CI — skip gracefully
+  if (err?.code === "ECONNREFUSED" || err?.code === "ENOTFOUND" || err?.code === "EAI_AGAIN") {
+    console.log(`⚠  Could not connect to database (${err.code}) — skipping migrations.`);
+    process.exit(0);
+  }
   console.error("Migration runner error:", err);
   process.exit(1);
 });
