@@ -52,7 +52,6 @@ describe('Header Component', () => {
 
     it('does not show student-only nav links for the default variant', () => {
       cy.get('header').contains('Find Opportunities').should('not.exist');
-      cy.get('header').contains('AI Fluency Test').should('not.exist');
     });
 
     it('shows Sign In and Get Started buttons', () => {

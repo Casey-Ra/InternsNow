@@ -55,7 +55,6 @@ describe('Footer Component', () => {
       cy.get('footer').contains('Find Opportunities').should('be.visible');
       cy.get('footer').contains('Career Resources').should('be.visible');
       cy.get('footer').contains('Resume Builder').should('be.visible');
-      cy.get('footer').contains('AI Fluency Test').should('be.visible');
     });
 
     it('still renders common company links', () => {

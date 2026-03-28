@@ -56,7 +56,6 @@ export default function Footer({
         { href: "/student/career-resources", label: "Career Resources" },
         { href: "/student/resume", label: "Resume Builder" },
         { href: "/student/interview", label: "AI Interview" },
-        { href: "/student/fluency-test", label: "AI Fluency Test" },
       ],
       employer: [
         { href: "#", label: "Post Jobs" },

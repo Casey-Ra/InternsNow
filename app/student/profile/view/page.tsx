@@ -4,6 +4,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 interface EducationRow {
   eduId: number;
@@ -130,6 +132,22 @@ function EmptyState({ title, message }: { title: string; message: string }) {
           Edit profile
         </Link>
       </div>
+    </div>
+  );
+}
+
+function StudentProfileShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen relative overflow-x-hidden text-gray-100">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-gray-950 via-slate-950 to-black" />
+      <div className="absolute -z-10 left-[-10%] top-[-10%] h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="absolute -z-10 right-[-10%] top-[20%] h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
+
+      <Header variant="student" tone="dark" />
+
+      {children}
+
+      <Footer variant="student" tone="dark" />
     </div>
   );
 }
@@ -263,43 +281,48 @@ export default function ViewProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6 text-gray-300">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <p className="text-sm">Loading profile...</p>
-        </div>
-      </main>
+      <StudentProfileShell>
+        <main className="min-h-[calc(100vh-9rem)] flex items-center justify-center px-6 text-gray-300">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm">Loading profile...</p>
+          </div>
+        </main>
+      </StudentProfileShell>
     );
   }
 
   if (!profile || profile.authenticated === false) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6 text-gray-300">
-        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6">
-          <p className="text-base font-semibold text-gray-100">
-            No profile found
-          </p>
-          <p className="mt-2 text-sm text-gray-400">
-            Add your education and experience so employers can see a complete
-            profile.
-          </p>
-          <div className="mt-4">
-            <Link
-              href="/student/profile/edit"
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition"
-            >
-              Create / Edit profile
-            </Link>
+      <StudentProfileShell>
+        <main className="min-h-[calc(100vh-9rem)] flex items-center justify-center px-6 text-gray-300">
+          <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-base font-semibold text-gray-100">
+              No profile found
+            </p>
+            <p className="mt-2 text-sm text-gray-400">
+              Add your education and experience so we can match you to better-fit
+              opportunities.
+            </p>
+            <div className="mt-4">
+              <Link
+                href="/student/profile/edit"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition"
+              >
+                Create / Edit profile
+              </Link>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </StudentProfileShell>
     );
   }
 
   return (
-    <main className="min-h-screen px-4 sm:px-6 py-10 text-gray-100">
-      <div className="mx-auto max-w-6xl">
-        {/* HERO */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5">
+    <StudentProfileShell>
+      <main className="px-4 sm:px-6 py-10">
+        <div className="mx-auto max-w-6xl">
+          {/* HERO */}
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5">
           {/* soft “cover” */}
           <div className="absolute inset-0 opacity-50">
             <div className="h-32 sm:h-40 bg-gradient-to-r from-blue-600/30 via-cyan-500/20 to-emerald-500/20" />
@@ -337,7 +360,7 @@ export default function ViewProfilePage() {
                     </p>
                   ) : (
                     <p className="mt-2 text-sm text-gray-400">
-                      Add education and experience to build your profile.
+                      Add education and experience to improve your matches.
                     </p>
                   )}
                 </div>
@@ -402,8 +425,8 @@ export default function ViewProfilePage() {
           </div>
         </div>
 
-        {/* BODY GRID */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* BODY GRID */}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* MAIN (2 cols) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Education */}
@@ -417,7 +440,7 @@ export default function ViewProfilePage() {
                 {profile.education.length === 0 ? (
                   <EmptyState
                     title="No education added"
-                    message="Add your school, degree type, and majors to make your profile more credible."
+                    message="Add your school, degree type, and majors so we can match you with more relevant roles."
                   />
                 ) : (
                   profile.education.map((e) => {
@@ -475,7 +498,7 @@ export default function ViewProfilePage() {
                 {profile.workExperience.length === 0 ? (
                   <EmptyState
                     title="No work experience added"
-                    message="Add jobs, internships, or campus roles. Even part-time work helps employers understand your strengths."
+                    message="Add jobs, internships, or campus roles. Even part-time work gives us more signal for better matching."
                   />
                 ) : (
                   profile.workExperience.map((w) => {
@@ -510,8 +533,8 @@ export default function ViewProfilePage() {
           <aside className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
               <SectionTitle
-                title="Profile Summary"
-                subtitle="Quick snapshot."
+                title="Matching Snapshot"
+                subtitle="What we currently use for recommendations."
               />
 
               <div className="mt-4 space-y-3 text-sm">
@@ -544,7 +567,7 @@ export default function ViewProfilePage() {
                 </div>
 
                 <div className="pt-3 border-t border-white/10">
-                  <p className="text-gray-400">Completeness</p>
+                  <p className="text-gray-400">Matching completeness</p>
                   <div className="mt-2">
                     {(() => {
                       const hasEdu = profile.education.length > 0;
@@ -579,23 +602,27 @@ export default function ViewProfilePage() {
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
               <SectionTitle
                 title="Next Steps"
-                subtitle="Make this profile stand out."
+                subtitle="Add details that help us match you better."
               />
               <ul className="mt-4 space-y-2 text-sm text-gray-300">
                 <li className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  Add a short “About” / summary (future: profile bio field).
+                  Add internships, jobs, research, or campus roles so we have
+                  more signal about your experience.
                 </li>
                 <li className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  Include measurable impact in work descriptions (numbers help).
+                  Include tools, responsibilities, coursework, or impact in your
+                  descriptions so we can infer stronger skill matches.
                 </li>
                 <li className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  Add multiple majors/minors and mark a primary major.
+                  Add majors, minors, degree timing, and current status so we
+                  can narrow recommendations more accurately.
                 </li>
               </ul>
             </div>
           </aside>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </StudentProfileShell>
   );
 }
