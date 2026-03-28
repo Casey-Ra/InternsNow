@@ -64,6 +64,9 @@ describe("fast API auth protection tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
+    process.env.POSTGRES_URL =
+      process.env.POSTGRES_URL ??
+      "postgresql://test:test@127.0.0.1:5432/testdb";
     mockGetSession.mockResolvedValue(null);
     mockGetEventActor.mockResolvedValue(null);
     mockPoolQuery.mockResolvedValue({ rows: [] });
