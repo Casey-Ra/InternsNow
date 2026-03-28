@@ -52,7 +52,7 @@ export default function Footer({
 
     const specificLinks = {
       student: [
-        { href: "/student/find-opportunities", label: "Find Opportunities" },
+        { href: "/opportunities", label: "Jobs & Internships" },
         { href: "/student/career-resources", label: "Career Resources" },
         { href: "/student/resume", label: "Resume Builder" },
         { href: "/student/interview", label: "AI Interview" },

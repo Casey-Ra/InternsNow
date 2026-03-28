@@ -14,7 +14,7 @@ function formatDate(iso?: string | Date) {
   try {
     const d = iso ? new Date(iso) : new Date();
     return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-  } catch (e) {
+  } catch {
     return "";
   }
 }
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps) {
   return { title: `${internship.company_name} opportunity • InternsNow` };
 }
 
-export default async function InternshipDetailsPage({ params }: PageProps) {
+export default async function OpportunityDetailsPage({ params }: PageProps) {
   const { id } = await params;
   const internship = await findInternshipById(id);
 
@@ -38,20 +38,24 @@ export default async function InternshipDetailsPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header variant="student" />
+      <Header variant="default" />
 
       <main className="max-w-3xl mx-auto px-6 py-16">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
           <Link
-            href="/student/find-opportunities"
+            href="/opportunities"
             className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← Back to listings
           </Link>
 
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{internship.company_name}</h1>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Posted on {formatDate(internship.created_at)}</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {internship.company_name}
+            </h1>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Posted on {formatDate(internship.created_at)}
+            </p>
           </div>
 
           <div className="text-gray-700 dark:text-gray-200 whitespace-pre-line leading-relaxed">
@@ -68,7 +72,7 @@ export default async function InternshipDetailsPage({ params }: PageProps) {
               Apply Now
             </a>
             <Link
-              href="/student/find-opportunities"
+              href="/opportunities"
               className="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               Back to Listings
@@ -77,7 +81,7 @@ export default async function InternshipDetailsPage({ params }: PageProps) {
         </div>
       </main>
 
-      <Footer variant="student" />
+      <Footer variant="default" />
     </div>
   );
 }

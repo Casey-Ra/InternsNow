@@ -1,6 +1,6 @@
 describe("Student Events", () => {
   it("navigates to /student/events from student header", () => {
-    cy.visit("/student/find-opportunities");
+    cy.visit("/opportunities");
     cy.get("header").contains("a", "Events").click();
     cy.url().should("include", "/events");
   });

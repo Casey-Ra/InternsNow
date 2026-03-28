@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type LocationItem = {
   id: string;
@@ -26,14 +27,19 @@ export function LocationAutocomplete({
   const [loading, setLoading] = useState(false);
 
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const justSelected = useRef(false);
 
   const q = useMemo(() => value.trim(), [value]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       if (!rootRef.current) return;
-      if (!rootRef.current.contains(e.target as Node)) setOpen(false);
+      if (
+        !rootRef.current.contains(e.target as Node) &&
+        !dropdownRef.current?.contains(e.target as Node)
+      ) setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -47,6 +53,10 @@ export function LocationAutocomplete({
     }
 
     const t = setTimeout(async () => {
+      if (justSelected.current) {
+        justSelected.current = false;
+        return;
+      }
       try {
         abortRef.current?.abort();
         const ac = new AbortController();
@@ -77,8 +87,52 @@ export function LocationAutocomplete({
     return () => clearTimeout(t);
   }, [q]);
 
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useEffect(() => {
+    if (!open || !rootRef.current) return;
+    const rect = rootRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + window.scrollY + 8, left: rect.left + window.scrollX, width: rect.width });
+  }, [open, items, loading]);
+
+  const dropdown =
+    open && (loading || items.length > 0) && pos
+      ? createPortal(
+          <div
+            ref={dropdownRef}
+            style={{ position: "absolute", top: pos.top, left: pos.left, width: pos.width }}
+            className="z-[9999] overflow-hidden rounded-xl border border-gray-200/70 dark:border-white/10 bg-white/95 dark:bg-gray-950/90 backdrop-blur shadow-lg"
+          >
+            {loading ? (
+              <div className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                Searching…
+              </div>
+            ) : (
+              <ul className="max-h-64 overflow-auto py-1">
+                {items.map((it) => (
+                  <li key={it.id}>
+                    <button
+                      type="button"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100/70 dark:hover:bg-white/10"
+                      onClick={() => {
+                        justSelected.current = true;
+                        onSelect(it);
+                        setOpen(false);
+                      }}
+                    >
+                      {it.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef}>
       <input
         value={value}
         onChange={(e) => {
@@ -89,33 +143,7 @@ export function LocationAutocomplete({
         placeholder={placeholder ?? "City, State (or City, Country)"}
         className={className}
       />
-
-      {open && (loading || items.length > 0) ? (
-        <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200/70 dark:border-white/10 bg-white/95 dark:bg-gray-950/90 backdrop-blur shadow-lg">
-          {loading ? (
-            <div className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-              Searching…
-            </div>
-          ) : (
-            <ul className="max-h-64 overflow-auto py-1">
-              {items.map((it) => (
-                <li key={it.id}>
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100/70 dark:hover:bg-white/10"
-                    onClick={() => {
-                      onSelect(it);
-                      setOpen(false);
-                    }}
-                  >
-                    {it.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : null}
+      {dropdown}
     </div>
   );
 }

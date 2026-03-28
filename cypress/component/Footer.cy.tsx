@@ -63,11 +63,11 @@ describe('Footer Component', () => {
       cy.get('footer').contains('Contact').should('be.visible');
     });
 
-    it('Find Opportunities link points to correct path', () => {
+    it('Jobs & Internships link points to correct path', () => {
       cy.get('footer')
-        .contains('Find Opportunities')
+        .contains('Jobs & Internships')
         .closest('a')
-        .should('have.attr', 'href', '/student/find-opportunities');
+        .should('have.attr', 'href', '/opportunities');
     });
   });
 

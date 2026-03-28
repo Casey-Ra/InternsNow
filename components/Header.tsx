@@ -61,7 +61,7 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
       case "student":
         return [
           { href: "/student", label: "Home" },
-          { href: "/student/find-opportunities", label: "Find Opportunities" },
+          { href: "/opportunities", label: "Jobs & Internships" },
           { href: "/events", label: "Events" },
           { href: "/student/resources", label: "Resources" },
           { href: "/student/fluency-test", label: "AI Fluency Test" },
@@ -69,6 +69,7 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
       default:
         return [
           { href: "/intake", label: "Quick Match" },
+          { href: "/opportunities", label: "Jobs & Internships" },
           { href: "/events", label: "Events" },
           { href: "/about", label: "About" },
           { href: "/features", label: "Features" },

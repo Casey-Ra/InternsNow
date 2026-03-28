@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 
 export function InstitutionAutocomplete({
   value,
@@ -19,8 +20,14 @@ export function InstitutionAutocomplete({
     setQuery(value?.name ?? "");
   }, [value?.id]);
 
+  const justSelected = React.useRef(false);
+
   React.useEffect(() => {
     const t = setTimeout(async () => {
+      if (justSelected.current) {
+        justSelected.current = false;
+        return;
+      }
       const q = query.trim();
       if (q.length < 2) {
         setItems([]);
@@ -41,8 +48,54 @@ export function InstitutionAutocomplete({
     return () => clearTimeout(t);
   }, [query]);
 
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const dropdownRef = React.useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
+
+  React.useEffect(() => {
+    if (!open || !rootRef.current) return;
+    const rect = rootRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + window.scrollY + 8, left: rect.left + window.scrollX, width: rect.width });
+  }, [open, items, loading]);
+
+  const dropdown =
+    open && pos
+      ? createPortal(
+          <div
+            ref={dropdownRef}
+            style={{ position: "absolute", top: pos.top, left: pos.left, width: pos.width }}
+            className="z-[9999] rounded-md border bg-white dark:bg-gray-800 shadow"
+          >
+            <div className="max-h-64 overflow-auto">
+              {loading && (
+                <div className="px-3 py-2 text-sm opacity-70">Searching…</div>
+              )}
+              {!loading && items.length === 0 && (
+                <div className="px-3 py-2 text-sm opacity-70">No matches</div>
+              )}
+              {items.map((it) => (
+                <button
+                  key={it.id}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    justSelected.current = true;
+                    onSelect(it);
+                    setQuery(it.name);
+                    setOpen(false);
+                  }}
+                >
+                  {it.name}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div className="relative">
+    <div ref={rootRef}>
       <label className="text-sm">School / University</label>
 
       <input
@@ -53,36 +106,13 @@ export function InstitutionAutocomplete({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)} // closes after click
+        onBlur={() => setTimeout(() => {
+          if (dropdownRef.current?.contains(document.activeElement)) return;
+          setOpen(false);
+        }, 150)}
         placeholder="Start typing a school..."
       />
-
-      {open && (
-        <div className="absolute z-50 mt-2 w-full rounded-md border bg-background shadow">
-          <div className="max-h-64 overflow-auto">
-            {loading && (
-              <div className="px-3 py-2 text-sm opacity-70">Searching…</div>
-            )}
-            {!loading && items.length === 0 && (
-              <div className="px-3 py-2 text-sm opacity-70">No matches</div>
-            )}
-            {items.map((it) => (
-              <button
-                key={it.id}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  onSelect(it);
-                  setQuery(it.name);
-                  setOpen(false);
-                }}
-              >
-                {it.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 }
