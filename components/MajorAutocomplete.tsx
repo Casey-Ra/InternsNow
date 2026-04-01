@@ -8,9 +8,15 @@ type Item = { id: number; name: string };
 export function MajorAutocomplete({
   selectedLabel,
   onSelect,
+  inputClassName,
+  showLabel = true,
+  onKeyDown,
 }: {
   selectedLabel: string; // formData.major
   onSelect: (it: Item) => void; // set formData.major to it.name
+  inputClassName?: string;
+  showLabel?: boolean;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState(selectedLabel ?? "");
@@ -99,13 +105,14 @@ export function MajorAutocomplete({
 
   return (
     <div ref={rootRef}>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Major / Focus
-      </label>
+      {showLabel && (
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Major / Focus
+        </label>
+      )}
 
       <input
-        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        className={inputClassName ?? "w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -116,6 +123,7 @@ export function MajorAutocomplete({
           if (dropdownRef.current?.contains(document.activeElement)) return;
           setOpen(false);
         }, 150)}
+        onKeyDown={onKeyDown}
         placeholder="Start typing a major..."
       />
       {dropdown}
