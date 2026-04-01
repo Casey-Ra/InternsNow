@@ -1,40 +1,57 @@
 # Greenhouse Board Starters
 
-Verified on March 25, 2026 as publicly accessible Greenhouse boards.
+Verified on April 1, 2026 as publicly accessible Greenhouse boards.
 
-## Recommended Starter Set
+## Default Board Set (99 boards)
 
-Use this in `GREENHOUSE_BOARDS`:
+The app ships with 99 default boards when `GREENHOUSE_BOARDS` is not set. They are organized by category:
 
-```env
-GREENHOUSE_BOARDS=stripe|Stripe;datadog|Datadog;figma|Figma;cloudflare|Cloudflare;robinhood|Robinhood;jumptrading|Jump Trading;c3iot|C3 AI;flexport|Flexport;coinbase|Coinbase;klaviyo|Klaviyo;indeedflex|Indeed Flex
+### Big Tech / Consumer (14)
+`airbnb`, `discord`, `dropbox`, `figma`, `instacart`, `lyft`, `pinterest`, `reddit`, `roku`, `squarespace`, `twitch`, `peloton`, `duolingo`, `grammarly`
+
+### AI / ML (10)
+`anthropic`, `deepmind`, `xai`, `scaleai`, `togetherai`, `stabilityai`, `runwayml`, `databricks`, `descript`, `gleanwork`
+
+### Fintech / Payments (12)
+`stripe`, `coinbase`, `robinhood`, `brex`, `affirm`, `chime`, `sofi`, `marqeta`, `carta`, `nubank`, `mercury`, `toast`
+
+### Quant / Trading (10)
+`jumptrading`, `janestreet`, `imc`, `akunacapital`, `point72`, `dvtrading`, `arcesiumllc`, `capstoneinvestmentadvisors`, `aquaticcapitalmanagement`, `gcmgrosvenor`
+
+### Enterprise SaaS / Dev Tools (18)
+`datadog`, `hubspotjobs`, `okta`, `mongodb`, `elastic`, `twilio`, `gitlab`, `asana`, `fivetran`, `dbtlabsinc`, `airtable`, `amplitude`, `neo4j`, `zscaler`, `cockroachlabs`, `calendly`, `vercel`, `planningcenter`
+
+### Defense / Aerospace / Hardware / Robotics (15)
+`spacex`, `andurilindustries`, `waymo`, `nuro`, `lucidmotors`, `verkada`, `purestorage`, `psiquantum`, `astranis`, `planetlabs`, `apptronik`, `freeformfuturecorp`, `relativity`, `armada`, `rivian`
+
+### Other (20)
+`c3iot`, `flexport`, `klaviyo`, `indeedflex`, `gusto`, `lattice`, `opendoor`, `checkr`, `ziprecruiter`, `thetradedesk`, `doubleverify`, `hootsuite`, `lgelectronics`, `carvana`, `icapitalnetwork`, `underdogfantasy`, `greenhouse`, `babelstreet`, `eulerity`, `shield`
+
+## Keyword Filter
+
+Default keywords (matched against job title and description):
+
+```
+intern, internship, co-op, apprentice, apprenticeship, fellowship,
+new grad, new graduate, entry level, entry-level, early career,
+campus, rotational, rotation program
 ```
 
-## Why These
+Override with `GREENHOUSE_KEYWORDS` env var (comma-separated).
 
-- `stripe|Stripe`: public board with intern and new grad roles.
-- `datadog|Datadog`: public board with engineering and product interns.
-- `figma|Figma`: public board with 2026 intern roles.
-- `cloudflare|Cloudflare`: public board with software and product intern roles.
-- `robinhood|Robinhood`: public board with multiple Summer 2026 intern roles.
-- `jumptrading|Jump Trading`: public board with many campus intern roles.
-- `c3iot|C3 AI`: public board with Summer 2026 software and data science interns.
-- `flexport|Flexport`: public board with new grad and early-career operations roles.
-- `coinbase|Coinbase`: public board for crypto and fintech roles; useful even when internship volume is seasonal.
-- `klaviyo|Klaviyo`: public board with campus-style intern postings.
-- `indeedflex|Indeed Flex`: usable Greenhouse board, though it skews more staffing and operations than traditional campus tech recruiting.
+## Environment Variable Override
 
-## Optional Next Wave
-
-These are valid Greenhouse boards, but internship/new grad volume may be more seasonal:
+To customize the board list, set `GREENHOUSE_BOARDS`:
 
 ```env
-GREENHOUSE_BOARDS=airbnb|Airbnb;notion|Notion;dropbox|Dropbox;hubspotjobs|HubSpot
+GREENHOUSE_BOARDS=stripe|Stripe;datadog|Datadog;figma|Figma
 ```
+
+Format: `token|Display Name` separated by `;` or newlines.
 
 ## Notes
 
 - Greenhouse imports are board-scoped, not platform-wide.
-- This starter set is now the app default when `GREENHOUSE_BOARDS` is not set.
-- Your keyword filter still controls what gets saved. Boards with no matching internship-style roles will simply import nothing.
-- If you want broader coverage, add Lever, Ashby, or SmartRecruiters separately instead of making the Greenhouse list too large.
+- Your keyword filter controls what gets saved. Boards with no matching roles will simply import nothing.
+- Boards can go inactive seasonally — the sync gracefully handles boards that return zero matches.
+- If you want broader coverage beyond Greenhouse, add Lever, Ashby, or SmartRecruiters as separate integrations.
