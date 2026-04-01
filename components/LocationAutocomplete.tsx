@@ -1,7 +1,7 @@
 // components/LocationAutocomplete.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type LocationItem = {
@@ -15,12 +15,14 @@ export function LocationAutocomplete({
   onSelect,
   placeholder,
   className,
+  onKeyDown,
 }: {
   value: string;
   onChange: (next: string) => void;
   onSelect: (it: LocationItem) => void;
   placeholder?: string;
   className?: string;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<LocationItem[]>([]);
@@ -142,6 +144,7 @@ export function LocationAutocomplete({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder ?? "City, State (or City, Country)"}
         className={className}
       />

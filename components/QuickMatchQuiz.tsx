@@ -10,6 +10,8 @@ import {
   type IntakeInterest,
   defaultIntakeInterests,
 } from "@/app/lib/utils/intakeRecommendations";
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
+import { MajorAutocomplete } from "@/components/MajorAutocomplete";
 
 type QuickMatchQuizProps = {
   initialLocation: string;
@@ -180,9 +182,10 @@ export default function QuickMatchQuiz({
 
               <label className="block">
                 <span className="sr-only">Preferred location</span>
-                <input
+                <LocationAutocomplete
                   value={location}
-                  onChange={(event) => setLocation(event.target.value)}
+                  onChange={setLocation}
+                  onSelect={(it) => setLocation(it.label)}
                   onKeyDown={handleAdvanceOnEnter}
                   placeholder="Chicago, IL"
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-lg text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
@@ -206,16 +209,13 @@ export default function QuickMatchQuiz({
                 </p>
               </div>
 
-              <label className="block">
-                <span className="sr-only">Major or field of study</span>
-                <input
-                  value={major}
-                  onChange={(event) => setMajor(event.target.value)}
-                  onKeyDown={handleAdvanceOnEnter}
-                  placeholder="Computer Science"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-lg text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                />
-              </label>
+              <MajorAutocomplete
+                selectedLabel={major}
+                onSelect={(it) => setMajor(it.name)}
+                onKeyDown={handleAdvanceOnEnter}
+                showLabel={false}
+                inputClassName="w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-lg text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+              />
             </div>
           )}
 

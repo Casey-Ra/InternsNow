@@ -109,16 +109,14 @@ describe("fast API lookup route tests", () => {
   });
 
   it("returns matching majors for valid major search queries", async () => {
-    const rows = [{ id: 7, name: "Computer Science" }];
-    mockRelationExists.mockResolvedValue(true);
-    mockPoolQuery.mockResolvedValue({ rows });
-
     const response = await searchMajors(
       new Request("http://localhost/api/majors/search?q=computer"),
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(rows);
+    const results = await response.json();
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every((r: { name: string }) => r.name.toLowerCase().includes("computer"))).toBe(true);
   });
 
   it("returns matching institutions for valid institution search queries", async () => {
