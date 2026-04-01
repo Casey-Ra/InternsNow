@@ -9,6 +9,10 @@
     {
       "path": "/api/cron/greenhouse-sync",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/eventbrite-sync",
+      "schedule": "0 10 * * *"
     }
   ],
   "redirects": [
