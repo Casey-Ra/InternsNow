@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { analyzeOpportunityText } from "@/app/lib/utils/opportunityMatching";
 
 interface Internship {
   id: string;
@@ -39,29 +40,30 @@ function formatDate(iso?: string | Date) {
   }
 }
 
-function scoreRelevance(item: Internship, hints: UserHints): number {
-  const text = `${item.company_name} ${item.job_description}`.toLowerCase();
+function scoreRelevance(
+  item: Internship,
+  hints: UserHints,
+  match = analyzeOpportunityText(
+    `${item.company_name} ${item.job_description}`,
+    hints,
+  ),
+): number {
   let score = 0;
 
-  // Location match
-  for (const loc of hints.locations) {
-    if (text.includes(loc.toLowerCase())) {
-      score += 3;
-      break;
-    }
+  if (match.strictMatch && (match.hasLocationPreference || match.hasKeywordPreference)) {
+    score += 6;
+  } else if (match.looseMatch) {
+    score += 2;
   }
 
-  // Remote is always somewhat relevant
-  if (/\bremote\b/i.test(text)) {
+  if (match.locationMatched) {
+    score += match.remotePreference ? 5 : match.preferredLocationMatched ? 4 : 3;
+  } else if (!match.hasLocationPreference && match.remoteMatched) {
     score += 1;
   }
 
-  // Keyword/major match
-  for (const kw of hints.keywords) {
-    if (text.includes(kw.toLowerCase())) {
-      score += 2;
-      break;
-    }
+  if (match.keywordMatched) {
+    score += 4 + match.keywordMatchCount;
   }
 
   // Recency boost — newer posts get a small edge
@@ -94,9 +96,28 @@ export default function OpportunitiesList({
   // Ranked list for the default view (top 10 by relevance)
   const ranked = useMemo(() => {
     if (!hasHints) return internships;
-    return [...internships].sort(
-      (a, b) => scoreRelevance(b, userHints) - scoreRelevance(a, userHints),
-    );
+    return internships
+      .map((internship) => {
+        const match = analyzeOpportunityText(
+          `${internship.company_name} ${internship.job_description}`,
+          userHints,
+        );
+
+        return {
+          internship,
+          match,
+          score: scoreRelevance(internship, userHints, match),
+        };
+      })
+      .sort((left, right) => {
+        if (right.score !== left.score) {
+          return right.score - left.score;
+        }
+
+        return new Date(right.internship.created_at).getTime() -
+          new Date(left.internship.created_at).getTime();
+      })
+      .map(({ internship }) => internship);
   }, [internships, userHints, hasHints]);
 
   const filtered = useMemo(() => {
@@ -116,11 +137,10 @@ export default function OpportunitiesList({
       }
 
       if (location) {
-        const locTerms = location
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(Boolean);
-        if (!locTerms.every((t) => text.includes(t))) return false;
+        const locationMatch = analyzeOpportunityText(text, {
+          locations: [location],
+        });
+        if (!locationMatch.locationMatched) return false;
       }
 
       return true;

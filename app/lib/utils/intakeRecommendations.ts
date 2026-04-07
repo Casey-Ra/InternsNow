@@ -1,5 +1,6 @@
 import type { Internship } from "@/app/lib/models/Internship";
 import type { EventItem } from "@/app/student/events/events";
+import { analyzeOpportunityText } from "@/app/lib/utils/opportunityMatching";
 
 export const intakeInterestValues = ["internship", "job", "event"] as const;
 
@@ -223,8 +224,8 @@ function buildOpportunityRecommendations(
     return [];
   }
 
-  const locationTokens = getLocationTokens(input.location);
-  const majorKeywords = getMajorKeywords(input.major);
+  const locationPreference = input.location.trim();
+  const majorPreference = input.major.trim();
 
   return internships
     .map((internship) => {
@@ -232,9 +233,12 @@ function buildOpportunityRecommendations(
         `${internship.company_name} ${internship.job_description}`,
       );
       const label = getOpportunityLabel(haystack);
-      const breakdown = scoreText(haystack, locationTokens, majorKeywords);
+      const breakdown = analyzeOpportunityText(haystack, {
+        locations: locationPreference ? [locationPreference] : [],
+        keywords: majorPreference ? [majorPreference] : [],
+      });
 
-      let score = breakdown.score;
+      let score = 1 + breakdown.keywordMatchCount * 2;
       const reasons: string[] = [];
 
       if (label === "Internship" && input.interests.includes("internship")) {
@@ -248,12 +252,29 @@ function buildOpportunityRecommendations(
         reasons.push("Aligned with your early-career interests.");
       }
 
-      if (breakdown.locationMatched) {
-        reasons.push("Contains your location keywords.");
+      if (breakdown.strictMatch) {
+        score += 6;
+      } else if (breakdown.looseMatch) {
+        score += 2;
       }
 
-      if (breakdown.majorMatchCount > 0 && input.major.trim()) {
-        reasons.push(`Related to ${input.major.trim()}.`);
+      if (breakdown.locationMatched) {
+        score += breakdown.remotePreference
+          ? 3
+          : breakdown.preferredLocationMatched
+            ? 3
+            : 2;
+        reasons.push(
+          breakdown.remotePreference
+            ? "Matches your remote preference."
+            : breakdown.preferredLocationMatched
+              ? "Matches your preferred location."
+              : "Available remotely.",
+        );
+      }
+
+      if (breakdown.keywordMatched && majorPreference) {
+        reasons.push(`Related to ${majorPreference}.`);
       }
 
       return {
