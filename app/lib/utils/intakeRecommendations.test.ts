@@ -67,6 +67,59 @@ describe("buildIntakeRecommendations", () => {
     expect(results.events[0]?.id).toBe("event-1");
   });
 
+  it("only returns remote opportunities when remote is selected", () => {
+    const results = buildIntakeRecommendations({
+      internships: [
+        ...internships,
+        {
+          id: "internship-3",
+          company_name: "Northstar Labs",
+          job_description:
+            "Software engineering intern supporting React and API work in a remote internship program.",
+          url: "https://example.com/northstar",
+          created_at: new Date("2026-01-22"),
+        },
+      ],
+      eventList,
+      input: {
+        location: "Remote",
+        major: "Computer Science",
+        interests: ["internship"],
+      },
+    });
+
+    expect(results.opportunities).toHaveLength(3);
+    expect(results.opportunities[0]?.id).toBe("internship-3");
+  });
+
+  it("includes remote opportunities by default for specific locations", () => {
+    const results = buildIntakeRecommendations({
+      internships: [
+        ...internships,
+        {
+          id: "internship-4",
+          company_name: "Orbit Systems",
+          job_description:
+            "Remote software engineering intern building React features and APIs for distributed teams.",
+          url: "https://example.com/orbit",
+          created_at: new Date("2026-01-21"),
+        },
+      ],
+      eventList,
+      input: {
+        location: "Chicago",
+        major: "Computer Science",
+        interests: ["internship"],
+      },
+    });
+
+    expect(results.opportunities.map((item) => item.id)).toEqual([
+      "internship-1",
+      "internship-4",
+      "internship-2",
+    ]);
+  });
+
   it("returns only events when opportunity interests are not selected", () => {
     const results = buildIntakeRecommendations({
       internships,

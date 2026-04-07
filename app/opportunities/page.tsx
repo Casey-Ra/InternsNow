@@ -42,12 +42,18 @@ async function getUserHints(): Promise<{ locations: string[]; keywords: string[]
       [userId],
     );
 
+    const profileLocation =
+      typeof u.location === "string" ? u.location.trim() : "";
+
     const locations: string[] = [];
-    if (u.location) locations.push(u.location);
-    for (const w of workRes.rows) {
-      if (w.city) locations.push(w.city);
-      if (w.state_name) locations.push(w.state_name);
-      if (w.state_code) locations.push(w.state_code);
+    if (profileLocation) {
+      locations.push(profileLocation);
+    } else {
+      for (const w of workRes.rows) {
+        if (w.city) locations.push(w.city);
+        if (w.state_name) locations.push(w.state_name);
+        if (w.state_code) locations.push(w.state_code);
+      }
     }
 
     const keywords: string[] = [];
