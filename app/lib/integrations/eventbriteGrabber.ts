@@ -45,13 +45,13 @@ function delay(ms: number): Promise<void> {
 }
 
 function extractEventId(url: string): string {
-  const match = url.match(/e\/([^/?]+)/);
-  return match ? match[1].split("-")[0] : url.slice(-20);
+  const match = url.match(/\/e\/[^"-]+-(\d+)/);
+  return match ? match[1] : url.slice(-15);
 }
 
 function normalizeText(text: string | null | undefined): string {
   if (!text) return "";
-  return text.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 200);
+  return text.replace(/<[^>]+>/g, "").replace(/&[^;]+;/g, " ").trim().slice(0, 200);
 }
 
 async function fetchEventsForLocation(
@@ -67,7 +67,6 @@ async function fetchEventsForLocation(
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
       },
     });
 
@@ -78,24 +77,52 @@ async function fetchEventsForLocation(
 
     const html = await res.text();
 
-    const eventIdRegex = /event-id="(\d+)"/g;
-    const seenIds = new Set<string>();
+    // First: get all unique event URLs
+    const urlRegex = /href="(https:\/\/www\.eventbrite\.com\/e\/[^"]+)"/g;
+    const seenUrls = new Set<string>();
+    const eventUrls: string[] = [];
     let match;
 
-    while ((match = eventIdRegex.exec(html)) !== null) {
-      const eventId = match[1];
-      if (seenIds.has(eventId)) continue;
-      seenIds.add(eventId);
+    while ((match = urlRegex.exec(html)) !== null) {
+      const fullUrl = match[1];
+      if (!seenUrls.has(fullUrl)) {
+        seenUrls.add(fullUrl);
+        eventUrls.push(fullUrl);
+      }
+    }
 
-      const eventUrl = `https://www.eventbrite.com/e/-${eventId}`;
+    // For each URL, try to find a title nearby in the HTML
+    for (const eventUrl of eventUrls) {
+      const eventId = extractEventId(eventUrl);
       
+      // Try to find the title by looking for the URL and getting nearby text
+      const urlIndex = html.indexOf(eventUrl);
+      if (urlIndex === -1) continue;
+      
+      // Get context around the URL (before and after)
+      const contextStart = Math.max(0, urlIndex - 300);
+      const contextEnd = Math.min(html.length, urlIndex + 300);
+      const context = html.substring(contextStart, contextEnd);
+      
+      // Try to find title in the context - look for text between > and <
+      let title = "";
+      const titleMatch = context.match(/>([^<]{5,60})</);
+      if (titleMatch) {
+        title = titleMatch[1].trim();
+      }
+      
+      // Fallback: use keyword + location if no title found
+      if (!title || title.length < 5) {
+        title = `${keyword} - ${location}`;
+      }
+
       events.push({
         id: eventId,
-        title: `${keyword} in ${location}`,
+        title: normalizeText(title),
         date: "TBD",
         time: "TBD",
         location: location,
-        description: `Event search: ${keyword}`,
+        description: `Search: ${keyword} in ${location}`,
         url: eventUrl,
         source: "eventbrite",
       });
