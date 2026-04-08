@@ -1,4 +1,5 @@
 import { chromium, Browser } from "playwright";
+import "@sparticuz/chromium";
 
 export type GrabbedEvent = {
   id: string;
@@ -201,6 +202,7 @@ export async function grabEventbriteEvents(): Promise<GrabbedEvent[]> {
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-blink-features=AutomationControlled",
+        "--disable-web-security",
       ],
     });
 
