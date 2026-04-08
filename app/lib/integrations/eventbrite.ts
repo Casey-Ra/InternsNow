@@ -141,7 +141,7 @@ export function mapEventbriteEventToInput(
 }
 
 export async function fetchEventbriteEvents(
-  location: string,
+  organizationId: string,
   options?: { page?: number; pageSize?: number },
 ): Promise<{ events: EventbriteEvent[]; venues: Map<string, EventbriteVenue> }> {
   const token = process.env.EVENTBRITE_TOKEN;
@@ -153,13 +153,13 @@ export async function fetchEventbriteEvents(
   const pageSize = options?.pageSize ?? 100;
 
   const params = new URLSearchParams({
-    "location.address": location,
     "expand[]": "venue",
     page: String(page),
     page_size: String(pageSize),
+    status: "live,started",
   });
 
-  const url = `${EVENTBRITE_BASE_URL}/events/search/?${params.toString()}`;
+  const url = `${EVENTBRITE_BASE_URL}/organizations/${organizationId}/events/?${params.toString()}`;
 
   const response = await fetch(url, {
     headers: {
@@ -192,14 +192,6 @@ export async function fetchEventbriteEvents(
   return { events, venues };
 }
 
-export function getConfiguredEventbriteLocations(): string[] {
-  const raw = process.env.EVENTBRITE_LOCATIONS ?? "";
-  if (!raw) {
-    return ["United States"];
-  }
-
-  return raw
-    .split(/[\n,;]+/g)
-    .map((loc) => loc.trim())
-    .filter(Boolean);
+export function getEventbriteOrganizationId(): string | null {
+  return process.env.EVENTBRITE_ORG_ID ?? null;
 }

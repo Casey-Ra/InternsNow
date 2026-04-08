@@ -152,6 +152,11 @@ export default function ManageEventsClient({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncingEventbrite, setSyncingEventbrite] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const updateNewField = (field: keyof EventFormState, value: string) => {
@@ -383,8 +388,98 @@ export default function ManageEventsClient({
     }
   };
 
+  const handleEventbriteSync = async () => {
+    setError(null);
+    setSyncFeedback(null);
+    setSyncingEventbrite(true);
+
+    try {
+      const res = await fetch("/api/events/eventbrite/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = (await res.json()) as {
+        error?: string;
+        msg?: string;
+        fetched?: number;
+        created?: number;
+        updated?: number;
+        unchanged?: number;
+      };
+
+      if (!res.ok) {
+        setSyncFeedback({
+          tone: "error",
+          text: data?.error || "Failed to grab Eventbrite events.",
+        });
+        return;
+      }
+
+      const summary = [
+        `${data?.fetched ?? 0} fetched`,
+        `${data?.created ?? 0} created`,
+        `${data?.updated ?? 0} updated`,
+        `${data?.unchanged ?? 0} unchanged`,
+      ].join(", ");
+
+      setSyncFeedback({
+        tone: "success",
+        text: `${data?.msg || "Eventbrite grab completed."} ${summary}.`,
+      });
+
+      try {
+        router.refresh();
+      } catch {
+        window.location.reload();
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unexpected error";
+      setSyncFeedback({
+        tone: "error",
+        text: message,
+      });
+    } finally {
+      setSyncingEventbrite(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
+      {isAdmin && (
+        <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Eventbrite Grabber
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            Grab events from Eventbrite (career fairs, networking events, job fairs, etc.)
+            across major US cities. This will sync events to the database.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              disabled={syncingEventbrite}
+              onClick={handleEventbriteSync}
+              className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {syncingEventbrite ? "Grabbing..." : "Grab Eventbrite Events"}
+            </button>
+
+            {syncFeedback && (
+              <p
+                className={`text-sm ${
+                  syncFeedback.tone === "error"
+                    ? "text-red-600"
+                    : "text-emerald-700 dark:text-emerald-300"
+                }`}
+              >
+                {syncFeedback.text}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Post a New Event
