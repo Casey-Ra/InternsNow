@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runAllEventbriteSyncs } from "@/app/lib/integrations/eventbriteSync";
+import { runAllEventbriteGrabberSyncs } from "@/app/lib/integrations/eventbriteGrabberSync";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -11,13 +11,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { results, totals } = await runAllEventbriteSyncs();
+    const { results, totals } = await runAllEventbriteGrabberSyncs();
 
     const hasError = results.some((r) => !r.ok);
 
     return NextResponse.json(
       {
-        msg: hasError ? "Eventbrite sync completed with errors" : "Eventbrite sync completed",
+        msg: hasError
+          ? "Eventbrite grabber sync completed with errors"
+          : "Eventbrite grabber sync completed",
         results,
         totals,
       },
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("/api/cron/eventbrite-sync error:", error);
     return NextResponse.json(
-      { error: "Failed to run scheduled Eventbrite sync" },
+      { error: "Failed to run scheduled Eventbrite grabber sync" },
       { status: 500 },
     );
   }

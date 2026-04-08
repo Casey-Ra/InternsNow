@@ -2,14 +2,14 @@ import { randomUUID } from "crypto";
 import pool from "../db";
 import {
   fetchEventbriteEvents,
-  getConfiguredEventbriteLocations,
+  getEventbriteOrganizationId,
   mapEventbriteEventToInput,
 } from "./eventbrite";
 
 export type EventbriteSyncResult = {
   ok: boolean;
   message: string;
-  location: string;
+  organizationId: string;
   fetched: number;
   created: number;
   updated: number;
@@ -154,7 +154,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export async function runEventbriteSync(
-  location?: string,
+  organizationId?: string,
 ): Promise<EventbriteSyncResult> {
   try {
     await ensureSourceColumns();
@@ -162,7 +162,7 @@ export async function runEventbriteSync(
     return {
       ok: false,
       message: "Failed to ensure database schema",
-      location: location ?? "unknown",
+      organizationId: organizationId ?? "unknown",
       fetched: 0,
       created: 0,
       updated: 0,
@@ -171,7 +171,20 @@ export async function runEventbriteSync(
     };
   }
 
-  const locationToSync = location ?? getConfiguredEventbriteLocations()[0] ?? "United States";
+  const orgId = organizationId ?? getEventbriteOrganizationId();
+
+  if (!orgId) {
+    return {
+      ok: false,
+      message: "No Eventbrite organization ID configured",
+      organizationId: organizationId ?? "unknown",
+      fetched: 0,
+      created: 0,
+      updated: 0,
+      unchanged: 0,
+      error: "EVENTBRITE_ORG_ID not set",
+    };
+  }
 
   let fetched = 0;
   let created = 0;
@@ -179,7 +192,7 @@ export async function runEventbriteSync(
   let unchanged = 0;
 
   try {
-    const { events, venues } = await fetchEventbriteEvents(locationToSync, {
+    const { events, venues } = await fetchEventbriteEvents(orgId, {
       pageSize: 100,
     });
 
@@ -203,7 +216,7 @@ export async function runEventbriteSync(
     return {
       ok: false,
       message: "Eventbrite sync failed",
-      location: locationToSync,
+      organizationId: orgId,
       fetched,
       created,
       updated,
@@ -215,7 +228,7 @@ export async function runEventbriteSync(
   return {
     ok: true,
     message: "Eventbrite sync completed",
-    location: locationToSync,
+    organizationId: orgId,
     fetched,
     created,
     updated,
@@ -227,13 +240,27 @@ export async function runAllEventbriteSyncs(): Promise<{
   results: EventbriteSyncResult[];
   totals: EventbriteSyncTotals;
 }> {
-  const locations = getConfiguredEventbriteLocations();
+  const orgId = getEventbriteOrganizationId();
   const results: EventbriteSyncResult[] = [];
 
-  for (const location of locations) {
-    const result = await runEventbriteSync(location);
-    results.push(result);
+  if (!orgId) {
+    return {
+      results: [{
+        ok: false,
+        message: "No Eventbrite organization ID configured",
+        organizationId: "unknown",
+        fetched: 0,
+        created: 0,
+        updated: 0,
+        unchanged: 0,
+        error: "EVENTBRITE_ORG_ID not set",
+      }],
+      totals: { fetched: 0, created: 0, updated: 0, unchanged: 0 },
+    };
   }
+
+  const result = await runEventbriteSync(orgId);
+  results.push(result);
 
   const totals = results.reduce<EventbriteSyncTotals>(
     (acc, result) => ({
