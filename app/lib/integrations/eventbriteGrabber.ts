@@ -1,3 +1,9 @@
+import {
+  EVENTBRITE_GRABBER_EXCLUDE_KEYWORDS,
+  EVENTBRITE_GRABBER_KEYWORDS,
+  EVENTBRITE_GRABBER_LOCATIONS,
+} from "./eventbriteGrabberConfig";
+
 export type GrabbedEvent = {
   id: string;
   title: string;
@@ -25,90 +31,20 @@ export type EventbriteGrabberOptions = {
   timeoutMs?: number;
 };
 
-const DEFAULT_KEYWORDS = [
-  "career fair",
-  "tech networking",
-  "job fair",
-  "internship",
-  "career workshop",
-];
-
-const DEFAULT_LOCATIONS = [
-  "New York",
-  "Los Angeles",
-  "Chicago",
-  "Houston",
-  "Phoenix",
-  "Philadelphia",
-  "San Antonio",
-  "San Diego",
-  "Dallas",
-  "San Jose",
-  "Austin",
-  "Jacksonville",
-  "Fort Worth",
-  "Columbus",
-  "Indianapolis",
-  "Seattle",
-  "Denver",
-  "Boston",
-  "Nashville",
-  "Portland",
-];
-
-const DEFAULT_EXCLUDE_KEYWORDS = [
-  "concert",
-  "music",
-  "festival",
-  "nightlife",
-  "club",
-  "comedy",
-  "dating",
-  "singles",
-  "party",
-];
-
-function splitConfigValues(value: string | undefined): string[] {
-  if (!value) {
-    return [];
-  }
-
-  return value
-    .split(/[;\n]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 function unique(values: string[]): string[] {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
 
-// Prefer dedicated Eventbrite keyword config; fall back to community keywords.
 function getConfiguredKeywords(): string[] {
-  const configured = unique(
-    splitConfigValues(
-      process.env.EVENTBRITE_GRABBER_KEYWORDS ?? process.env.COMMUNITY_EVENT_KEYWORDS,
-    ),
-  );
-  return configured.length > 0 ? configured : DEFAULT_KEYWORDS;
+  return unique(EVENTBRITE_GRABBER_KEYWORDS);
 }
 
 function getConfiguredLocations(): string[] {
-  const configured = unique(
-    splitConfigValues(
-      process.env.EVENTBRITE_GRABBER_LOCATIONS ?? process.env.COMMUNITY_EVENT_LOCATIONS,
-    ),
-  );
-  return configured.length > 0 ? configured : DEFAULT_LOCATIONS;
+  return unique(EVENTBRITE_GRABBER_LOCATIONS);
 }
 
 function getConfiguredExcludeKeywords(): string[] {
-  const configured = unique(
-    splitConfigValues(
-      process.env.EVENTBRITE_GRABBER_EXCLUDE_KEYWORDS ?? process.env.COMMUNITY_EVENT_EXCLUDE_KEYWORDS,
-    ),
-  );
-  return configured.length > 0 ? configured : DEFAULT_EXCLUDE_KEYWORDS;
+  return unique(EVENTBRITE_GRABBER_EXCLUDE_KEYWORDS);
 }
 
 function toEventbriteSlug(value: string): string {
