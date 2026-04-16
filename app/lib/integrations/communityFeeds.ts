@@ -1,4 +1,5 @@
 import Parser from "rss-parser";
+import { COMMUNITY_FEED_LIST } from "./communityFeedsList";
 
 export type CommunityFeedConfig = {
   url: string;
@@ -180,7 +181,21 @@ export function parseCommunityFeedConfigs(raw?: string): CommunityFeedConfig[] {
 }
 
 export function getConfiguredCommunityFeedConfigs(): CommunityFeedConfig[] {
-  return parseCommunityFeedConfigs(process.env.COMMUNITY_EVENT_FEEDS);
+  const seenUrls = new Set<string>();
+
+  return COMMUNITY_FEED_LIST
+    .map((feed) => ({
+      url: safeUrl(feed.url) ?? "",
+      label: feed.label?.trim() || feed.url,
+    }))
+    .filter((feed) => Boolean(feed.url))
+    .filter((feed): feed is CommunityFeedConfig => {
+      if (seenUrls.has(feed.url)) {
+        return false;
+      }
+      seenUrls.add(feed.url);
+      return true;
+    });
 }
 
 export function getCommunityKeywords(raw?: string): string[] {
