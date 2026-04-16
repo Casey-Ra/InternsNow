@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { getAllInternships } from "@/app/lib/models/Internship";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
+import Link from "next/link";
 import OpportunitiesList from "./OpportunitiesList";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,15 @@ export default async function OpportunitiesPage() {
           </div>
 
           <OpportunitiesList internships={internships} userHints={userHints} />
+
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/manage-internships"
+              className="inline-flex items-center rounded-lg bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Manage &amp; Sync Jobs/Internships
+            </Link>
+          </div>
         </div>
       </main>
 

@@ -32,7 +32,14 @@ function hasAuth0Config() {
 }
 
 export async function middleware(request: NextRequest) {
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth/");
+
+  // Keep API responses API-shaped (JSON/status codes) by letting route handlers
+  // enforce auth instead of redirecting to HTML from middleware.
+  if (isApiRoute) {
+    return NextResponse.next();
+  }
 
   // When Auth0 is not configured, redirect auth routes to the login page
   // instead of letting them 404 or hit a broken Auth0 SDK.
