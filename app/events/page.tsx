@@ -84,13 +84,14 @@ export default async function EventsPage() {
             </div>
           )}
 
-          <section className="mt-10 rounded-lg border border-blue-100 bg-blue-50/60 p-5 text-sm text-blue-900 dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-200">
-            If users want to post events to InternsNow, they can by{" "}
-            <Link href="/events/manage" className="font-semibold underline">
-              clicking here
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/events/manage"
+              className="inline-flex items-center rounded-lg bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Manage &amp; Sync Events
             </Link>
-            .
-          </section>
+          </div>
         </div>
       </main>
 

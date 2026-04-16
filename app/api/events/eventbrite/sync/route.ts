@@ -1,15 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth0 } from "@/lib/auth0";
-import { runEventbriteGrabberSync } from "@/app/lib/integrations/eventbriteGrabberSync";
+import { NextResponse } from "next/server";
+import {
+  runEventbriteGrabberSync,
+  type EventbriteSyncRequest,
+} from "@/app/lib/integrations/eventbriteGrabberSync";
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const session = await auth0.getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    let body: EventbriteSyncRequest = {};
+    try {
+      body = (await request.json()) as EventbriteSyncRequest;
+    } catch {
+      body = {};
     }
 
-    const result = await runEventbriteGrabberSync();
+    const result = await runEventbriteGrabberSync(body);
 
     return NextResponse.json(
       {
@@ -19,6 +23,11 @@ export async function POST(_request: NextRequest) {
         created: result.created,
         updated: result.updated,
         unchanged: result.unchanged,
+        attemptedQueries: result.attemptedQueries,
+        failedQueries: result.failedQueries,
+        totalQueries: result.totalQueries,
+        chunkIndex: result.chunkIndex,
+        chunkCount: result.chunkCount,
         error: result.error,
       },
       { status: result.ok ? 200 : 500 },

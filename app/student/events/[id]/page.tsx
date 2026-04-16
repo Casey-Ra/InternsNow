@@ -54,7 +54,9 @@ export default async function EventDetailsPage({ params }: PageProps) {
 
           <div className="text-gray-700 dark:text-gray-200 leading-relaxed space-y-3">
             <p>{event.description}</p>
-            <p>{event.details}</p>
+            {event.details && event.details.trim() !== event.description.trim() ? (
+              <p>{event.details}</p>
+            ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
