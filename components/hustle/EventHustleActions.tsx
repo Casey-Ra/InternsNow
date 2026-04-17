@@ -108,6 +108,7 @@ export default function EventHustleActions({
 
   useEffect(() => {
     void loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusUrl]);
 
   async function recordActivity(activityType: "event_rsvp" | "event_attended" | "event_missed") {

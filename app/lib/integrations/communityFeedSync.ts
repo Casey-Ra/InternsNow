@@ -178,7 +178,7 @@ export async function runCommunityFeedSync(
 ): Promise<CommunityFeedSyncResult> {
   try {
     await ensureSourceColumns();
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       message: "Failed to ensure database schema",

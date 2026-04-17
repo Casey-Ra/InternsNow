@@ -4,21 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import UserMenu from "@/components/UserMenu";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 type SeekingValue = "job" | "internship" | "both" | null;
 
 const SEEKING_CACHE_KEY = "internsnow_seeking";
 
-function useSeekingLabel(): string {
-  const [seeking, setSeeking] = useState<SeekingValue>(null);
+function getSeekingSnapshot(): SeekingValue {
+  try {
+    const v = localStorage.getItem(SEEKING_CACHE_KEY);
+    return v === "job" || v === "internship" || v === "both" ? v : null;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    try {
-      const v = localStorage.getItem(SEEKING_CACHE_KEY);
-      if (v === "job" || v === "internship" || v === "both") setSeeking(v);
-    } catch {}
-  }, []);
+function useSeekingLabel(): string {
+  const seeking = useSyncExternalStore(
+    () => () => {},
+    getSeekingSnapshot,
+    () => null,
+  );
 
   if (seeking === "job") return "Jobs";
   if (seeking === "internship") return "Internships";
@@ -68,8 +74,6 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
   };
 
   const colors = getThemeColors();
-  const isDarkTone = tone === "dark";
-
   const logoTextClass = "text-gray-900 dark:text-white";
   const navTextClass = "text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white";
   const secondaryButtonClass = `${colors.textButton} dark:text-sky-300 dark:hover:text-white`;

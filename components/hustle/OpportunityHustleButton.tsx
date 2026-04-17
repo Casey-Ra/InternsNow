@@ -85,6 +85,7 @@ export default function OpportunityHustleButton({
 
   useEffect(() => {
     void loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusUrl]);
 
   async function handleLogApplication() {

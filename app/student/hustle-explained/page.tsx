@@ -75,7 +75,7 @@ export default function HustleExplainedPage() {
             How your hustle score works
           </h1>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-            Your hustle score reflects how actively you're building your career
+            Your hustle score reflects how actively you&apos;re building your career
             this week. It resets and recomputes every 7 days based on your
             recent activity — not a lifetime total.
           </p>
@@ -144,7 +144,7 @@ export default function HustleExplainedPage() {
               no activity
             </span>{" "}
             subtracts 2 points from your score. Days before you first joined
-            don't count against you. The score floors at zero.
+            don&apos;t count against you. The score floors at zero.
           </p>
         </section>
 
@@ -155,7 +155,7 @@ export default function HustleExplainedPage() {
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Only activity from the past 14 days counts. This keeps the score
-            current — a strong stretch three weeks ago won't carry you forever.
+            current — a strong stretch three weeks ago won&apos;t carry you forever.
             Show up consistently and the score reflects it.
           </p>
         </section>
