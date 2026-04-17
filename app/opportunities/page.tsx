@@ -5,6 +5,7 @@ import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
 import Link from "next/link";
 import OpportunitiesList from "./OpportunitiesList";
+import SeekingToggle from "@/components/SeekingToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -73,10 +74,26 @@ async function getUserHints(): Promise<{ locations: string[]; keywords: string[]
   }
 }
 
+async function getUserSeeking(): Promise<"job" | "internship" | "both" | null> {
+  try {
+    const session = await auth0.getSession();
+    if (!session) return null;
+    const res = await pool.query(
+      `SELECT seeking FROM "USER" WHERE auth0_sub = $1 LIMIT 1`,
+      [session.user.sub],
+    );
+    const v = res.rows[0]?.seeking;
+    return v === "job" || v === "internship" || v === "both" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function OpportunitiesPage() {
-  const [internships, userHints] = await Promise.all([
+  const [internships, userHints, seeking] = await Promise.all([
     getAllInternships(),
     getUserHints(),
+    getUserSeeking(),
   ]);
 
   return (
@@ -85,12 +102,17 @@ export default async function OpportunitiesPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Jobs &amp; Internships
-            </h1>
+          <div className="mb-8">
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Jobs &amp; Internships
+              </h1>
+              {seeking !== null ? (
+                <SeekingToggle initial={seeking} showApplyButton />
+              ) : null}
+            </div>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Browse the latest internships and job opportunities submitted by employers.
+              Browse the latest opportunities submitted by employers.
             </p>
           </div>
 

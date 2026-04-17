@@ -7,6 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
+import { getProfileCompletionSummary } from "@/app/lib/utils/profileCompletion";
 
 import { InstitutionAutocomplete } from "@/components/InstitutionAutocomplete";
 import { MajorAutocomplete } from "@/components/MajorAutocomplete";
@@ -38,6 +39,7 @@ type FormState = {
   linkedin: string;
   github: string;
   portfolio: string;
+  seeking: "job" | "internship" | "both" | "";
 };
 
 function isoDateOrEmpty(date: Date | null) {
@@ -201,9 +203,11 @@ export default function StudentProfilePage() {
     linkedin: "",
     github: "",
     portfolio: "",
+    seeking: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "error" | null>(null);
 
   const [selectedInstitutionName, setSelectedInstitutionName] =
     useState<string>("");
@@ -268,7 +272,7 @@ export default function StudentProfilePage() {
           phone: data.phone ?? "",
           location: data.location ?? "",
           graduationDate: edu0?.endDate ?? "",
-          gpa: "",
+          gpa: edu0?.gpa != null ? String(edu0.gpa) : "",
 
           skills: Array.isArray(data.skills)
             ? data.skills.join(", ")
@@ -278,6 +282,12 @@ export default function StudentProfilePage() {
           linkedin: data.linkedin ?? "",
           github: data.github ?? "",
           portfolio: data.portfolio ?? "",
+          seeking:
+            data.seeking === "job" ||
+            data.seeking === "internship" ||
+            data.seeking === "both"
+              ? data.seeking
+              : "",
         }));
 
         setSelectedInstitutionName(edu0?.institution?.name ?? "");
@@ -318,27 +328,26 @@ export default function StudentProfilePage() {
 
   // Simple “profile completeness”
   const completion = useMemo(() => {
-    const checks = [
-      !!formData.first_name.trim() && !!formData.last_name.trim(),
-      !!formData.email.trim(),
-      !!formData.location.trim(),
-      !!formData.phone.trim(),
-      !!formData.university.trim(),
-      !!formData.degree.trim(),
-      !!formData.major.trim(),
-      !!formData.graduationDate.trim(),
-      (formData.skills ?? "")
+    return getProfileCompletionSummary({
+      location: formData.location,
+      bio: formData.bio,
+      skillsCount: (formData.skills ?? "")
         .split(",")
         .map((s) => s.trim())
-        .filter(Boolean).length >= 3,
-      formData.interests.length >= 2,
-      (formData.bio ?? "").trim().length >= 40,
-      !!formData.linkedin.trim() ||
-        !!formData.github.trim() ||
-        !!formData.portfolio.trim(),
-    ];
-    const done = checks.filter(Boolean).length;
-    return Math.round((done / checks.length) * 100);
+        .filter(Boolean).length,
+      interestsCount: formData.interests.length,
+      educationCount:
+        formData.university.trim() ||
+        formData.degree.trim() ||
+        formData.major.trim() ||
+        formData.graduationDate.trim()
+          ? 1
+          : 0,
+      workCount: 0,
+      linkedin: formData.linkedin,
+      github: formData.github,
+      portfolio: formData.portfolio,
+    }).percent;
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -363,6 +372,7 @@ export default function StudentProfilePage() {
             endDate: formData.graduationDate ? formData.graduationDate : null,
             status: null,
             description: null,
+            gpa: formData.gpa ? Number(formData.gpa) : null,
 
             majors: formData.major
               ? [{ name: formData.major.trim(), isPrimary: true }]
@@ -380,6 +390,7 @@ export default function StudentProfilePage() {
         linkedin: formData.linkedin,
         github: formData.github,
         portfolio: formData.portfolio,
+        seeking: formData.seeking || null,
       };
 
       const res = await fetch("/api/profile", {
@@ -390,13 +401,18 @@ export default function StudentProfilePage() {
       });
 
       if (res.ok) {
-        alert("✅ Profile saved successfully!");
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus(null), 3000);
+        try {
+          if (formData.seeking) localStorage.setItem("internsnow_seeking", formData.seeking);
+          else localStorage.removeItem("internsnow_seeking");
+        } catch {}
       } else {
-        alert("❌ Failed to save profile.");
+        setSaveStatus("error");
       }
     } catch (err) {
       console.error("Save error:", err);
-      alert("❌ Error saving profile.");
+      setSaveStatus("error");
     } finally {
       setLoading(false);
     }
@@ -523,6 +539,60 @@ export default function StudentProfilePage() {
                     className={inputBase}
                   />
                 </Field>
+              </div>
+            </Card>
+
+            {/* Seeking */}
+            <Card>
+              <SectionHeader
+                title="What are you looking for?"
+                subtitle="This helps us show you the most relevant opportunities."
+                icon="🎯"
+              />
+              <div className="flex flex-wrap gap-3">
+                {(["internship", "job"] as const).map((option) => {
+                  const active =
+                    formData.seeking === option ||
+                    formData.seeking === "both";
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => {
+                          const wasJob =
+                            prev.seeking === "job" || prev.seeking === "both";
+                          const wasInternship =
+                            prev.seeking === "internship" ||
+                            prev.seeking === "both";
+                          const nextJob =
+                            option === "job" ? !wasJob : wasJob;
+                          const nextInternship =
+                            option === "internship"
+                              ? !wasInternship
+                              : wasInternship;
+                          const next =
+                            nextJob && nextInternship
+                              ? "both"
+                              : nextJob
+                                ? "job"
+                                : nextInternship
+                                  ? "internship"
+                                  : "";
+                          return { ...prev, seeking: next };
+                        })
+                      }
+                      className={[
+                        "rounded-xl px-6 py-3 text-sm font-semibold border transition",
+                        active
+                          ? "bg-blue-600 text-white border-blue-500/50 shadow-sm"
+                          : "bg-white/50 dark:bg-white/5 text-gray-700 dark:text-gray-200 border-gray-200/70 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10",
+                      ].join(" ")}
+                    >
+                      {option === "internship" ? "Internship" : "Full-time job"}
+                    </button>
+                  );
+                })}
               </div>
             </Card>
 
@@ -755,7 +825,13 @@ export default function StudentProfilePage() {
             </Card>
 
             {/* (Optional) Keep old buttons for non-sticky contexts */}
-            <div className="hidden sm:flex gap-3 justify-end">
+            <div className="hidden sm:flex items-center gap-3 justify-end">
+              {saveStatus === "saved" && (
+                <span className="text-sm text-emerald-600 dark:text-emerald-400">Saved</span>
+              )}
+              {saveStatus === "error" && (
+                <span className="text-sm text-red-600 dark:text-red-400">Failed to save</span>
+              )}
               <button
                 type="button"
                 onClick={() => window.location.reload()}
@@ -795,6 +871,12 @@ export default function StudentProfilePage() {
             </div>
 
             <div className="flex items-center gap-3">
+              {saveStatus === "saved" && (
+                <span className="text-sm text-emerald-600 dark:text-emerald-400">Saved</span>
+              )}
+              {saveStatus === "error" && (
+                <span className="text-sm text-red-600 dark:text-red-400">Failed to save</span>
+              )}
               <button
                 type="button"
                 onClick={() => window.location.reload()}

@@ -4,6 +4,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import UserMenu from "@/components/UserMenu";
+import { useSyncExternalStore } from "react";
+
+type SeekingValue = "job" | "internship" | "both" | null;
+
+const SEEKING_CACHE_KEY = "internsnow_seeking";
+
+function getSeekingSnapshot(): SeekingValue {
+  try {
+    const v = localStorage.getItem(SEEKING_CACHE_KEY);
+    return v === "job" || v === "internship" || v === "both" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function useSeekingLabel(): string {
+  const seeking = useSyncExternalStore(
+    () => () => {},
+    getSeekingSnapshot,
+    () => null,
+  );
+
+  if (seeking === "job") return "Jobs";
+  if (seeking === "internship") return "Internships";
+  return "Jobs & Internships";
+}
 
 interface HeaderProps {
   variant?: "student" | "employer" | "default";
@@ -12,6 +38,8 @@ interface HeaderProps {
 
 export default function Header({ variant, tone = "light" }: HeaderProps) {
   const pathname = usePathname();
+  const { user, isLoading } = useUser();
+  const opportunitiesLabel = useSeekingLabel();
 
   const pathVariant = pathname?.startsWith("/student")
     ? "student"
@@ -46,17 +74,31 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
   };
 
   const colors = getThemeColors();
-  const isDarkTone = tone === "dark";
+  const logoTextClass = "text-gray-900 dark:text-white";
+  const navTextClass = "text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white";
+  const secondaryButtonClass = `${colors.textButton} dark:text-sky-300 dark:hover:text-white`;
 
-  const logoTextClass = isDarkTone ? "text-slate-100" : "text-gray-900";
-  const navTextClass = isDarkTone
-    ? "text-slate-300 hover:text-slate-100"
-    : "text-gray-600 hover:text-gray-900";
-  const secondaryButtonClass = isDarkTone
-    ? "text-sky-200 hover:text-slate-100"
-    : colors.textButton;
+  const homeHref = user
+    ? resolvedVariant === "employer"
+      ? "/employer"
+      : "/student"
+    : "/";
 
   const getNavLinks = () => {
+    if (user) {
+      switch (resolvedVariant) {
+        case "employer":
+          return [{ href: homeHref, label: "Home" }];
+        default:
+          return [
+            { href: homeHref, label: "Home" },
+            { href: "/opportunities", label: opportunitiesLabel },
+            { href: "/events", label: "Events" },
+            { href: "/student/resources", label: "Resources" },
+          ];
+      }
+    }
+
     switch (resolvedVariant) {
       case "student":
         return [
@@ -91,14 +133,6 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
   const navLinks = getNavLinks();
   const buttonText = getButtonText();
 
-  const { user, isLoading } = useUser();
-
-  const logoHref = user
-    ? resolvedVariant === "employer"
-      ? "/employer"
-      : "/student"
-    : "/";
-
   const returnTo =
     resolvedVariant === "student"
       ? "/student"
@@ -109,13 +143,17 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
   return (
     <header className="px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href={logoHref} className="flex items-center space-x-2">
+        <Link
+          href={homeHref}
+          aria-label={user ? "Go to your home screen" : "Go to InternsNow home"}
+          className="flex items-center space-x-2"
+        >
           <div
-            className={`w-8 h-8 ${colors.logo} rounded-lg flex items-center justify-center`}
+            className={`w-10 h-10 ${colors.logo} rounded-lg flex items-center justify-center`}
           >
-            <span className="text-white font-bold text-sm">IN</span>
+            <span className="text-white font-bold text-base">IN</span>
           </div>
-          <span className={`text-2xl font-bold ${logoTextClass}`}>
+          <span className={`text-3xl font-bold ${logoTextClass}`}>
             InternsNow
           </span>
         </Link>
@@ -136,10 +174,18 @@ export default function Header({ variant, tone = "light" }: HeaderProps) {
           {isLoading ? (
             <div className="px-4 py-2 text-gray-500">...</div>
           ) : user ? (
-            <UserMenu
-              profileImage={user.picture}
-              name={(user.name ?? user.email ?? "") as string}
-            />
+            <div className="flex items-center space-x-3">
+              <Link
+                href={homeHref}
+                className="md:hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                Home
+              </Link>
+              <UserMenu
+                profileImage={user.picture}
+                name={(user.name ?? user.email ?? "") as string}
+              />
+            </div>
           ) : (
             <>
               <a

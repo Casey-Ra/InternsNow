@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getProfileCompletionSummary } from "@/app/lib/utils/profileCompletion";
 
 interface EducationRow {
   eduId: number;
@@ -45,6 +46,13 @@ interface ProfileResponse {
   userId: number;
   fullName: string;
   email: string;
+  location?: string | null;
+  bio?: string | null;
+  skills?: string[];
+  interests?: string[];
+  linkedin?: string | null;
+  github?: string | null;
+  portfolio?: string | null;
   education: EducationRow[];
   workExperience: WorkRow[];
 }
@@ -254,6 +262,17 @@ export default function ViewProfilePage() {
     ].filter(Boolean);
 
     const headline = headlineParts.join(" ");
+    const completion = getProfileCompletionSummary({
+      location: profile.location,
+      bio: profile.bio,
+      skillsCount: profile.skills?.length ?? 0,
+      interestsCount: profile.interests?.length ?? 0,
+      educationCount: profile.education.length,
+      workCount: profile.workExperience.length,
+      linkedin: profile.linkedin,
+      github: profile.github,
+      portfolio: profile.portfolio,
+    });
 
     return {
       topEdu,
@@ -271,6 +290,7 @@ export default function ViewProfilePage() {
       location: loc,
       headline: headline || null,
       initials: initials(profile.fullName),
+      completion,
     };
   }, [profile]);
 
@@ -564,31 +584,16 @@ export default function ViewProfilePage() {
                 <div className="pt-3 border-t border-white/10">
                   <p className="text-gray-400">Matching completeness</p>
                   <div className="mt-2">
-                    {(() => {
-                      const hasEdu = profile.education.length > 0;
-                      const hasWork = profile.workExperience.length > 0;
-                      const hasName =
-                        (profile.fullName ?? "").trim().length > 0;
-                      const score = [hasName, hasEdu, hasWork].filter(
-                        Boolean,
-                      ).length;
-                      const pct = Math.round((score / 3) * 100);
-
-                      return (
-                        <>
-                          <div className="h-2 rounded-full bg-black/20 border border-white/10 overflow-hidden">
-                            <div
-                              className="h-full bg-blue-600"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <p className="mt-2 text-xs text-gray-400">
-                            {pct}% complete — add more details to improve
-                            matching quality.
-                          </p>
-                        </>
-                      );
-                    })()}
+                    <div className="h-2 rounded-full bg-black/20 border border-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-blue-600"
+                        style={{ width: `${derived?.completion.percent ?? 0}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs text-gray-400">
+                      {derived?.completion.percent ?? 0}% complete — add more details to improve
+                      matching quality.
+                    </p>
                   </div>
                 </div>
               </div>

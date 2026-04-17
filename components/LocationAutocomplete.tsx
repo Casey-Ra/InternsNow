@@ -27,6 +27,7 @@ export function LocationAutocomplete({
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasSelection, setHasSelection] = useState(Boolean(value.trim()));
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -34,6 +35,12 @@ export function LocationAutocomplete({
   const justSelected = useRef(false);
 
   const q = useMemo(() => value.trim(), [value]);
+
+  useEffect(() => {
+    if (!value.trim()) {
+      setHasSelection(false);
+    }
+  }, [value]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -51,6 +58,7 @@ export function LocationAutocomplete({
     if (q.length < 2) {
       setItems([]);
       setLoading(false);
+      setOpen(false);
       return;
     }
 
@@ -78,7 +86,6 @@ export function LocationAutocomplete({
         }
         const data = await res.json();
         setItems(Array.isArray(data) ? data : []);
-        setOpen(true);
       } catch (error: unknown) {
         if (!(error instanceof Error) || error.name !== "AbortError") {
           setItems([]);
@@ -120,6 +127,7 @@ export function LocationAutocomplete({
                       className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100/70 dark:hover:bg-white/10"
                       onClick={() => {
                         justSelected.current = true;
+                        setHasSelection(true);
                         onSelect(it);
                         setOpen(false);
                       }}
@@ -140,10 +148,19 @@ export function LocationAutocomplete({
       <input
         value={value}
         onChange={(e) => {
+          setHasSelection(false);
           onChange(e.target.value);
-          setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          if (!hasSelection && q.length >= 2) {
+            setOpen(true);
+          }
+        }}
+        onClick={() => {
+          if (!hasSelection && q.length >= 2) {
+            setOpen(true);
+          }
+        }}
         onKeyDown={onKeyDown}
         placeholder={placeholder ?? "City, State (or City, Country)"}
         className={className}

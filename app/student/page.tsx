@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { auth0 } from "@/lib/auth0";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import HustleScorePanel from "@/components/hustle/HustleScorePanel";
+import ProfileCompletionPanel from "./ProfileCompletionPanel";
+import pool from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Student Portal - Find Your Dream Internship | InternsNow",
@@ -29,6 +33,20 @@ export default async function StudentLandingPage() {
   if (!session) {
     redirect("/auth/login");
   }
+
+  const auth0Sub =
+    typeof session.user.sub === "string" ? session.user.sub : null;
+
+  if (!auth0Sub) {
+    redirect("/auth/login");
+  }
+
+  const seekingResult = await pool.query(
+    `SELECT seeking FROM "USER" WHERE auth0_sub = $1 LIMIT 1`,
+    [auth0Sub],
+  ).catch(() => null);
+  const seeking = seekingResult?.rows[0]?.seeking as "job" | "internship" | "both" | null ?? null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header variant="student" />
@@ -36,179 +54,74 @@ export default async function StudentLandingPage() {
       {/* Hero Section */}
       <main className="px-6 py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Launch Your Career with
-              <span className="text-blue-600 block">Perfect Internships</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Discover internships and entry-level positions at top companies.
-              Build your experience, network with professionals, and kickstart
-              your dream career.
-            </p>
+          <HustleScorePanel />
 
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg">
-                <input
-                  type="text"
-                  placeholder="Job title, company, or keywords"
-                  className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  className="md:w-48 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-                <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
-                  Search Jobs
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Smart Matching
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Our AI matches you with opportunities based on your skills,
-                interests, and career goals.
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center mb-16">
+            <div>
+              <p className="text-lg font-semibold uppercase tracking-[0.28em] text-blue-600 dark:text-blue-300 mb-4">
+                Student Home
               </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-green-600 dark:text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Verified Companies
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                All employers are verified and committed to providing meaningful
-                learning experiences.
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                Welcome Back
+                <span className="text-blue-600 block">Keep Your Momentum Moving</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl">
+                Show up, stay active, and keep building momentum. Your home
+                screen is set up to make the next move feel obvious.
               </p>
-            </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-purple-600 dark:text-purple-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/opportunities"
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-4 text-base font-semibold text-white shadow hover:bg-blue-500"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+                  {seeking === "job"
+                    ? "Jobs for you"
+                    : seeking === "internship"
+                      ? "Internships for you"
+                      : "Jobs & Internships for you"}
+                </Link>
+                <Link
+                  href="/events"
+                  className="inline-flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 px-7 py-4 text-base font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Events for you
+                </Link>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Fast Applications
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Apply to multiple positions with one click using your optimized
-                profile.
-              </p>
             </div>
-          </div>
 
-          {/* Popular Categories <section className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
-              Popular Categories
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                {
-                  name: "Software Engineering",
-                  count: "1,234 jobs",
-                  color: "bg-blue-500",
-                },
-                { name: "Marketing", count: "567 jobs", color: "bg-green-500" },
-                { name: "Design", count: "432 jobs", color: "bg-purple-500" },
-                {
-                  name: "Data Science",
-                  count: "789 jobs",
-                  color: "bg-orange-500",
-                },
-
-                { name: "Business", count: "654 jobs", color: "bg-red-500" },
-                { name: "Finance", count: "321 jobs", color: "bg-yellow-500" },
-                { name: "Healthcare", count: "456 jobs", color: "bg-pink-500" },
-                {
-                  name: "Engineering",
-                  count: "543 jobs",
-                  color: "bg-indigo-500",
-                },
-              ].map((category, index) => (
-                <button
-                  key={index}
-                  className="p-4 bg-white dark:bg-gray-800 rounded-lg hover:shadow-lg transition-all text-left group"
-                >
-                  <div
-                    className={`w-8 h-8 ${category.color} rounded-lg mb-3 group-hover:scale-110 transition-transform`}
-                  ></div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-                    {category.name}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs">
-                    {category.count}
+            <div className="rounded-3xl bg-white/70 dark:bg-gray-800/70 border border-white/70 dark:border-white/10 p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Stay In Motion
+              </h2>
+              <p className="mt-3 text-base text-gray-600 dark:text-gray-300">
+                Keep your rhythm up this week. Consistency matters, and the
+                students who keep moving tend to see the best outcomes.
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 px-4 py-4">
+                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                    Keep showing up
                   </p>
-                </button>
-              ))}
+                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                    Momentum compounds when you stay engaged instead of
+                    disappearing for long stretches.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 px-4 py-4">
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                    Small actions add up
+                  </p>
+                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                    The more consistently you engage here, the stronger your
+                    week looks.
+                  </p>
+                </div>
+              </div>
             </div>
-          </section>*/}
+          </div>
 
-          {/* CTA Section */}
-          <section className="text-center bg-blue-600 rounded-2xl p-12 text-white">
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Start Your Journey?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Join thousands of students who have found their perfect
-              internships
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 font-semibold text-lg">
-                Create Your Profile
-              </button>
-              <button className="px-8 py-4 bg-blue-700 text-white rounded-lg hover:bg-blue-800 font-semibold text-lg border-2 border-blue-500">
-                Browse Opportunities
-              </button>
-            </div>
-          </section>
+          <ProfileCompletionPanel auth0Sub={auth0Sub} />
         </div>
       </main>
 

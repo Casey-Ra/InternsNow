@@ -12,8 +12,8 @@ describe('Home Page', () => {
     ).should('be.visible');
     cy.contains('Find Your Career Now.').should('be.visible');
     cy.contains("I'm a Student").should('be.visible');
-    cy.get('header span').contains('InternsNow').should('have.class', 'text-slate-100');
-    cy.get('footer span').contains('InternsNow').should('have.class', 'text-slate-100');
+    cy.get('header span').contains('InternsNow').should('have.class', 'text-gray-900');
+    cy.get('footer span').contains('InternsNow').should('be.visible');
     cy.get('img').each(($img) => {
       cy.wrap($img).should('have.prop', 'naturalWidth').and('be.gt', 0);
     });

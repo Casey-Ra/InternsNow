@@ -85,7 +85,7 @@ export default function OpportunitiesList({
   internships: Internship[];
   userHints: UserHints;
 }) {
-  const [typeFilter, setTypeFilter] = useState<OpportunityType>("all");
+  const [typeFilter] = useState<OpportunityType>("all");
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -151,11 +151,6 @@ export default function OpportunitiesList({
   const visible = filtered.slice(0, displayLimit);
   const hasMore = !isSearching && !showAll && filtered.length > DEFAULT_COUNT;
 
-  const typeButtons: { value: OpportunityType; label: string }[] = [
-    { value: "all", label: "All" },
-    { value: "internships", label: "Internships" },
-    { value: "jobs", label: "Jobs" },
-  ];
 
   return (
     <>
@@ -170,25 +165,6 @@ export default function OpportunitiesList({
 
       {/* Filters */}
       <div className="mb-8 space-y-4">
-        <div className="flex gap-2">
-          {typeButtons.map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => {
-                setTypeFilter(btn.value);
-                setShowAll(false);
-              }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === btn.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="text"
