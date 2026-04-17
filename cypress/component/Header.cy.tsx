@@ -93,6 +93,19 @@ describe('Header Component', () => {
     it('does not show the loading placeholder after auth resolves', () => {
       cy.get('header').should('not.contain.text', '...');
     });
+
+    it('shows a Home nav link for signed-in users', () => {
+      cy.get('header')
+        .contains('Home')
+        .should('have.attr', 'href', '/student');
+    });
+
+    it('routes the brand logo back to the signed-in home screen', () => {
+      cy.get('header')
+        .find('a[aria-label="Go to your home screen"]')
+        .first()
+        .should('have.attr', 'href', '/student');
+    });
   });
 
   describe('navigation link href values', () => {

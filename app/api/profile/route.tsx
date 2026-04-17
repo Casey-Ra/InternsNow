@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 import pool from "@/lib/db";
+import { recordDailyProfileEdit } from "@/app/lib/models/StudentHustleActivity";
 
 type SessionUser = {
   sub: string;
@@ -29,6 +30,8 @@ async function ensureProfileColumns() {
       ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS linkedin VARCHAR(500);
       ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS github VARCHAR(500);
       ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS portfolio VARCHAR(500);
+      ALTER TABLE "USER" ADD COLUMN IF NOT EXISTS seeking VARCHAR(20);
+      ALTER TABLE "EDUCATION" ADD COLUMN IF NOT EXISTS gpa NUMERIC(3,2);
     `);
   } catch {
     // Table may not exist locally — ignore so the route still loads
@@ -46,7 +49,7 @@ async function getOrCreateUserId(auth0Sub: string, email?: string | null) {
       update_at = NOW()
     RETURNING user_id, first_name, last_name, email,
               phone, location, bio, skills, interests,
-              linkedin, github, portfolio
+              linkedin, github, portfolio, seeking
     `,
     [auth0Sub, email],
   );
@@ -79,6 +82,7 @@ export async function GET() {
         e.end_date,
         e.status,
         e.description,
+        e.gpa,
 
         i.institution_id,
         i.name AS institution_name,
@@ -151,6 +155,7 @@ export async function GET() {
       linkedin: u.linkedin ?? null,
       github: u.github ?? null,
       portfolio: u.portfolio ?? null,
+      seeking: u.seeking ?? null,
 
       education: eduRes.rows.map((e) => ({
         eduId: e.edu_id,
@@ -158,6 +163,7 @@ export async function GET() {
         endDate: e.end_date,
         status: e.status,
         description: e.description,
+        gpa: e.gpa,
         institution: e.institution_id
           ? { institutionId: e.institution_id, name: e.institution_name }
           : null,
@@ -225,6 +231,12 @@ export async function POST(request: Request) {
     const linkedin = (body.linkedin ?? null) as string | null;
     const github = (body.github ?? null) as string | null;
     const portfolio = (body.portfolio ?? null) as string | null;
+    const seeking =
+      body.seeking === "job" ||
+      body.seeking === "internship" ||
+      body.seeking === "both"
+        ? (body.seeking as string)
+        : null;
 
     const education = Array.isArray(body.education)
       ? (body.education as Record<string, unknown>[])
@@ -242,13 +254,13 @@ export async function POST(request: Request) {
       INSERT INTO "USER" (
         auth0_sub, first_name, last_name, email,
         phone, location, bio, skills, interests,
-        linkedin, github, portfolio,
+        linkedin, github, portfolio, seeking,
         created_at, update_at
       )
       VALUES (
         $1, COALESCE($2,'Unknown'), COALESCE($3,'User'), COALESCE($4,'unknown@example.com'),
         $5, $6, $7, $8::text[], $9::text[],
-        $10, $11, $12,
+        $10, $11, $12, $13,
         NOW(), NOW()
       )
       ON CONFLICT (auth0_sub) DO UPDATE SET
@@ -263,10 +275,11 @@ export async function POST(request: Request) {
         linkedin = EXCLUDED.linkedin,
         github = EXCLUDED.github,
         portfolio = EXCLUDED.portfolio,
+        seeking = EXCLUDED.seeking,
         update_at = NOW()
       RETURNING user_id
       `,
-      [auth0Sub, first, last, email, phone, location, bio, skills, interests, linkedin, github, portfolio],
+      [auth0Sub, first, last, email, phone, location, bio, skills, interests, linkedin, github, portfolio, seeking],
     );
 
     const userId = userUpsert.rows[0].user_id as number;
@@ -291,8 +304,8 @@ export async function POST(request: Request) {
         `
         INSERT INTO "EDUCATION" (
           start_date, end_date, status, description,
-          degree_type_id, user_id, institution_id
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7)
+          gpa, degree_type_id, user_id, institution_id
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
         RETURNING edu_id
         `,
         [
@@ -300,6 +313,7 @@ export async function POST(request: Request) {
           e.endDate ?? null,
           e.status ?? null,
           e.description ?? null,
+          e.gpa ?? null,
           e.degreeTypeId ?? null,
           userId,
           e.institutionId ?? null,
@@ -350,6 +364,7 @@ export async function POST(request: Request) {
     }
 
     await client.query("COMMIT");
+    await recordDailyProfileEdit(auth0Sub);
     return NextResponse.json({ success: true });
   } catch (error) {
     await client.query("ROLLBACK");
