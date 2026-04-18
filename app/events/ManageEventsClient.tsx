@@ -199,6 +199,12 @@ export default function ManageEventsClient({
     tone: "success" | "error";
     text: string;
   } | null>(null);
+  const [syncingMeetup, setSyncingMeetup] = useState(false);
+  const [resettingAndSyncingMeetup, setResettingAndSyncingMeetup] = useState(false);
+  const [meetupSyncFeedback, setMeetupSyncFeedback] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const [syncingEventbrite, setSyncingEventbrite] = useState(false);
   const [resettingAndSyncingEventbrite, setResettingAndSyncingEventbrite] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{
@@ -753,6 +759,152 @@ export default function ManageEventsClient({
     }
   };
 
+  const handleMeetupSync = async () => {
+    setError(null);
+    setMeetupSyncFeedback(null);
+    setSyncingMeetup(true);
+
+    try {
+      const res = await fetch("/api/events/meetup/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const payload = await parseApiPayload(res);
+      const data = (payload.json ?? {}) as {
+        error?: string;
+        msg?: string;
+        fetched?: number;
+        created?: number;
+        updated?: number;
+        unchanged?: number;
+      };
+
+      if (!res.ok) {
+        setMeetupSyncFeedback({
+          tone: "error",
+          text: extractResponseError(res, payload, "Failed to sync Meetup events."),
+        });
+        return;
+      }
+
+      if (!payload.json) {
+        setMeetupSyncFeedback({
+          tone: "error",
+          text: "Sync endpoint returned an unexpected response format.",
+        });
+        return;
+      }
+
+      const summary = [
+        `${data?.fetched ?? 0} fetched`,
+        `${data?.created ?? 0} created`,
+        `${data?.updated ?? 0} updated`,
+        `${data?.unchanged ?? 0} unchanged`,
+      ].join(", ");
+
+      setMeetupSyncFeedback({
+        tone: "success",
+        text: `${data?.msg || "Meetup sync completed."} ${summary}.`,
+      });
+
+      try {
+        router.refresh();
+      } catch {
+        window.location.reload();
+      }
+    } catch (syncError: unknown) {
+      const message =
+        syncError instanceof Error ? syncError.message : "Unexpected error";
+      setMeetupSyncFeedback({
+        tone: "error",
+        text: message,
+      });
+    } finally {
+      setSyncingMeetup(false);
+    }
+  };
+
+  const handleResetAndResyncMeetup = async () => {
+    if (
+      !window.confirm(
+        "Delete only Meetup events and resync from Meetup? Manually posted and other-source events will be kept.",
+      )
+    ) {
+      return;
+    }
+
+    setError(null);
+    setMeetupSyncFeedback(null);
+    setResettingAndSyncingMeetup(true);
+
+    try {
+      const res = await fetch("/api/events/meetup/reset-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const payload = await parseApiPayload(res);
+      const data = (payload.json ?? {}) as {
+        deleted?: number;
+        error?: string;
+        msg?: string;
+        fetched?: number;
+        created?: number;
+        updated?: number;
+        unchanged?: number;
+      };
+
+      if (!res.ok) {
+        setMeetupSyncFeedback({
+          tone: "error",
+          text: extractResponseError(
+            res,
+            payload,
+            "Failed to delete and resync Meetup events.",
+          ),
+        });
+        return;
+      }
+
+      if (!payload.json) {
+        setMeetupSyncFeedback({
+          tone: "error",
+          text: "Reset sync endpoint returned an unexpected response format.",
+        });
+        return;
+      }
+
+      const summary = [
+        `${data?.deleted ?? 0} deleted`,
+        `${data?.fetched ?? 0} fetched`,
+        `${data?.created ?? 0} created`,
+        `${data?.updated ?? 0} updated`,
+        `${data?.unchanged ?? 0} unchanged`,
+      ].join(", ");
+
+      setMeetupSyncFeedback({
+        tone: "success",
+        text: `${data?.msg || "Delete and resync completed."} ${summary}.`,
+      });
+
+      try {
+        router.refresh();
+      } catch {
+        window.location.reload();
+      }
+    } catch (syncError: unknown) {
+      const message =
+        syncError instanceof Error ? syncError.message : "Unexpected error";
+      setMeetupSyncFeedback({
+        tone: "error",
+        text: message,
+      });
+    } finally {
+      setResettingAndSyncingMeetup(false);
+    }
+  };
+
   const handleResetAndResyncCommunity = async () => {
     if (
       !window.confirm(
@@ -915,6 +1067,48 @@ export default function ManageEventsClient({
               }`}
             >
               {syncFeedback.text}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          Meetup Integration
+        </h2>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          Sync upcoming Meetup events using the configured location and start-date
+          query so your Events tab stays filled with real local events.
+        </p>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            disabled={syncingMeetup || resettingAndSyncingMeetup}
+            onClick={() => void handleMeetupSync()}
+            className="rounded bg-cyan-600 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {syncingMeetup ? "Syncing..." : "Sync Meetup Events"}
+          </button>
+
+          <button
+            disabled={syncingMeetup || resettingAndSyncingMeetup}
+            onClick={() => void handleResetAndResyncMeetup()}
+            className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {resettingAndSyncingMeetup
+              ? "Deleting + Syncing..."
+              : "Delete Meetup Events + Resync"}
+          </button>
+
+          {meetupSyncFeedback && (
+            <p
+              className={`text-sm ${
+                meetupSyncFeedback.tone === "error"
+                  ? "text-red-600"
+                  : "text-cyan-700 dark:text-cyan-300"
+              }`}
+            >
+              {meetupSyncFeedback.text}
             </p>
           )}
         </div>

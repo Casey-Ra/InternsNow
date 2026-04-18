@@ -9,6 +9,24 @@ if (!connectionString) {
   throw new Error("Database connection string not found. Please set POSTGRES_URL, DATABASE_URL, or PG_URI environment variable.");
 }
 
+function hasPasswordInConnectionString(urlValue: string): boolean {
+  try {
+    const parsed = new URL(urlValue);
+    return parsed.password.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+if (
+  connectionString.includes("localhost") &&
+  !hasPasswordInConnectionString(connectionString)
+) {
+  console.warn(
+    "Local PostgreSQL connection string is missing a password. Update PG_URI to include one, e.g. postgresql://postgres:<password>@localhost:5432/InternsNow",
+  );
+}
+
 // If the connection string targets a remote host (Neon, Supabase, etc.) we must
 // keep SSL enabled.  Forcing ssl:false breaks SCRAM authentication against those
 // servers even when the connection string already carries sslmode=require.
