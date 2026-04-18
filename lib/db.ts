@@ -22,7 +22,7 @@ if (
   connectionString.includes("localhost") &&
   !hasPasswordInConnectionString(connectionString)
 ) {
-  throw new Error(
+  console.warn(
     "Local PostgreSQL connection string is missing a password. Update PG_URI to include one, e.g. postgresql://postgres:<password>@localhost:5432/InternsNow",
   );
 }
