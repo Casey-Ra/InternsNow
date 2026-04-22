@@ -8,6 +8,7 @@ import { getAllInternships } from "@/app/lib/models/Internship";
 import { getLiveEvents } from "@/app/student/events/events";
 import { buildIntakeRecommendations } from "@/app/lib/utils/intakeRecommendations";
 import { parseIntakeParams, type IntakeSearchParams } from "../intakeParams";
+import { getStudentMajorOrDefault } from "@/app/lib/utils/studentDefaults";
 
 export const dynamic = "force-dynamic";
 
@@ -33,13 +34,14 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
     getAllInternships(),
     getLiveEvents(),
   ]);
+  const effectiveMajor = getStudentMajorOrDefault(major);
 
   const recommendations = buildIntakeRecommendations({
     internships,
     eventList: events,
     input: {
       location,
-      major,
+      major: effectiveMajor,
       interests: effectiveInterests,
     },
   });
@@ -74,7 +76,7 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
 
         <QuickMatchResults
           location={location}
-          major={major}
+          major={effectiveMajor}
           interests={effectiveInterests}
           usedFallbackInterests={usedFallbackInterests}
           opportunityMatches={opportunityMatches}
@@ -102,7 +104,7 @@ export default async function IntakeResultsPage({ searchParams }: PageProps) {
 
             <QuickMatchQuiz
               initialLocation={location}
-              initialMajor={major}
+              initialMajor={effectiveMajor}
               initialInterests={effectiveInterests}
               className="mt-6"
             />
