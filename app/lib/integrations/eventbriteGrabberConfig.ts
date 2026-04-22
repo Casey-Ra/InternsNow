@@ -1,22 +1,46 @@
 export const EVENTBRITE_GRABBER_KEYWORDS = [
-  "career networking",
+  "career fair",
+  "tech networking", 
   "job fair",
-  "internship fair",
+  "internship",
+  "career workshop",
+  "networking event",
+  "professional development",
   "hiring event",
-  "startup networking",
+  "tech job",
+  "career networking",
 ];
 
 export const EVENTBRITE_GRABBER_LOCATIONS = [
+  // Connecticut (original focus)
   "Stamford, CT",
-  "Norwalk, CT",
+  "Norwalk, CT", 
   "Fairfield County, CT",
+  "Hartford, CT",
+  "New Haven, CT",
+  // Major US Cities
+  "New York",
+  "Los Angeles",
+  "Chicago",
+  "Houston",
+  "Phoenix",
+  "Philadelphia",
+  "San Diego",
+  "Dallas",
+  "Austin",
+  "Seattle",
+  "Denver",
+  "Boston",
+  "Atlanta",
+  "Miami",
+  "Washington DC",
+  "San Francisco",
 ];
 
 export const EVENTBRITE_GRABBER_EXCLUDE_KEYWORDS = [
   "virtual",
   "online",
   "zoom",
-  "elevating your potential",
   "dating",
   "singles",
   "concert",
@@ -24,4 +48,7 @@ export const EVENTBRITE_GRABBER_EXCLUDE_KEYWORDS = [
   "party",
   "nightlife",
   "club",
+  "wine",
+  "beer",
+  "food tasting",
 ];
