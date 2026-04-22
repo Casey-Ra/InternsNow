@@ -8,6 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
 import { getProfileCompletionSummary } from "@/app/lib/utils/profileCompletion";
+import { getStudentMajorOrDefault } from "@/app/lib/utils/studentDefaults";
 
 import { InstitutionAutocomplete } from "@/components/InstitutionAutocomplete";
 import { MajorAutocomplete } from "@/components/MajorAutocomplete";
@@ -193,7 +194,7 @@ export default function StudentProfilePage() {
 
     university: "",
     degree: "",
-    major: "",
+    major: getStudentMajorOrDefault(),
     graduationDate: "",
     gpa: "",
 
@@ -267,7 +268,7 @@ export default function StudentProfilePage() {
           degree: edu0?.degreeType?.degreeTypeId
             ? String(edu0.degreeType.degreeTypeId)
             : "",
-          major: primaryMajor?.name ?? "",
+          major: getStudentMajorOrDefault(primaryMajor?.name ?? prev.major),
 
           phone: data.phone ?? "",
           location: data.location ?? "",

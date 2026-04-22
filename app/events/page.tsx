@@ -3,13 +3,19 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { getLiveEvents } from "@/app/student/events/events";
 import { auth0 } from "@/lib/auth0";
+import { getDiscoveryPreferences } from "@/app/lib/utils/discoveryPreferences";
+import { rankEventsByRelevance } from "@/app/lib/utils/eventMatching";
 
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
   const session = await auth0.getSession();
   const isAuthenticated = Boolean(session);
-  const events = await getLiveEvents();
+  const [events, discoveryPreferences] = await Promise.all([
+    getLiveEvents(),
+    getDiscoveryPreferences(),
+  ]);
+  const rankedEvents = rankEventsByRelevance(events, discoveryPreferences);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -25,6 +31,11 @@ export default async function EventsPage() {
               Grow Your Circle: local networking events to meet peers, mentors, and employers.
             </p>
           </div>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            {discoveryPreferences.source === "profile"
+              ? `Events are softly ranked using your profile, including ${discoveryPreferences.major}.`
+              : `Events are softly ranked toward ${discoveryPreferences.major} by default.`}
+          </p>
           {!isAuthenticated && (
             <section className="mb-6 rounded-lg border border-blue-100 bg-blue-50/60 p-4 text-sm text-blue-900 dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-200">
               Sign in to post events.{" "}
@@ -35,7 +46,7 @@ export default async function EventsPage() {
             </section>
           )}
 
-          {events.length === 0 ? (
+          {rankedEvents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-300">
                 No events listed yet. Check back soon.
@@ -43,7 +54,7 @@ export default async function EventsPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {events.map((event) => (
+              {rankedEvents.map((event) => (
                 <div
                   key={event.id}
                   className="relative border border-gray-100 dark:border-gray-700 rounded-lg p-6"

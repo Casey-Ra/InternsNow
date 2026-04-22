@@ -15,6 +15,8 @@ interface Internship {
 interface UserHints {
   locations: string[];
   keywords: string[];
+  major: string;
+  source: "default" | "profile";
 }
 
 const INTERNSHIP_TITLE_PATTERN =
@@ -158,8 +160,10 @@ export default function OpportunitiesList({
       {!isSearching && (
         <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
           {hasHints
-            ? `Top ${Math.min(DEFAULT_COUNT, filtered.length)} opportunities based on your profile. Use the filters to search for more.`
-            : `Showing the ${Math.min(DEFAULT_COUNT, filtered.length)} most recent opportunities. Sign in to see personalized results, or use the filters to search.`}
+            ? userHints.source === "profile"
+              ? `Top ${Math.min(DEFAULT_COUNT, filtered.length)} opportunities based on your profile, including ${userHints.major}. Use the filters to search for more.`
+              : `Top ${Math.min(DEFAULT_COUNT, filtered.length)} opportunities softly ranked toward ${userHints.major}. Use the filters to adjust the mix.`
+            : `Showing the ${Math.min(DEFAULT_COUNT, filtered.length)} most recent opportunities. Use the filters to search.`}
         </p>
       )}
 

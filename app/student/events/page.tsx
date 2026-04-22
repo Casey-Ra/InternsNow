@@ -2,11 +2,17 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { getLiveEvents } from "./events";
+import { getDiscoveryPreferences } from "@/app/lib/utils/discoveryPreferences";
+import { rankEventsByRelevance } from "@/app/lib/utils/eventMatching";
 
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
-  const events = await getLiveEvents();
+  const [events, discoveryPreferences] = await Promise.all([
+    getLiveEvents(),
+    getDiscoveryPreferences(),
+  ]);
+  const rankedEvents = rankEventsByRelevance(events, discoveryPreferences);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -22,8 +28,13 @@ export default async function EventsPage() {
               Local networking events to meet peers, mentors, and employers.
             </p>
           </div>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            {discoveryPreferences.source === "profile"
+              ? `Events are softly ranked using your profile, including ${discoveryPreferences.major}.`
+              : `Events are softly ranked toward ${discoveryPreferences.major} by default.`}
+          </p>
 
-          {events.length === 0 ? (
+          {rankedEvents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-300">
                 No events listed yet. Check back soon.
@@ -31,7 +42,7 @@ export default async function EventsPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {events.map((event) => (
+              {rankedEvents.map((event) => (
                 <div
                   key={event.id}
                   className="relative border border-gray-100 dark:border-gray-700 rounded-lg p-6"

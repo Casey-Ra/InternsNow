@@ -1,6 +1,7 @@
 import type { Internship } from "@/app/lib/models/Internship";
 import type { EventItem } from "@/app/student/events/events";
 import { analyzeOpportunityText } from "@/app/lib/utils/opportunityMatching";
+import { analyzeEventText } from "@/app/lib/utils/eventMatching";
 
 export const intakeInterestValues = ["internship", "job", "event"] as const;
 
@@ -44,12 +45,6 @@ export interface IntakeRecommendationResult {
   events: EventRecommendation[];
 }
 
-type ScoreBreakdown = {
-  score: number;
-  locationMatched: boolean;
-  majorMatchCount: number;
-};
-
 const internshipSignals = [
   "intern",
   "internship",
@@ -59,152 +54,13 @@ const internshipSignals = [
   "campus",
 ];
 
-const majorHints: Array<{ aliases: string[]; keywords: string[] }> = [
-  {
-    aliases: ["computer science", "software", "it", "information technology"],
-    keywords: [
-      "software",
-      "developer",
-      "engineering",
-      "frontend",
-      "backend",
-      "api",
-      "react",
-      "typescript",
-      "data",
-      "ai",
-      "cybersecurity",
-      "python",
-    ],
-  },
-  {
-    aliases: ["data science", "analytics", "statistics", "math"],
-    keywords: [
-      "data",
-      "analytics",
-      "machine learning",
-      "python",
-      "sql",
-      "tableau",
-      "visualization",
-      "reporting",
-    ],
-  },
-  {
-    aliases: ["marketing", "communications", "media"],
-    keywords: [
-      "marketing",
-      "campaign",
-      "social media",
-      "content",
-      "brand",
-      "communications",
-      "growth",
-    ],
-  },
-  {
-    aliases: ["finance", "accounting", "economics"],
-    keywords: [
-      "finance",
-      "financial",
-      "budget",
-      "accounting",
-      "analyst",
-      "consulting",
-      "excel",
-      "client",
-    ],
-  },
-  {
-    aliases: ["business", "management", "operations"],
-    keywords: [
-      "operations",
-      "strategy",
-      "management",
-      "consulting",
-      "business",
-      "supply chain",
-      "logistics",
-      "process",
-    ],
-  },
-  {
-    aliases: ["design", "ux", "ui", "product"],
-    keywords: [
-      "design",
-      "ux",
-      "ui",
-      "product",
-      "creative",
-      "portfolio",
-      "prototype",
-    ],
-  },
-  {
-    aliases: ["health", "biology", "pre-med", "medicine"],
-    keywords: [
-      "health",
-      "healthcare",
-      "clinical",
-      "biology",
-      "medical",
-      "research",
-    ],
-  },
-];
-
 function normalize(value: string): string {
   return value.trim().toLowerCase();
-}
-
-function tokenize(value: string): string[] {
-  const tokens = normalize(value).split(/[^a-z0-9+#]+/g).filter(Boolean);
-  return Array.from(new Set(tokens));
 }
 
 function toTimestamp(value: Date | string): number {
   const parsed = new Date(value).getTime();
   return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function getLocationTokens(location: string): string[] {
-  return tokenize(location).filter((token) => token.length >= 2);
-}
-
-function getMajorKeywords(major: string): string[] {
-  const normalizedMajor = normalize(major);
-  if (!normalizedMajor) {
-    return [];
-  }
-
-  const fromHints = majorHints
-    .filter(({ aliases }) => aliases.some((alias) => normalizedMajor.includes(alias)))
-    .flatMap(({ keywords }) => keywords);
-
-  return Array.from(new Set([...tokenize(major), ...fromHints]));
-}
-
-function scoreText(
-  haystack: string,
-  locationTokens: string[],
-  majorKeywords: string[],
-): ScoreBreakdown {
-  let score = 1;
-  const locationMatched =
-    locationTokens.length > 0 &&
-    locationTokens.some((token) => haystack.includes(token));
-
-  if (locationMatched) {
-    score += 3;
-  }
-
-  const matchedMajorKeywords = majorKeywords.filter(
-    (keyword) => keyword.length > 2 && haystack.includes(keyword),
-  );
-  const majorMatchCount = Math.min(matchedMajorKeywords.length, 3);
-  score += majorMatchCount * 2;
-
-  return { score, locationMatched, majorMatchCount };
 }
 
 function getOpportunityLabel(text: string): "Internship" | "Entry-Level Job" {
@@ -306,25 +162,35 @@ function buildEventRecommendations(
     return [];
   }
 
-  const locationTokens = getLocationTokens(input.location);
-  const majorKeywords = getMajorKeywords(input.major);
+  const locationPreference = input.location.trim();
+  const majorPreference = input.major.trim();
 
   return eventList
     .map((event) => {
       const haystack = normalize(
         `${event.title} ${event.description} ${event.details} ${event.location} ${event.tags.join(" ")}`,
       );
-
-      const breakdown = scoreText(haystack, locationTokens, majorKeywords);
       const reasons: string[] = ["Matches your event interest."];
-      const score = breakdown.score + 2;
+      const breakdown = analyzeEventText(haystack, {
+        locations: locationPreference ? [locationPreference] : [],
+        keywords: majorPreference ? [majorPreference] : [],
+      });
+      let score = 2;
+
+      if (breakdown.strictMatch && (breakdown.hasLocationPreference || breakdown.hasKeywordPreference)) {
+        score += 6;
+      } else if (breakdown.looseMatch) {
+        score += 2;
+      }
 
       if (breakdown.locationMatched) {
+        score += 3;
         reasons.push("In or near your preferred location.");
       }
 
-      if (breakdown.majorMatchCount > 0 && input.major.trim()) {
-        reasons.push(`Relevant to ${input.major.trim()}.`);
+      if (breakdown.keywordMatched && majorPreference) {
+        score += 4 + breakdown.keywordMatchCount;
+        reasons.push(`Relevant to ${majorPreference}.`);
       }
 
       return {

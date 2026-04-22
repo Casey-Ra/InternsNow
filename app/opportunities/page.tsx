@@ -6,73 +6,9 @@ import pool from "@/lib/db";
 import Link from "next/link";
 import OpportunitiesList from "./OpportunitiesList";
 import SeekingToggle from "@/components/SeekingToggle";
+import { getDiscoveryPreferences } from "@/app/lib/utils/discoveryPreferences";
 
 export const dynamic = "force-dynamic";
-
-async function getUserHints(): Promise<{ locations: string[]; keywords: string[] }> {
-  try {
-    const session = await auth0.getSession();
-    if (!session) return { locations: [], keywords: [] };
-
-    const auth0Sub = session.user.sub;
-
-    // Get user_id and profile-level fields
-    const userRes = await pool.query(
-      `SELECT user_id, location, skills, interests FROM "USER" WHERE auth0_sub = $1`,
-      [auth0Sub],
-    );
-    if (userRes.rows.length === 0) return { locations: [], keywords: [] };
-
-    const u = userRes.rows[0];
-    const userId = u.user_id;
-
-    // Get location hints from work experience + profile location
-    const workRes = await pool.query(
-      `SELECT w.city, s.state_name, s.state_code
-       FROM "WORK EXPERIENCE" w
-       LEFT JOIN "US_STATES" s ON s.id = w.state_id
-       WHERE w.user_id = $1`,
-      [userId],
-    );
-
-    // Get keyword hints from majors + profile interests/skills
-    const majorRes = await pool.query(
-      `SELECT um.name
-       FROM "USER MAJOR" um
-       JOIN "EDUCATION" e ON e.edu_id = um.education_id
-       WHERE e.user_id = $1`,
-      [userId],
-    );
-
-    const profileLocation =
-      typeof u.location === "string" ? u.location.trim() : "";
-
-    const locations: string[] = [];
-    if (profileLocation) {
-      locations.push(profileLocation);
-    } else {
-      for (const w of workRes.rows) {
-        if (w.city) locations.push(w.city);
-        if (w.state_name) locations.push(w.state_name);
-        if (w.state_code) locations.push(w.state_code);
-      }
-    }
-
-    const keywords: string[] = [];
-    for (const m of majorRes.rows) {
-      if (m.name) keywords.push(m.name);
-    }
-    if (Array.isArray(u.interests)) keywords.push(...u.interests);
-    if (Array.isArray(u.skills)) keywords.push(...u.skills);
-
-    return {
-      locations: [...new Set(locations.filter(Boolean))],
-      keywords: [...new Set(keywords.filter(Boolean))],
-    };
-  } catch {
-    return { locations: [], keywords: [] };
-  }
-}
 
 async function getUserSeeking(): Promise<"job" | "internship" | "both" | null> {
   try {
@@ -90,9 +26,9 @@ async function getUserSeeking(): Promise<"job" | "internship" | "both" | null> {
 }
 
 export default async function OpportunitiesPage() {
-  const [internships, userHints, seeking] = await Promise.all([
+  const [internships, discoveryPreferences, seeking] = await Promise.all([
     getAllInternships(),
-    getUserHints(),
+    getDiscoveryPreferences(),
     getUserSeeking(),
   ]);
 
@@ -116,7 +52,10 @@ export default async function OpportunitiesPage() {
             </p>
           </div>
 
-          <OpportunitiesList internships={internships} userHints={userHints} />
+          <OpportunitiesList
+            internships={internships}
+            userHints={discoveryPreferences}
+          />
 
           <div className="mt-10 flex justify-center">
             <Link
