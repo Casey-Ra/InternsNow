@@ -121,47 +121,6 @@ function validateFormState(form: EventFormState): string | null {
   return null;
 }
 
-async function parseApiPayload(response: Response): Promise<{
-  json: Record<string, unknown> | null;
-  text: string;
-}> {
-  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-  const bodyText = await response.text();
-
-  if (!contentType.includes("application/json")) {
-    return { json: null, text: bodyText };
-  }
-
-  try {
-    const parsed = JSON.parse(bodyText) as Record<string, unknown>;
-    return { json: parsed, text: bodyText };
-  } catch {
-    return { json: null, text: bodyText };
-  }
-}
-
-function extractResponseError(
-  response: Response,
-  payload: { json: Record<string, unknown> | null; text: string },
-  fallback: string,
-): string {
-  if (payload.json && typeof payload.json.error === "string") {
-    return payload.json.error;
-  }
-
-  if (payload.text.trim().toLowerCase().startsWith("<!doctype") || payload.text.includes("<html")) {
-    if (response.status === 401 || response.status === 403) {
-      return "Your session is no longer authorized. Please sign in again.";
-    }
-    if (response.status === 404) {
-      return "Sync endpoint not found. Please restart the dev server and try again.";
-    }
-    return "Received an HTML response instead of JSON. Please refresh and try again.";
-  }
-
-  return fallback;
-}
-
 function ownerLabel(item: ManagedEventItem, currentUserSub: string): string {
   if (item.createdBy && item.createdBy === currentUserSub) {
     return "You";
@@ -193,20 +152,7 @@ export default function ManageEventsClient({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [syncingCommunity, setSyncingCommunity] = useState(false);
-  const [resettingAndSyncingCommunity, setResettingAndSyncingCommunity] = useState(false);
-  const [communitySyncFeedback, setCommunitySyncFeedback] = useState<{
-    tone: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [syncingMeetup, setSyncingMeetup] = useState(false);
-  const [resettingAndSyncingMeetup, setResettingAndSyncingMeetup] = useState(false);
-  const [meetupSyncFeedback, setMeetupSyncFeedback] = useState<{
-    tone: "success" | "error";
-    text: string;
-  } | null>(null);
   const [syncingEventbrite, setSyncingEventbrite] = useState(false);
-  const [resettingAndSyncingEventbrite, setResettingAndSyncingEventbrite] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{
     tone: "success" | "error";
     text: string;
@@ -442,145 +388,44 @@ export default function ManageEventsClient({
     }
   };
 
-  const syncEventbriteChunk = async (body: Record<string, unknown>) => {
-    const res = await fetch("/api/events/eventbrite/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    const payload = await parseApiPayload(res);
-    const data = (payload.json ?? {}) as {
-      error?: string;
-      msg?: string;
-      fetched?: number;
-      created?: number;
-      updated?: number;
-      unchanged?: number;
-      attemptedQueries?: number;
-      failedQueries?: number;
-      totalQueries?: number;
-      chunkIndex?: number;
-      chunkCount?: number;
-    };
-
-    return { res, payload, data };
-  };
-
-  const runRemainingEventbriteChunks = async (initial: {
-    chunkIndex?: number;
-    chunkCount?: number;
-    fetched?: number;
-    created?: number;
-    updated?: number;
-    unchanged?: number;
-    attemptedQueries?: number;
-    failedQueries?: number;
-  }) => {
-    const initialChunkIndex =
-      typeof initial.chunkIndex === "number" ? initial.chunkIndex : 0;
-    const initialChunkCount =
-      typeof initial.chunkCount === "number" ? initial.chunkCount : 1;
-
-    let fetched = initial.fetched ?? 0;
-    let created = initial.created ?? 0;
-    let updated = initial.updated ?? 0;
-    let unchanged = initial.unchanged ?? 0;
-    let attemptedQueries = initial.attemptedQueries ?? 0;
-    let failedQueries = initial.failedQueries ?? 0;
-    let completedChunks = 1;
-
-    if (initialChunkCount > 1) {
-      for (let offset = 1; offset < initialChunkCount; offset += 1) {
-        const chunkIndex = (initialChunkIndex + offset) % initialChunkCount;
-        const { res, payload, data } = await syncEventbriteChunk({ chunkIndex });
-
-        if (!res.ok || !payload.json) {
-          return {
-            ok: false as const,
-            error: extractResponseError(
-              res,
-              payload,
-              `Failed while syncing chunk ${chunkIndex + 1}/${initialChunkCount}.`,
-            ),
-            fetched,
-            created,
-            updated,
-            unchanged,
-            attemptedQueries,
-            failedQueries,
-            completedChunks,
-            chunkCount: initialChunkCount,
-          };
-        }
-
-        fetched += data.fetched ?? 0;
-        created += data.created ?? 0;
-        updated += data.updated ?? 0;
-        unchanged += data.unchanged ?? 0;
-        attemptedQueries += data.attemptedQueries ?? 0;
-        failedQueries += data.failedQueries ?? 0;
-        completedChunks += 1;
-      }
-    }
-
-    return {
-      ok: true as const,
-      fetched,
-      created,
-      updated,
-      unchanged,
-      attemptedQueries,
-      failedQueries,
-      completedChunks,
-      chunkCount: initialChunkCount,
-    };
-  };
-
   const handleEventbriteSync = async () => {
     setError(null);
     setSyncFeedback(null);
     setSyncingEventbrite(true);
 
     try {
-      const { res, payload, data } = await syncEventbriteChunk({});
+      const res = await fetch("/api/events/eventbrite/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = (await res.json()) as {
+        error?: string;
+        msg?: string;
+        fetched?: number;
+        created?: number;
+        updated?: number;
+        unchanged?: number;
+      };
 
       if (!res.ok) {
         setSyncFeedback({
           tone: "error",
-          text: extractResponseError(res, payload, "Failed to grab Eventbrite events."),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setSyncFeedback({
-          tone: "error",
-          text: "Sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const rollup = await runRemainingEventbriteChunks(data);
-
-      if (!rollup.ok) {
-        setSyncFeedback({
-          tone: "error",
-          text: `${rollup.error} Partial totals: ${rollup.fetched} fetched, ${rollup.created} created, ${rollup.updated} updated, ${rollup.unchanged} unchanged.`,
+          text: data?.error || "Failed to grab Eventbrite events.",
         });
         return;
       }
 
       const summary = [
-        `${rollup.fetched} fetched`,
-        `${rollup.created} created`,
-        `${rollup.updated} updated`,
-        `${rollup.unchanged} unchanged`,
+        `${data?.fetched ?? 0} fetched`,
+        `${data?.created ?? 0} created`,
+        `${data?.updated ?? 0} updated`,
+        `${data?.unchanged ?? 0} unchanged`,
       ].join(", ");
 
       setSyncFeedback({
         tone: "success",
-        text: `${data?.msg || "Eventbrite grab completed."} ${summary}. chunks ${rollup.completedChunks}/${rollup.chunkCount} (queries ${rollup.attemptedQueries}, ${rollup.failedQueries} empty/failed).`,
+        text: `${data?.msg || "Eventbrite grab completed."} ${summary}.`,
       });
 
       try {
@@ -599,520 +444,41 @@ export default function ManageEventsClient({
     }
   };
 
-  const handleResetAndResyncEventbrite = async () => {
-    if (
-      !window.confirm(
-        "Delete all Eventbrite events and resync across all chunks? This only removes source='eventbrite' rows.",
-      )
-    ) {
-      return;
-    }
-
-    setError(null);
-    setSyncFeedback(null);
-    setResettingAndSyncingEventbrite(true);
-
-    try {
-      const res = await fetch("/api/events/eventbrite/reset-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await parseApiPayload(res);
-      const data = (payload.json ?? {}) as {
-        error?: string;
-        msg?: string;
-        deleted?: number;
-        fetched?: number;
-        created?: number;
-        updated?: number;
-        unchanged?: number;
-        attemptedQueries?: number;
-        failedQueries?: number;
-        chunkIndex?: number;
-        chunkCount?: number;
-      };
-
-      if (!res.ok) {
-        setSyncFeedback({
-          tone: "error",
-          text: extractResponseError(
-            res,
-            payload,
-            "Failed to delete and resync Eventbrite events.",
-          ),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setSyncFeedback({
-          tone: "error",
-          text: "Eventbrite reset sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const rollup = await runRemainingEventbriteChunks(data);
-      if (!rollup.ok) {
-        setSyncFeedback({
-          tone: "error",
-          text: `${rollup.error} Partial totals after delete: ${rollup.fetched} fetched, ${rollup.created} created, ${rollup.updated} updated, ${rollup.unchanged} unchanged.`,
-        });
-        return;
-      }
-
-      const summary = [
-        `${data.deleted ?? 0} deleted`,
-        `${rollup.fetched} fetched`,
-        `${rollup.created} created`,
-        `${rollup.updated} updated`,
-        `${rollup.unchanged} unchanged`,
-      ].join(", ");
-
-      setSyncFeedback({
-        tone: "success",
-        text: `${data.msg || "Eventbrite delete and resync completed."} ${summary}. chunks ${rollup.completedChunks}/${rollup.chunkCount} (queries ${rollup.attemptedQueries}, ${rollup.failedQueries} empty/failed).`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (syncError: unknown) {
-      const message =
-        syncError instanceof Error ? syncError.message : "Unexpected error";
-      setSyncFeedback({
-        tone: "error",
-        text: message,
-      });
-    } finally {
-      setResettingAndSyncingEventbrite(false);
-    }
-  };
-
-  const handleCommunitySync = async () => {
-    setError(null);
-    setCommunitySyncFeedback(null);
-    setSyncingCommunity(true);
-
-    try {
-      const res = await fetch("/api/events/community/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await parseApiPayload(res);
-      const data = (payload.json ?? {}) as {
-        error?: string;
-        msg?: string;
-        fetched?: number;
-        matched?: number;
-        created?: number;
-        updated?: number;
-        unchanged?: number;
-      };
-
-      if (!res.ok) {
-        setCommunitySyncFeedback({
-          tone: "error",
-          text: extractResponseError(res, payload, "Failed to sync community event feeds."),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setCommunitySyncFeedback({
-          tone: "error",
-          text: "Sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const summary = [
-        `${data?.matched ?? data?.fetched ?? 0} matched`,
-        `${data?.created ?? 0} created`,
-        `${data?.updated ?? 0} updated`,
-        `${data?.unchanged ?? 0} unchanged`,
-      ].join(", ");
-
-      setCommunitySyncFeedback({
-        tone: "success",
-        text: `${data?.msg || "Community feed sync completed."} ${summary}.`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (syncError: unknown) {
-      const message =
-        syncError instanceof Error ? syncError.message : "Unexpected error";
-      setCommunitySyncFeedback({
-        tone: "error",
-        text: message,
-      });
-    } finally {
-      setSyncingCommunity(false);
-    }
-  };
-
-  const handleMeetupSync = async () => {
-    setError(null);
-    setMeetupSyncFeedback(null);
-    setSyncingMeetup(true);
-
-    try {
-      const res = await fetch("/api/events/meetup/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await parseApiPayload(res);
-      const data = (payload.json ?? {}) as {
-        error?: string;
-        msg?: string;
-        fetched?: number;
-        created?: number;
-        updated?: number;
-        unchanged?: number;
-      };
-
-      if (!res.ok) {
-        setMeetupSyncFeedback({
-          tone: "error",
-          text: extractResponseError(res, payload, "Failed to sync Meetup events."),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setMeetupSyncFeedback({
-          tone: "error",
-          text: "Sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const summary = [
-        `${data?.fetched ?? 0} fetched`,
-        `${data?.created ?? 0} created`,
-        `${data?.updated ?? 0} updated`,
-        `${data?.unchanged ?? 0} unchanged`,
-      ].join(", ");
-
-      setMeetupSyncFeedback({
-        tone: "success",
-        text: `${data?.msg || "Meetup sync completed."} ${summary}.`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (syncError: unknown) {
-      const message =
-        syncError instanceof Error ? syncError.message : "Unexpected error";
-      setMeetupSyncFeedback({
-        tone: "error",
-        text: message,
-      });
-    } finally {
-      setSyncingMeetup(false);
-    }
-  };
-
-  const handleResetAndResyncMeetup = async () => {
-    if (
-      !window.confirm(
-        "Delete only Meetup events and resync from Meetup? Manually posted and other-source events will be kept.",
-      )
-    ) {
-      return;
-    }
-
-    setError(null);
-    setMeetupSyncFeedback(null);
-    setResettingAndSyncingMeetup(true);
-
-    try {
-      const res = await fetch("/api/events/meetup/reset-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await parseApiPayload(res);
-      const data = (payload.json ?? {}) as {
-        deleted?: number;
-        error?: string;
-        msg?: string;
-        fetched?: number;
-        created?: number;
-        updated?: number;
-        unchanged?: number;
-      };
-
-      if (!res.ok) {
-        setMeetupSyncFeedback({
-          tone: "error",
-          text: extractResponseError(
-            res,
-            payload,
-            "Failed to delete and resync Meetup events.",
-          ),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setMeetupSyncFeedback({
-          tone: "error",
-          text: "Reset sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const summary = [
-        `${data?.deleted ?? 0} deleted`,
-        `${data?.fetched ?? 0} fetched`,
-        `${data?.created ?? 0} created`,
-        `${data?.updated ?? 0} updated`,
-        `${data?.unchanged ?? 0} unchanged`,
-      ].join(", ");
-
-      setMeetupSyncFeedback({
-        tone: "success",
-        text: `${data?.msg || "Delete and resync completed."} ${summary}.`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (syncError: unknown) {
-      const message =
-        syncError instanceof Error ? syncError.message : "Unexpected error";
-      setMeetupSyncFeedback({
-        tone: "error",
-        text: message,
-      });
-    } finally {
-      setResettingAndSyncingMeetup(false);
-    }
-  };
-
-  const handleResetAndResyncCommunity = async () => {
-    if (
-      !window.confirm(
-        "Delete only community-feed events and resync from community feeds? Manually posted and other-source events will be kept.",
-      )
-    ) {
-      return;
-    }
-
-    setError(null);
-    setCommunitySyncFeedback(null);
-    setResettingAndSyncingCommunity(true);
-
-    try {
-      const res = await fetch("/api/events/community/reset-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await parseApiPayload(res);
-      const data = (payload.json ?? {}) as {
-        deleted?: number;
-        error?: string;
-        msg?: string;
-        fetched?: number;
-        matched?: number;
-        created?: number;
-        updated?: number;
-        unchanged?: number;
-      };
-
-      if (!res.ok) {
-        setCommunitySyncFeedback({
-          tone: "error",
-          text: extractResponseError(
-            res,
-            payload,
-            "Failed to delete and resync community events.",
-          ),
-        });
-        return;
-      }
-
-      if (!payload.json) {
-        setCommunitySyncFeedback({
-          tone: "error",
-          text: "Reset sync endpoint returned an unexpected response format.",
-        });
-        return;
-      }
-
-      const summary = [
-        `${data?.deleted ?? 0} deleted`,
-        `${data?.matched ?? data?.fetched ?? 0} matched`,
-        `${data?.created ?? 0} created`,
-        `${data?.updated ?? 0} updated`,
-        `${data?.unchanged ?? 0} unchanged`,
-      ].join(", ");
-
-      setCommunitySyncFeedback({
-        tone: "success",
-        text: `${data?.msg || "Delete and resync completed."} ${summary}.`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (syncError: unknown) {
-      const message =
-        syncError instanceof Error ? syncError.message : "Unexpected error";
-      setCommunitySyncFeedback({
-        tone: "error",
-        text: message,
-      });
-    } finally {
-      setResettingAndSyncingCommunity(false);
-    }
-  };
-
   return (
     <div className="space-y-8">
-      <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Community Event Feeds
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Pull local networking events, meetups, panels, workshops, and industry talks
-          from configured RSS and ICS feeds. This ignores concert-style events.
-        </p>
+      {isAdmin && (
+        <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Eventbrite Grabber
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            Grab events from Eventbrite (career fairs, networking events, job fairs, etc.)
+            across major US cities. This will sync events to the database.
+          </p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            disabled={syncingCommunity || resettingAndSyncingCommunity}
-            onClick={handleCommunitySync}
-            className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {syncingCommunity ? "Syncing..." : "Sync Community Events"}
-          </button>
-
-          <button
-            disabled={syncingCommunity || resettingAndSyncingCommunity}
-            onClick={handleResetAndResyncCommunity}
-            className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {resettingAndSyncingCommunity
-              ? "Deleting + Syncing..."
-              : "Delete Community Events + Resync"}
-          </button>
-
-          {communitySyncFeedback && (
-            <p
-              className={`text-sm ${
-                communitySyncFeedback.tone === "error"
-                  ? "text-red-600"
-                  : "text-blue-700 dark:text-blue-300"
-              }`}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              disabled={syncingEventbrite}
+              onClick={handleEventbriteSync}
+              className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {communitySyncFeedback.text}
-            </p>
-          )}
-        </div>
-      </section>
+              {syncingEventbrite ? "Grabbing..." : "Grab Eventbrite Events"}
+            </button>
 
-      <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Eventbrite Grabber
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Grab events from Eventbrite (career fairs, networking events, job fairs, etc.)
-          across major US cities. This will sync events to the database.
-        </p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            disabled={syncingEventbrite || resettingAndSyncingEventbrite}
-            onClick={() => void handleEventbriteSync()}
-            className="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {syncingEventbrite ? "Grabbing All Chunks..." : "Grab Eventbrite Events"}
-          </button>
-
-          <button
-            disabled={syncingEventbrite || resettingAndSyncingEventbrite}
-            onClick={() => void handleResetAndResyncEventbrite()}
-            className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {resettingAndSyncingEventbrite
-              ? "Deleting + Syncing..."
-              : "Delete Eventbrite Events + Resync"}
-          </button>
-
-          {syncFeedback && (
-            <p
-              className={`text-sm ${
-                syncFeedback.tone === "error"
-                  ? "text-red-600"
-                  : "text-emerald-700 dark:text-emerald-300"
-              }`}
-            >
-              {syncFeedback.text}
-            </p>
-          )}
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Meetup Integration
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Sync upcoming Meetup events using the configured location and start-date
-          query so your Events tab stays filled with real local events.
-        </p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            disabled={syncingMeetup || resettingAndSyncingMeetup}
-            onClick={() => void handleMeetupSync()}
-            className="rounded bg-cyan-600 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {syncingMeetup ? "Syncing..." : "Sync Meetup Events"}
-          </button>
-
-          <button
-            disabled={syncingMeetup || resettingAndSyncingMeetup}
-            onClick={() => void handleResetAndResyncMeetup()}
-            className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {resettingAndSyncingMeetup
-              ? "Deleting + Syncing..."
-              : "Delete Meetup Events + Resync"}
-          </button>
-
-          {meetupSyncFeedback && (
-            <p
-              className={`text-sm ${
-                meetupSyncFeedback.tone === "error"
-                  ? "text-red-600"
-                  : "text-cyan-700 dark:text-cyan-300"
-              }`}
-            >
-              {meetupSyncFeedback.text}
-            </p>
-          )}
-        </div>
-      </section>
+            {syncFeedback && (
+              <p
+                className={`text-sm ${
+                  syncFeedback.tone === "error"
+                    ? "text-red-600"
+                    : "text-emerald-700 dark:text-emerald-300"
+                }`}
+              >
+                {syncFeedback.text}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">

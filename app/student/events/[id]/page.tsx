@@ -3,10 +3,6 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findEventById } from "../events";
-import { auth0 } from "@/lib/auth0";
-import EventPageCTA from "@/components/hustle/EventPageCTA";
-
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{
@@ -25,7 +21,6 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function EventDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await auth0.getSession();
   const event = await findEventById(id);
 
   if (!event) {
@@ -59,9 +54,7 @@ export default async function EventDetailsPage({ params }: PageProps) {
 
           <div className="text-gray-700 dark:text-gray-200 leading-relaxed space-y-3">
             <p>{event.description}</p>
-            {event.details && event.details.trim() !== event.description.trim() ? (
-              <p>{event.details}</p>
-            ) : null}
+            <p>{event.details}</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -95,15 +88,14 @@ export default async function EventDetailsPage({ params }: PageProps) {
           </div>
 
           <div className="pt-2 flex flex-wrap gap-4">
-            <EventPageCTA
-              registrationLink={event.registrationLink}
-              referenceId={event.id}
-              sourceLabel={event.title}
-              sourceDate={event.date}
-              sourceTime={event.time}
-              sourceLocation={event.location}
-              isLoggedIn={!!session}
-            />
+            <a
+              href={event.registrationLink}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              Register / Details
+            </a>
             <Link
               href="/student/events"
               className="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"

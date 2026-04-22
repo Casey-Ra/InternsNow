@@ -7,24 +7,12 @@
   "regions": ["iad1"],
   "crons": [
     {
-      "path": "/api/cron/events-prune",
-      "schedule": "0 8 * * *"
-    },
-    {
       "path": "/api/cron/greenhouse-sync",
       "schedule": "0 10 * * *"
     },
     {
-      "path": "/api/cron/lever-sync",
-      "schedule": "0 11 * * *"
-    },
-    {
       "path": "/api/cron/eventbrite-sync",
       "schedule": "0 10 * * *"
-    },
-    {
-      "path": "/api/cron/community-events-sync",
-      "schedule": "0 9 * * *"
     }
   ],
   "redirects": [

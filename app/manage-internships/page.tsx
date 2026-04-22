@@ -5,10 +5,6 @@ import {
   getConfiguredGreenhouseBoards,
   serializeGreenhouseBoards,
 } from "@/app/lib/integrations/greenhouse";
-import {
-  getConfiguredLeverBoards,
-  serializeLeverBoards,
-} from "@/app/lib/integrations/lever";
 import ManageInternshipsClient from "@/app/manage-internships/ManageInternshipsClient";
 
 // Prevent static generation - this page needs database access at runtime
@@ -19,7 +15,6 @@ export default async function ManageInternshipsPage() {
   const initialGreenhouseBoards = serializeGreenhouseBoards(
     getConfiguredGreenhouseBoards(),
   );
-  const initialLeverBoards = serializeLeverBoards(getConfiguredLeverBoards());
   // Next.js serializes props to the client; ensure dates are strings
   const initialData = internships.map((it) => ({ ...it, created_at: it.created_at?.toISOString?.() ?? String(it.created_at) }));
 
@@ -36,7 +31,6 @@ export default async function ManageInternshipsPage() {
           <ManageInternshipsClient
             initialData={initialData}
             initialGreenhouseBoards={initialGreenhouseBoards}
-            initialLeverBoards={initialLeverBoards}
           />
         </div>
       </main>

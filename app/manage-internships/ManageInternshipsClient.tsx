@@ -38,11 +38,9 @@ function getErrorMessage(error: unknown) {
 export default function ManageInternshipsClient({
   initialData,
   initialGreenhouseBoards,
-  initialLeverBoards,
 }: {
   initialData: InternshipItem[];
   initialGreenhouseBoards: string;
-  initialLeverBoards: string;
 }) {
   const [items, setItems] = useState<InternshipItem[]>(initialData || []);
   const router = useRouter();
@@ -52,12 +50,6 @@ export default function ManageInternshipsClient({
   const [greenhouseBoards, setGreenhouseBoards] = useState(initialGreenhouseBoards);
   const [syncingGreenhouse, setSyncingGreenhouse] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{
-    tone: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [leverBoards, setLeverBoards] = useState(initialLeverBoards);
-  const [syncingLever, setSyncingLever] = useState(false);
-  const [leverSyncFeedback, setLeverSyncFeedback] = useState<{
     tone: "success" | "error";
     text: string;
   } | null>(null);
@@ -134,69 +126,6 @@ export default function ManageInternshipsClient({
       });
     } finally {
       setSyncingGreenhouse(false);
-    }
-  };
-
-  const handleLeverSync = async () => {
-    setError(null);
-    setLeverSyncFeedback(null);
-    setSyncingLever(true);
-
-    try {
-      const res = await fetch("/api/internships/lever/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          boardsText: leverBoards.trim() || undefined,
-        }),
-      });
-
-      const data = (await res.json()) as SyncResponse;
-      if (!res.ok) {
-        setLeverSyncFeedback({
-          tone: "error",
-          text: data?.error || "Failed to sync Lever jobs.",
-        });
-        return;
-      }
-
-      const failedBoards = Array.isArray(data?.boards)
-        ? data.boards.filter((board) => Boolean(board.error))
-        : [];
-      const totals = data?.totals ?? {};
-      const summary = [
-        `${totals.created ?? 0} created`,
-        `${totals.updated ?? 0} updated`,
-        `${totals.unchanged ?? 0} unchanged`,
-        `${totals.matched ?? 0} matched`,
-      ].join(", ");
-      const failures =
-        failedBoards.length > 0
-          ? ` Failed boards: ${failedBoards
-              .map(
-                (board) =>
-                  `${board.companyName || board.token} (${board.error ?? "unknown error"})`,
-              )
-              .join("; ")}`
-          : "";
-
-      setLeverSyncFeedback({
-        tone: "success",
-        text: `${data?.msg || "Lever sync completed."} ${summary}.${failures}`,
-      });
-
-      try {
-        router.refresh();
-      } catch {
-        window.location.reload();
-      }
-    } catch (err: unknown) {
-      setLeverSyncFeedback({
-        tone: "error",
-        text: getErrorMessage(err),
-      });
-    } finally {
-      setSyncingLever(false);
     }
   };
 
@@ -326,50 +255,6 @@ export default function ManageInternshipsClient({
                 }`}
               >
                 {syncFeedback.text}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/20">
-        <div className="flex flex-col gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Import from Lever
-            </h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-              Use one board per line in the format <code>company_slug|Company Name</code>.
-              Leave it as-is to use <code>LEVER_BOARDS</code>. Internship-style
-              roles are filtered with <code>LEVER_KEYWORDS</code>.
-            </p>
-          </div>
-
-          <textarea
-            className="min-h-28 w-full rounded border border-blue-200 bg-white p-3 font-mono text-sm dark:border-blue-800 dark:bg-gray-900"
-            placeholder={"netflix|Netflix\nplaid|Plaid"}
-            value={leverBoards}
-            onChange={(event) => setLeverBoards(event.target.value)}
-          />
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              disabled={syncingLever}
-              onClick={handleLeverSync}
-              className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {syncingLever ? "Syncing..." : "Sync Lever"}
-            </button>
-
-            {leverSyncFeedback && (
-              <p
-                className={`text-sm ${
-                  leverSyncFeedback.tone === "error"
-                    ? "text-red-600"
-                    : "text-blue-700 dark:text-blue-300"
-                }`}
-              >
-                {leverSyncFeedback.text}
               </p>
             )}
           </div>

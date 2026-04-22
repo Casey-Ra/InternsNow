@@ -1,10 +1,6 @@
 import { randomUUID } from "crypto";
 import pool from "../db";
-import {
-  grabEventbriteEvents,
-  type EventbriteGrabberOptions,
-  type GrabbedEvent,
-} from "./eventbriteGrabber";
+import { grabEventbriteEvents, type GrabbedEvent } from "./eventbriteGrabber";
 
 export type EventbriteSyncResult = {
   ok: boolean;
@@ -14,11 +10,6 @@ export type EventbriteSyncResult = {
   created: number;
   updated: number;
   unchanged: number;
-  attemptedQueries?: number;
-  failedQueries?: number;
-  totalQueries?: number;
-  chunkIndex?: number;
-  chunkCount?: number;
   error?: string;
 };
 
@@ -28,11 +19,6 @@ export type EventbriteSyncTotals = {
   updated: number;
   unchanged: number;
 };
-
-export type EventbriteSyncRequest = Pick<
-  EventbriteGrabberOptions,
-  "chunkIndex" | "maxQueriesPerRun" | "timeoutMs" | "useNextChunk"
->;
 
 async function ensureSourceColumns() {
   await pool.query(`
@@ -92,7 +78,7 @@ async function upsertEventbriteEvent(
         event.time,
         event.location,
         event.description,
-        "",
+        event.description,
         "Eventbrite",
         "See website",
         event.url,
@@ -130,7 +116,7 @@ async function upsertEventbriteEvent(
       event.time,
       event.location,
       event.description,
-      "",
+      event.description,
     ],
   );
 
@@ -144,9 +130,7 @@ function getErrorMessage(error: unknown): string {
   return "Unknown Eventbrite grabber error";
 }
 
-export async function runEventbriteGrabberSync(
-  request: EventbriteSyncRequest = {},
-): Promise<EventbriteSyncResult> {
+export async function runEventbriteGrabberSync(): Promise<EventbriteSyncResult> {
   try {
     await ensureSourceColumns();
   } catch (error) {
@@ -166,22 +150,14 @@ export async function runEventbriteGrabberSync(
   let created = 0;
   let updated = 0;
   let unchanged = 0;
-  let attemptedQueries = 0;
-  let failedQueries = 0;
-  let totalQueries = 0;
-  let chunkIndex = 0;
-  let chunkCount = 0;
 
   try {
-    const grabResult = await grabEventbriteEvents(request);
-    const events = grabResult.events;
-    attemptedQueries = grabResult.attemptedQueries;
-    failedQueries = grabResult.failedQueries;
-    totalQueries = grabResult.totalQueries;
-    chunkIndex = grabResult.chunkIndex;
-    chunkCount = grabResult.chunkCount;
+    console.log("Starting Eventbrite grabber sync...");
+
+    const events = await grabEventbriteEvents();
 
     fetched = events.length;
+    console.log(`Grabbed ${fetched} events from Eventbrite`);
 
     for (const event of events) {
       try {
@@ -207,28 +183,18 @@ export async function runEventbriteGrabberSync(
       created,
       updated,
       unchanged,
-      attemptedQueries,
-      failedQueries,
-      totalQueries,
-      chunkIndex,
-      chunkCount,
       error: getErrorMessage(error),
     };
   }
 
   return {
     ok: true,
-    message: "Eventbrite grabber sync completed (partial chunk)",
+    message: "Eventbrite grabber sync completed",
     source: "grabber",
     fetched,
     created,
     updated,
     unchanged,
-    attemptedQueries,
-    failedQueries,
-    totalQueries,
-    chunkIndex,
-    chunkCount,
   };
 }
 

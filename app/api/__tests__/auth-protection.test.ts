@@ -36,8 +36,6 @@ function loadRoutes() {
   let routes!: {
     getProfile: typeof import("@/app/api/profile/route").GET;
     getProtected: typeof import("@/app/api/protected/route").GET;
-    getHustle: typeof import("@/app/api/student/hustle/route").GET;
-    postHustle: typeof import("@/app/api/student/hustle/route").POST;
     createInternship: typeof import("@/app/api/internships/create/route").POST;
     updateInternship: typeof import("@/app/api/internships/update/route").POST;
     deleteInternship: typeof import("@/app/api/internships/delete/route").POST;
@@ -50,8 +48,6 @@ function loadRoutes() {
     routes = {
       getProfile: require("@/app/api/profile/route").GET,
       getProtected: require("@/app/api/protected/route").GET,
-      getHustle: require("@/app/api/student/hustle/route").GET,
-      postHustle: require("@/app/api/student/hustle/route").POST,
       createInternship: require("@/app/api/internships/create/route").POST,
       updateInternship: require("@/app/api/internships/update/route").POST,
       deleteInternship: require("@/app/api/internships/delete/route").POST,
@@ -85,22 +81,15 @@ describe("fast API auth protection tests", () => {
   });
 
   it("rejects unauthenticated protected API reads", async () => {
-    const { getProtected, getHustle } = loadRoutes();
+    const { getProtected } = loadRoutes();
     const response = await getProtected(
       new Request(
         "http://localhost/api/protected",
       ) as unknown as import("next/server").NextRequest,
     );
-    const hustleResponse = await getHustle(
-      new Request(
-        "http://localhost/api/student/hustle",
-      ) as unknown as import("next/server").NextRequest,
-    );
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: "Not authenticated" });
-    expect(hustleResponse.status).toBe(401);
-    expect(await hustleResponse.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("rejects unauthenticated internship mutations", async () => {
@@ -143,7 +132,7 @@ describe("fast API auth protection tests", () => {
   });
 
   it("rejects unauthenticated event mutations", async () => {
-    const { createEvent, updateEvent, deleteEvent, postHustle } = loadRoutes();
+    const { createEvent, updateEvent, deleteEvent } = loadRoutes();
     const createResponse = await createEvent(
       new Request("http://localhost/api/events/create", {
         method: "POST",
@@ -173,17 +162,6 @@ describe("fast API auth protection tests", () => {
         body: JSON.stringify({ id: "evt_1" }),
       }) as unknown as import("next/server").NextRequest,
     );
-    const hustleResponse = await postHustle(
-      new Request("http://localhost/api/student/hustle", {
-        method: "POST",
-        body: JSON.stringify({
-          activityType: "event_rsvp",
-          referenceType: "event",
-          referenceId: "evt_1",
-          sourceLabel: "Test Event",
-        }),
-      }) as unknown as import("next/server").NextRequest,
-    );
 
     expect(createResponse.status).toBe(401);
     expect(await createResponse.json()).toEqual({ error: "Unauthorized" });
@@ -191,7 +169,5 @@ describe("fast API auth protection tests", () => {
     expect(await updateResponse.json()).toEqual({ error: "Unauthorized" });
     expect(deleteResponse.status).toBe(401);
     expect(await deleteResponse.json()).toEqual({ error: "Unauthorized" });
-    expect(hustleResponse.status).toBe(401);
-    expect(await hustleResponse.json()).toEqual({ error: "Unauthorized" });
   });
 });

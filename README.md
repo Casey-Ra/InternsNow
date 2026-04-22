@@ -151,25 +151,6 @@ Notes:
 - A Vercel Cron job calls `/api/cron/greenhouse-sync` once per day at `10:00 UTC` (`6:00 AM EDT` / `5:00 AM EST`)
 - Set `CRON_SECRET` in Vercel so the scheduled route accepts the request
 
-### Meetup Events Sync
-
-The Events Management page now supports syncing real Meetup events into the main `events` table.
-
-Add these optional values to `.env.local`:
-
-```env
-MEETUP_SYNC_FIRST=12
-MEETUP_SYNC_LAT=41.0528
-MEETUP_SYNC_LON=-73.5395
-MEETUP_SYNC_START_DATE_RANGE=2026-04-08T12:00:00.000-04:00[US/Eastern]
-MEETUP_PERSISTED_QUERY_HASH=3f7480361301be1b3208df0cd724930a22f7741d3c24666ab5b37a381ff4e0e8
-```
-
-Notes:
-- If unset, the app falls back to the same defaults shown above.
-- Sync from the UI at `/events/manage` using **Sync Meetup Events**.
-- You can also trigger it via cron endpoint `GET /api/cron/events-meetup-sync` with `Authorization: Bearer <CRON_SECRET>`.
-
 ### CI/CD Pipeline
 
 On every Pull Request, GitHub Actions automatically runs:

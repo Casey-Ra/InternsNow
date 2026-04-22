@@ -3,10 +3,6 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findInternshipById } from "@/app/lib/models/Internship";
-import { auth0 } from "@/lib/auth0";
-import OpportunityPageCTA from "@/components/hustle/OpportunityPageCTA";
-
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{
@@ -34,7 +30,6 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function OpportunityDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await auth0.getSession();
   const internship = await findInternshipById(id);
 
   if (!internship) {
@@ -68,12 +63,14 @@ export default async function OpportunityDetailsPage({ params }: PageProps) {
           </div>
 
           <div className="pt-4 flex flex-wrap gap-4">
-            <OpportunityPageCTA
-              applyUrl={internship.url}
-              referenceId={internship.id}
-              sourceLabel={internship.company_name}
-              isLoggedIn={!!session}
-            />
+            <a
+              href={internship.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              Apply Now
+            </a>
             <Link
               href="/opportunities"
               className="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"

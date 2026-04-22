@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth0 } from "@/lib/auth0";
 import {
   type GreenhouseSyncRequest,
   runGreenhouseSync,
@@ -6,6 +7,11 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth0.getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     let body: GreenhouseSyncRequest = {};
     try {
       body = (await request.json()) as {
